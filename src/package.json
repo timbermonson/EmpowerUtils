@@ -1,30 +1,33 @@
 {
-  "type": "module" ,
-  "name": "empowernode",
-  "version": "1.0.0",
-  "main": "app.js",
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 4,
-    "semi": false,
-    "singleQuote": true
-  },
-  "nodemonConfig": {
-    "watch": [
-      "./"
-    ],
-    "verbose": false,
-    "ext": "js, txt, json"
-  },
-  "scripts": {
-    "ebp": "node ./ExtractBusinessPrincipals.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "axios": "^1.8.1",
-    "lodash": "^4.17.21",
-    "node-clipboardy": "^1.0.3"
-  }
+    "type": "module",
+    "name": "empowernode",
+    "version": "1.0.0",
+    "main": "app.js",
+    "prettier": {
+        "trailingComma": "es5",
+        "tabWidth": 4,
+        "semi": false,
+        "singleQuote": true
+    },
+    "nodemonConfig": {
+        "watch": [
+            "./"
+        ],
+        "ignore": [
+            "output.txt"
+        ],
+        "verbose": false,
+        "ext": "js, txt, json"
+    },
+    "scripts": {
+        "ebp": "node ./ExtractBusinessPrincipals.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "axios": "^1.8.1",
+        "lodash": "^4.17.21",
+        "node-clipboardy": "^1.0.3"
+    }
 }
