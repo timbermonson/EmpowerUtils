@@ -18,6 +18,7 @@ async function getSaltLakeCountyResultPageByNameString(nameString) {
 }
 
 async function getSaltLakeCountyResultPageByAppendage(appendage) {
+    console.log(`Getting data for ${appendage}...`)
     const baseUrl =
         'http://apps.saltlakecounty.gov/assessor/new/resultsMain.cfm?'
     const url = `${baseUrl}${appendage}`
@@ -63,13 +64,24 @@ async function getSaltLakeCountyResultPageByAppendage(appendage) {
             const ownerMatch = `${resp}`.match(
                 /Owner.*<\/td>.+right\"\>(.+)<\/td>/
             )
+            const latMatch = `${resp}`.match(
+                /id="polyx" hidden="true">([0-9\-\.]+)</
+            )
+            const longMatch = `${resp}`.match(
+                /id="polyy" hidden="true">([0-9\-\.]+)</
+            )
+
             if (
                 !streetMatch ||
                 !streetMatch[1] ||
                 !cityMatch ||
                 !cityMatch[1] ||
                 !ownerMatch ||
-                !ownerMatch[1]
+                !ownerMatch[1] ||
+                !latMatch ||
+                !latMatch[1] ||
+                !longMatch ||
+                !longMatch[1]
             ) {
                 throw new Error(
                     `could not parse search results for ${nameString}`
@@ -79,23 +91,15 @@ async function getSaltLakeCountyResultPageByAppendage(appendage) {
                 owner: ownerMatch[1].trim(),
                 street: streetMatch[1].trim(),
                 city: cityMatch[1].trim(),
+                coords: `${latMatch[1].trim()}, ${longMatch[1].trim()}`,
             }
             break
     }
     throw new Error('could not find results!')
 }
 
-async function getSaltLakeCountyResultPageByName(name) {
+export default async function getSaltLakeCountyResultPageByName(name) {
     const nameString = generateNameSearchString(name)
 
     return await getSaltLakeCountyResultPageByNameString(nameString)
 }
-
-const args = process.argv
-args.splice(0, 2)
-
-const nameInput = args.join(' ')
-const resp = await getSaltLakeCountyResultPageByName(nameInput)
-
-// console.log(JSON.stringify(resp).replace(/\\n/g, ''))
-console.log(JSON.stringify(resp, null, 2))
