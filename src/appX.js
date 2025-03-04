@@ -20,12 +20,20 @@ let output = ''
 
 for (const nameInput of inputList) {
     output += `${nameInput}\t`
-    const resp = await getSaltLakeCountyResultPageByName(nameInput)
-    // output += `${JSON.stringify(resp, null, 2)}\n`
+    let resp
+    try {
+        resp = await getSaltLakeCountyResultPageByName(nameInput)
+    } catch (e) {
+        console.error(e.message)
+        output += '\t'
+        continue
+    }
+
     if (!resp || (Array.isArray(resp) && resp.length === 0)) {
         output += '\t'
         continue
     }
+    // output += `${JSON.stringify(resp, null, 2)}\n`
 
     console.log(resp)
 
