@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { l, lm, el } from './lib.js'
-import { searchFullName } from './getAddressUtahCounty.js'
+import countyScraperMap from './countyScraper/index.js'
+const searchFullName = countyScraperMap['Utah County']
 
 function readFileInput(filePath) {
     return fs.readFileSync(filePath, 'utf8')
