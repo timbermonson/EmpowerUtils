@@ -1,105 +1,185 @@
-import axios from 'axios'
-import process from 'process'
+import {
+    nameCommaReverse,
+    SearchStatus,
+    encodeUrl,
+    getWebpage,
+    lm,
+} from './lib.js'
 
-function generateNameSearchString(name) {
-    const nameList = name.split(' ')
-    if (nameList.length === 3) {
-        return `${nameList[nameList.length - 1]}%2C+${nameList[0]}%20${
-            nameList[1]
-        }`
+const baseUrl = 'http://apps.saltlakecounty.gov/assessor/new/resultsMain.cfm'
+function getUniqIdWebpageFactory(id) {
+    const param = `parcelId=${id}`
+    return async function getUniqIdWebpage() {
+        const resp = await getWebpage(baseUrl, {
+            queryParamList: [param],
+        })
+        return resp
     }
-    return `${nameList[nameList.length - 1]}%2C+${nameList[0]}`
 }
-
-async function getSaltLakeCountyResultPageByNameString(nameString) {
-    return await getSaltLakeCountyResultPageByAppendage(
-        `itemname=${nameString}`
-    )
+function getFullNameWebpageFactory(fullName) {
+    const param = `itemname=${encodeUrl(nameCommaReverse(fullName))}`
+    return async function getFullNameWebpage() {
+        const resp = await getWebpage(baseUrl, {
+            queryParamList: [param],
+        })
+        return resp
+    }
 }
-
-async function getSaltLakeCountyResultPageByAppendage(appendage) {
-    console.log(`Getting data for ${appendage}...`)
-    const baseUrl =
-        'http://apps.saltlakecounty.gov/assessor/new/resultsMain.cfm?'
-    const url = `${baseUrl}${appendage}`
-    const { data: resp } = await axios.get(url)
-
+function parseSearchStatus(resp) {
+    // find page title
     const pageTitleMatch = `${resp}`.match(/id\=\"MainTitle\".+\>(.+)\</)
-    if (!pageTitleMatch || !pageTitleMatch[1]) {
-        throw new Error('Could not find page title')
+    if (!pageTitleMatch || !pageTitleMatch.length) {
+        return SearchStatus.ERROR
     }
-    const pageTitle = pageTitleMatch[1]
+    const pageTitle = pageTitleMatch[1].trim().toLowerCase()
 
-    switch (pageTitle) {
-        case 'Parcel Search Results':
-            let parcelIdList = []
-            try {
-                const parcelListMatch = [
-                    ...`${resp}`.matchAll(/parcel_id\,([0-9]+)\"/g),
-                ]
-                parcelListMatch.forEach((result) => {
-                    parcelIdList.push(result[1])
-                })
-            } catch {
-                throw new Error('could not find result list on result page!')
-            }
-
-            const resultList = []
-            for (const parcelId of parcelIdList) {
-                const result = await getSaltLakeCountyResultPageByAppendage(
-                    `parcelId=${parcelId}`
-                )
-                resultList.push(result)
-            }
-            return resultList
-            break
-
-        case 'Parcel Details':
-            const streetMatch = `${resp}`.match(
-                /Address<\/td>.+right;\"\>(.+)<\/td>/
-            )
-            const cityMatch = `${resp}`.match(
-                /Tax District location<\/td>.+right;\"\>(.+)\/\w<\/td>/
-            )
-            const ownerMatch = `${resp}`.match(
-                /Owner.*<\/td>.+right\"\>(.+)<\/td>/
-            )
-            const latMatch = `${resp}`.match(
-                /id="polyx" hidden="true">([0-9\-\.]+)</
-            )
-            const longMatch = `${resp}`.match(
-                /id="polyy" hidden="true">([0-9\-\.]+)</
-            )
-
-            if (
-                !streetMatch ||
-                !streetMatch[1] ||
-                !cityMatch ||
-                !cityMatch[1] ||
-                !ownerMatch ||
-                !ownerMatch[1] ||
-                !latMatch ||
-                !latMatch[1] ||
-                !longMatch ||
-                !longMatch[1]
-            ) {
-                throw new Error(
-                    `could not parse search results for ${appendage}`
-                )
-            }
-            return {
-                owner: ownerMatch[1].trim(),
-                street: streetMatch[1].trim(),
-                city: cityMatch[1].trim(),
-                coords: `${latMatch[1].trim()}, ${longMatch[1].trim()}`,
-            }
-            break
+    // handle cases
+    if (pageTitle === 'parcel details') {
+        return SearchStatus.FOUND_SINGLE
     }
-    throw new Error('could not find results!')
+
+    if (pageTitle === 'parcel search results') {
+        if (resp.includes('Your search returned no results'))
+            return SearchStatus.NONE
+        if (resp.match(/Your search found/s)) return SearchStatus.FOUND_MULTIPLE
+    }
+
+    return SearchStatus.ERROR
 }
 
-export default async function getSaltLakeCountyResultPageByName(name) {
-    const nameString = generateNameSearchString(name)
+function parseMultiResultUniqIdList(resp) {
+    const parcelListMatch = [...`${resp}`.matchAll(/parcel_id\,([0-9]+)\"/g)]
 
-    return await getSaltLakeCountyResultPageByNameString(nameString)
+    if (
+        !parcelListMatch ||
+        !parcelListMatch.length ||
+        !parcelListMatch[0].length
+    ) {
+        return []
+    }
+
+    let parcelIdList = []
+    parcelListMatch.forEach((result) => {
+        parcelIdList.push(result[1])
+    })
+
+    return parcelIdList
+}
+
+function parseSingleResultAddress(resp) {
+    const streetMatch = `${resp}`.match(/Address<\/td>.+right;\"\>(.+)<\/td>/)
+    const cityMatch = `${resp}`.match(
+        /Tax District location<\/td>.+right;\"\>(.+)\/\w<\/td>/
+    )
+    const ownerMatch = `${resp}`.match(/Owner.*<\/td>.+right\"\>(.+)<\/td>/)
+    const latMatch = `${resp}`.match(/id="polyx" hidden="true">([0-9\-\.]+)</)
+    const longMatch = `${resp}`.match(/id="polyy" hidden="true">([0-9\-\.]+)</)
+
+    if (
+        !streetMatch ||
+        !streetMatch[1] ||
+        !cityMatch ||
+        !cityMatch[1] ||
+        !ownerMatch ||
+        !ownerMatch[1] ||
+        !latMatch ||
+        !latMatch[1] ||
+        !longMatch ||
+        !longMatch[1]
+    ) {
+        throw new Error(`could not parse search results for ${appendage}`)
+    }
+    return {
+        owner: ownerMatch[1].trim(),
+        street: streetMatch[1].trim(),
+        city: cityMatch[1].trim(),
+        coords: `${latMatch[1].trim()}, ${longMatch[1].trim()}`,
+    }
+}
+
+export async function searchFullName(fullName) {
+    lm(`Getting address for ${fullName}...`)
+    const getFullNameWebpage = getFullNameWebpageFactory(fullName)
+    let status = ''
+    let addressList = []
+    let resp
+
+    try {
+        resp = await getFullNameWebpage()
+        status = parseSearchStatus(resp)
+
+        switch (status) {
+            case SearchStatus.FOUND_SINGLE:
+                lm('Found!')
+                addressList = [parseSingleResultAddress(resp)]
+                break
+            case SearchStatus.FOUND_MULTIPLE:
+                lm('Found Mulitple! Iterating...')
+                const uniqIdList = parseMultiResultUniqIdList(resp)
+                addressList = []
+                for (const uniqId of uniqIdList) {
+                    const uniqIdResult = await searchUniqId(uniqId)
+                    if (uniqIdResult.status === SearchStatus.FOUND_SINGLE) {
+                        addressList.push(uniqIdResult.addressList[0])
+                    }
+                }
+                break
+            case SearchStatus.NONE:
+                lm('No results.')
+                addressList = []
+                break
+            case SearchStatus.ERROR:
+                lm('Search Failed!')
+                addressList = []
+                break
+            default:
+                addressList = []
+                break
+        }
+
+        return { status, addressList }
+    } catch (e) {
+        lm(e)
+        return { status: SearchStatus.ERROR, addressList: [] }
+    }
+}
+
+async function searchUniqId(id) {
+    lm(`Getting address for unique identifier ${id}...`)
+    const getUniqIdWebpage = getUniqIdWebpageFactory(id)
+    let status = ''
+    let addressList = []
+    let resp
+
+    try {
+        resp = await getUniqIdWebpage()
+
+        status = parseSearchStatus(resp)
+        switch (status) {
+            case SearchStatus.FOUND_SINGLE:
+                lm('Found!')
+                addressList = [parseSingleResultAddress(resp)]
+                break
+            case SearchStatus.FOUND_MULTIPLE:
+                lm('Found Mulitple! Skipping...')
+                addressList = []
+                break
+            case SearchStatus.NONE:
+                lm('No results.')
+                addressList = []
+                break
+            case SearchStatus.ERROR:
+                lm('Search Failed!')
+                addressList = []
+                break
+            default:
+                addressList = []
+                break
+        }
+
+        return { status, addressList }
+    } catch (e) {
+        console.log(e)
+        return { status: SearchStatus.ERROR, addressList: [] }
+    }
 }

@@ -1,5 +1,6 @@
 import fs from 'fs'
-import { nameCommaReverse, l, el } from './lib.js'
+import { l, el } from './lib.js'
+import { searchFullName } from './getAddressSLC.js'
 
 function readFileInput(filePath) {
     return fs.readFileSync(filePath, 'utf8')
@@ -25,14 +26,13 @@ function parseInput(inputContent) {
     return fullNameList
 }
 
-function test() {
+async function run() {
     let inputFileContent = ''
     try {
         inputFileContent = readFileInput('./input.txt')
     } catch (e) {
         el(e, 'Could not read inputfile')
     }
-    l(inputFileContent)
 
     let fullNameList = []
     try {
@@ -40,7 +40,14 @@ function test() {
     } catch (e) {
         el(e, 'Could not parse inputfile')
     }
-    l(fullNameList)
+
+    let resultList = []
+    for (const fullName of fullNameList) {
+        const result = await searchFullName(fullName)
+        resultList.push(result)
+    }
+    lm('--------RESULTS--------')
+    l(resultList)
 }
 
-test()
+run()
