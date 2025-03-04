@@ -26,6 +26,20 @@ function parseInput(inputContent) {
     return fullNameList
 }
 
+function writeResultList(resultList) {
+    let output = ''
+    for (const result of resultList) {
+        output += result.fullName
+        output += '\t'
+        const parsedAddressList = result.addressList
+            .map(({ street, city }) => `${street}, ${city}`)
+            .join(' | ')
+        output += parsedAddressList
+        output += '\t'
+    }
+    fs.writeFileSync('output.txt', output)
+}
+
 async function run() {
     let inputFileContent = ''
     try {
@@ -48,6 +62,7 @@ async function run() {
     }
     lm('--------RESULTS--------')
     l(resultList)
+    writeResultList(resultList)
 }
 
 run()
