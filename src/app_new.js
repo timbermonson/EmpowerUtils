@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { nameCommaReverse } from './lib.js'
+import { nameCommaReverse, l, el } from './lib.js'
 
 function readFileInput(filePath) {
     return fs.readFileSync(filePath, 'utf8')
@@ -23,14 +23,6 @@ function parseInput(inputContent) {
     )
 
     return fullNameList
-}
-
-function l(inp) {
-    console.log(JSON.stringify(inp, null, 2))
-}
-
-function el(error, message) {
-    throw new Error(`${message}, Error msg: ${error.message}`)
 }
 
 function test() {
