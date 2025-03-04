@@ -1,6 +1,6 @@
 import fs from 'fs'
-import { l, el } from './lib.js'
-import { searchFullName } from './getAddressSLCounty.js'
+import { l, lm, el } from './lib.js'
+import { searchFullName } from './getAddressUtahCounty.js'
 
 function readFileInput(filePath) {
     return fs.readFileSync(filePath, 'utf8')
