@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { uniq } from 'lodash-es'
 import { l, lm, el } from './lib.js'
 import countyScraperMap from './countyScraper/index.js'
 const searchFullName = countyScraperMap['Utah County']
@@ -24,27 +25,50 @@ function parseInput(inputContent) {
         name.trim().split(' ').slice(1).join(' ')
     )
 
-    return fullNameList
+    return uniq(fullNameList)
 }
 
-function writeResultList(resultList) {
-    let output = ''
-    for (const result of resultList) {
-        output += result.fullName
-        output += '\t'
-        const parsedAddressList = result.addressList
-            .map(({ street, city }) => `${street}, ${city}`)
-            .join(' | ')
-        output += parsedAddressList
-        output += '\t'
+function writeResultMap(filePath, nameSearchResultMapByCounty) {
+    let outputList = []
+
+    for (const countyName in nameSearchResultMapByCounty) {
+        let countyOutput = ''
+        const searchResultMap = nameSearchResultMapByCounty[countyName]
+        countyOutput += `${countyName}\n`
+
+        for (const fullName in searchResultMap) {
+            const searchResult = searchResultMap[fullName]
+            countyOutput += `${fullName}\t`
+            countyOutput += `${searchResult.addressList
+                .map(({ street, city }) => `${street}, ${city}`)
+                .join(' | ')}\t`
+        }
+
+        outputList.push(countyOutput)
     }
-    fs.writeFileSync('output.txt', output)
+
+    const output = outputList.join('\n\n')
+    fs.writeFileSync(filePath, output)
 }
 
-async function run() {
+function printCountyScores(nameSearchResultMapByCounty) {
+    lm('--------SCORES--------')
+    for (const countyName in nameSearchResultMapByCounty) {
+        let score = 0
+        const searchResultMap = nameSearchResultMapByCounty[countyName]
+        for (const fullName in searchResultMap) {
+            const searchResult = searchResultMap[fullName]
+            score += searchResult.addressList.length ? 1 : 0
+        }
+        lm(`${countyName}:\t${score}`)
+    }
+    lm('----------------------')
+}
+
+function readFullNameList(filePath) {
     let inputFileContent = ''
     try {
-        inputFileContent = readFileInput('./input.txt')
+        inputFileContent = readFileInput(filePath)
     } catch (e) {
         el(e, 'Could not read inputfile')
     }
@@ -56,14 +80,37 @@ async function run() {
         el(e, 'Could not parse inputfile')
     }
 
-    let resultList = []
-    for (const fullName of fullNameList) {
-        const result = await searchFullName(fullName)
-        resultList.push(result)
+    return fullNameList
+}
+
+async function run() {
+    const fullNameList = readFullNameList('./ioFiles/input.txt')
+    const nameSearchResultMapByCounty = {}
+
+    for (const countyName in countyScraperMap) {
+        lm(`--------${countyName}--------`)
+        const searcher = countyScraperMap[countyName]
+        nameSearchResultMapByCounty[countyName] = {}
+
+        for (const fullName of fullNameList) {
+            nameSearchResultMapByCounty[countyName][fullName] = await searcher(
+                fullName
+            )
+        }
     }
-    lm('--------RESULTS--------')
-    l(resultList)
-    writeResultList(resultList)
+
+    printCountyScores(nameSearchResultMapByCounty)
+    lm('writing output to file...')
+    writeResultMap('./ioFiles/output.txt', nameSearchResultMapByCounty)
+    lm('done!')
+    // let resultList = []
+    // for (const fullName of fullNameList) {
+    //     const result = await searchFullName(fullName)
+    //     resultList.push(result)
+    // }
+    // lm('--------RESULTS--------')
+    // l(resultList)
+    // writeResultList(resultList)
 }
 
 run()
