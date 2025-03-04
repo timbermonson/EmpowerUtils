@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export function nameCommaReverse(fullName) {
+function nameCommaReverse(fullName) {
     const nameList = fullName.split(' ')
 
     const lastName = nameList[nameList.length - 1]
@@ -11,28 +11,28 @@ export function nameCommaReverse(fullName) {
     return reversedName
 }
 
-export function l(inp) {
+function l(inp) {
     console.log(JSON.stringify(inp, null, 2))
 }
 
-export function lm(inp) {
+function lm(inp) {
     console.log(inp)
 }
 
-export function el(error, message) {
+function el(error, message) {
     throw new Error(`${message}, Error msg: ${error.message}`)
 }
 
-export const encodeUrl = encodeURIComponent
+const encodeUrl = encodeURIComponent
 
-export const SearchStatus = Object.freeze({
+const SearchStatus = Object.freeze({
     ERROR: 'error',
     FOUND_MULTIPLE: 'found_multiple',
     FOUND_SINGLE: 'found_single',
     NONE: 'none',
 })
 
-export async function getWebpage(baseUrl, { queryParamList }) {
+async function getWebpage(baseUrl, { queryParamList }) {
     let urlAppendage = ''
     if (queryParamList && queryParamList.length) {
         urlAppendage = `?${queryParamList.join('&')}`
@@ -43,3 +43,5 @@ export async function getWebpage(baseUrl, { queryParamList }) {
 
     return response
 }
+
+export { nameCommaReverse, l, lm, el, encodeUrl, SearchStatus, getWebpage }
