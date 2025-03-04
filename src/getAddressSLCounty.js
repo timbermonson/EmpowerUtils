@@ -137,10 +137,10 @@ export async function searchFullName(fullName) {
                 break
         }
 
-        return { status, addressList }
+        return { fullName, status, addressList }
     } catch (e) {
         lm(e)
-        return { status: SearchStatus.ERROR, addressList: [] }
+        return { fullName, status: SearchStatus.ERROR, addressList: [] }
     }
 }
 
