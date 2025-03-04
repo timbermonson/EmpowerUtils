@@ -179,7 +179,7 @@ async function searchUniqId(id) {
 
         return { status, addressList }
     } catch (e) {
-        console.log(e)
+        lm(e)
         return { status: SearchStatus.ERROR, addressList: [] }
     }
 }
