@@ -84,7 +84,7 @@ async function getSaltLakeCountyResultPageByAppendage(appendage) {
                 !longMatch[1]
             ) {
                 throw new Error(
-                    `could not parse search results for ${nameString}`
+                    `could not parse search results for ${appendage}`
                 )
             }
             return {
