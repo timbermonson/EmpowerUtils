@@ -1,6 +1,4 @@
-input.txt
-output.txt
-./ioFiles
+ioFiles/
 
 # Logs
 logs
