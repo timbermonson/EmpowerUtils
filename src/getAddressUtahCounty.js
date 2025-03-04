@@ -81,8 +81,10 @@ function parseMultiResultUniqIdList(resp) {
 }
 
 function parseSingleResultAddress(resp) {
-    const streetMatch = `${resp}`.match(/Property Address[^>]+>([^<-]+)/)
-    const cityMatch = `${resp}`.match(/Property Address[^>]+>[^-]+-([^<]+)/)
+    const streetMatch = `${resp}`.match(/Property Address[^\n>]+>([^\n<-]+)/)
+    const cityMatch = `${resp}`.match(
+        /Property Address[^\n>]+>[^\n-]+-([^\n<]+)/
+    )
     const ownerMatch = [
         ...`${resp}`.matchAll(/\.\.\.[^\?]+\?av_name[^>]+>([^<]+)/g),
     ]
@@ -91,7 +93,7 @@ function parseSingleResultAddress(resp) {
 
     if (
         !streetMatch ||
-        !streetMatch[1] ||
+        !streetMatch[1].replace('&nbsp;', '').trim() ||
         !cityMatch ||
         !cityMatch[1] ||
         !ownerMatch ||
@@ -147,10 +149,10 @@ export async function searchFullName(fullName) {
                 break
         }
 
-        return { status, addressList }
+        return { fullName, status, addressList }
     } catch (e) {
         lm(e)
-        return { status: SearchStatus.ERROR, addressList: [] }
+        return { fullName, status: SearchStatus.ERROR, addressList: [] }
     }
 }
 
