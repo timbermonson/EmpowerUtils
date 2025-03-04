@@ -87,7 +87,7 @@ function parseSingleResultAddress(resp) {
         !longMatch ||
         !longMatch[1]
     ) {
-        throw new Error(`could not parse search results for ${appendage}`)
+        throw new Error(`could not parse search results!`)
     }
     return {
         owner: ownerMatch[1].trim(),
