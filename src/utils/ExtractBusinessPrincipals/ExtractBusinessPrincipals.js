@@ -26,7 +26,7 @@ function capitalizeName(fullName) {
 // Read input data
 let inputData
 try {
-    inputData = fs.readFileSync('./input.txt', 'utf8')
+    inputData = fs.readFileSync('../../ioFiles/input.txt')
 } catch (e) {
     console.error(e.message)
 }
