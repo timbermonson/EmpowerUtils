@@ -42,7 +42,7 @@ export default function searchFullNameFactory({
 
             return { status, addressList }
         } catch (e) {
-            lm(e)
+            lm(e.message)
             return { status: SearchStatus.ERROR, addressList: [] }
         }
     }
@@ -89,7 +89,7 @@ export default function searchFullNameFactory({
 
             return { fullName, status, addressList }
         } catch (e) {
-            lm(e)
+            lm(e.message)
             return { fullName, status: SearchStatus.ERROR, addressList: [] }
         }
     }
