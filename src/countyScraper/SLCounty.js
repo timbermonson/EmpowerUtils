@@ -3,7 +3,7 @@ import {
     SearchStatus,
     encodeUrl,
     getWebpage,
-} from '../lib.js'
+} from '../utils/lib.js'
 
 import searchFullNameFactory from './searchFullNameFactory.js'
 

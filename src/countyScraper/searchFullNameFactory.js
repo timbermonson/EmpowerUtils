@@ -1,4 +1,4 @@
-import { SearchStatus, lm } from '../lib.js'
+import { SearchStatus, lm } from '../utils/lib.js'
 
 export default function searchFullNameFactory({
     getFullNameWebpageFactory,

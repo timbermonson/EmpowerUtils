@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { uniq } from 'lodash-es'
-import { lo, lm, le } from './lib.js'
+import { lo, lm, le } from './utils/lib.js'
 import countyScraperMap from './countyScraper/index.js'
 const searchFullName = countyScraperMap['Utah County']
 

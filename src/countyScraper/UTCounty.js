@@ -4,7 +4,7 @@ import {
     encodeUrl,
     getWebpage,
     lm,
-} from '../lib.js'
+} from '../utils/lib.js'
 
 import searchFullNameFactory from './searchFullNameFactory.js'
 
