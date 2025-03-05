@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { compact } from 'lodash-es'
 
 function nameCommaReverse(fullName) {
-    const nameList = fullName.split(' ')
+    const nameList = compact(fullName.split(' '))
 
     const lastName = nameList[nameList.length - 1]
     const beginning = nameList.slice(0, nameList.length - 1).join(' ')
