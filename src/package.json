@@ -20,7 +20,8 @@
         "ext": "js, txt, json"
     },
     "scripts": {
-        "ebp": "node ./ExtractBusinessPrincipals.js"
+        "app": "nodemon app.js",
+        "ebp": "nodemon ./utils/ExtractBusinessPrincipals/ExtractBusinessPrincipals.js"
     },
     "author": "",
     "license": "ISC",
