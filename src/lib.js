@@ -11,7 +11,7 @@ function nameCommaReverse(fullName) {
     return reversedName
 }
 
-function l(inp) {
+function lo(inp) {
     console.log(JSON.stringify(inp, null, 2))
 }
 
@@ -19,7 +19,7 @@ function lm(inp) {
     console.log(inp)
 }
 
-function el(error, message) {
+function le(error, message) {
     throw new Error(`${message}, Error msg: ${error.message}`)
 }
 
@@ -44,4 +44,4 @@ async function getWebpage(baseUrl, { queryParamList }) {
     return response
 }
 
-export { nameCommaReverse, l, lm, el, encodeUrl, SearchStatus, getWebpage }
+export { nameCommaReverse, lo, lm, le, encodeUrl, SearchStatus, getWebpage }

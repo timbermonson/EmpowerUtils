@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { uniq } from 'lodash-es'
-import { l, lm, el } from './lib.js'
+import { lo, lm, le } from './lib.js'
 import countyScraperMap from './countyScraper/index.js'
 const searchFullName = countyScraperMap['Utah County']
 
@@ -70,14 +70,14 @@ function readFullNameList(filePath) {
     try {
         inputFileContent = readFileInput(filePath)
     } catch (e) {
-        el(e, 'Could not read inputfile')
+        le(e, 'Could not read inputfile')
     }
 
     let fullNameList = []
     try {
         fullNameList = parseInput(inputFileContent)
     } catch (e) {
-        el(e, 'Could not parse inputfile')
+        le(e, 'Could not parse inputfile')
     }
 
     return fullNameList
