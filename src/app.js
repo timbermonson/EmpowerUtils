@@ -103,14 +103,6 @@ async function run() {
     lm('writing output to file...')
     writeResultMap('./ioFiles/output.txt', nameSearchResultMapByCounty)
     lm('done!')
-    // let resultList = []
-    // for (const fullName of fullNameList) {
-    //     const result = await searchFullName(fullName)
-    //     resultList.push(result)
-    // }
-    // lm('--------RESULTS--------')
-    // l(resultList)
-    // writeResultList(resultList)
 }
 
 run()

@@ -11,6 +11,7 @@ import searchFullNameFactory from './searchFullNameFactory.js'
 function getUniqIdWebpageFactory(id) {
     const baseUrl = 'https://www.utahcounty.gov/landrecords/property.asp'
     const param = `av_serial=${id.replaceAll(':', '')}`
+
     return async function getUniqIdWebpage() {
         const resp = await getWebpage(baseUrl, {
             queryParamList: [param],
@@ -18,9 +19,11 @@ function getUniqIdWebpageFactory(id) {
         return resp
     }
 }
+
 function getFullNameWebpageFactory(fullName) {
     const baseUrl = 'https://www.utahcounty.gov/landrecords/NameSearch.asp'
     const param = `av_name=${encodeUrl(nameCommaReverse(fullName))}`
+
     return async function getFullNameWebpage() {
         const resp = await getWebpage(baseUrl, {
             queryParamList: [param, 'av_valid=...', 'Submit=++++Search++++'],
@@ -28,8 +31,10 @@ function getFullNameWebpageFactory(fullName) {
         return resp
     }
 }
+
 function parseSearchStatus(resp) {
     const singleResultMatch = `${resp}`.match(/<h1>Property Information<\/h1>/)
+
     if (singleResultMatch && singleResultMatch.length) {
         return SearchStatus.FOUND_SINGLE
     }
@@ -86,6 +91,7 @@ function parseSingleResultAddress(resp) {
     const cityMatch = `${resp}`.match(
         /Property Address[^\n>]+>[^\n-]+-([^\n<]+)/
     )
+
     const ownerMatch = [
         ...`${resp}`.matchAll(/\.\.\.[^\?]+\?av_name[^>]+>([^<]+)/g),
     ]
@@ -100,6 +106,7 @@ function parseSingleResultAddress(resp) {
     ) {
         throw new Error(`could not parse search results!`)
     }
+
     return {
         owner: ownerMatch.map((r) => r[1]).join(', '),
         street: streetMatch[1].trim().replace('&nbsp; ', ''),

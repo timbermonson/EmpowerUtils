@@ -3,14 +3,15 @@ import {
     SearchStatus,
     encodeUrl,
     getWebpage,
-    lm,
 } from '../lib.js'
 
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 const baseUrl = 'http://apps.saltlakecounty.gov/assessor/new/resultsMain.cfm'
+
 function getUniqIdWebpageFactory(id) {
     const param = `parcelId=${id}`
+
     return async function getUniqIdWebpage() {
         const resp = await getWebpage(baseUrl, {
             queryParamList: [param],
@@ -18,8 +19,10 @@ function getUniqIdWebpageFactory(id) {
         return resp
     }
 }
+
 function getFullNameWebpageFactory(fullName) {
     const param = `itemname=${encodeUrl(nameCommaReverse(fullName))}`
+
     return async function getFullNameWebpage() {
         const resp = await getWebpage(baseUrl, {
             queryParamList: [param],
@@ -27,9 +30,11 @@ function getFullNameWebpageFactory(fullName) {
         return resp
     }
 }
+
 function parseSearchStatus(resp) {
     // find page title
     const pageTitleMatch = `${resp}`.match(/id\=\"MainTitle\".+\>(.+)\</)
+
     if (!pageTitleMatch || !pageTitleMatch.length) {
         return SearchStatus.ERROR
     }
@@ -73,7 +78,9 @@ function parseSingleResultAddress(resp) {
     const cityMatch = `${resp}`.match(
         /Tax District location<\/td>.+right;\"\>(.+)\/\w<\/td>/
     )
+
     const ownerMatch = `${resp}`.match(/Owner.*<\/td>.+right\"\>(.+)<\/td>/)
+
     const latMatch = `${resp}`.match(/id="polyx" hidden="true">([0-9\-\.]+)</)
     const longMatch = `${resp}`.match(/id="polyy" hidden="true">([0-9\-\.]+)</)
 
@@ -91,6 +98,7 @@ function parseSingleResultAddress(resp) {
     ) {
         throw new Error(`could not parse search results!`)
     }
+
     return {
         owner: ownerMatch[1].trim(),
         street: streetMatch[1].trim(),
