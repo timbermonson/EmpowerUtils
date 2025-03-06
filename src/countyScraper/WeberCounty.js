@@ -42,11 +42,6 @@ function getFullNameWebpageFactory(fullName) {
 }
 
 function parseSearchStatus(resp) {
-    const document = new JSDOM(resp, {
-        pretendToBeVisual: true,
-        runScripts: 'outside-only',
-    }).window.document
-
     const propertySearch = `${resp}`.match(
         /strong[^>]+>Property<[^c]+class[^>]+>([^\/]+)/
     )
@@ -54,6 +49,10 @@ function parseSearchStatus(resp) {
         return SearchStatus.FOUND_SINGLE
     }
 
+    const document = new JSDOM(resp, {
+        pretendToBeVisual: true,
+        runScripts: 'outside-only',
+    }).window.document
     const tableDomSearch = document.querySelector('#results')
     const tableContent = compact(
         tableDomSearch.textContent.split('\n').map((n) => n.trim())

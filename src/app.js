@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { uniq } from 'lodash-es'
+import { uniq, compact } from 'lodash-es'
 import { lo, lm, le } from './utils/lib.js'
 import countyScraperMap from './countyScraper/index.js'
 const searchFullName = countyScraperMap['Utah County']
@@ -25,7 +25,7 @@ function parseInput(inputContent) {
         name.trim().split(' ').slice(1).join(' ')
     )
 
-    return uniq(fullNameList)
+    return compact(uniq(fullNameList))
 }
 
 function writeResultMap(filePath, nameSearchResultMapByCounty) {
@@ -85,6 +85,11 @@ function readFullNameList(filePath) {
 
 async function run() {
     const fullNameList = readFullNameList('./ioFiles/input.txt')
+    if (!fullNameList.length) {
+        lm('Input list empty!')
+        lm('Exiting...')
+        return
+    }
     const nameSearchResultMapByCounty = {}
 
     for (const countyName in countyScraperMap) {

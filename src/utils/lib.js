@@ -33,14 +33,25 @@ const SearchStatus = Object.freeze({
     NONE: 'none',
 })
 
-async function getWebpage(baseUrl, { queryParamList }) {
+async function getWebpage(
+    baseUrl,
+    { headers, data, queryParamList, method = 'GET' }
+) {
     let urlAppendage = ''
     if (queryParamList && queryParamList.length) {
         urlAppendage = `?${queryParamList.join('&')}`
     }
 
     const url = `${baseUrl}${urlAppendage}`
-    const { data: response } = await axios.get(url)
+    const options = {
+        url,
+        method,
+        headers,
+        data,
+        withCredentials: true,
+    }
+
+    const { data: response } = await axios(options)
 
     return response
 }
