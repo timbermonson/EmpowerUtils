@@ -24,7 +24,7 @@ function getUniqIdWebpageFactory(id) {
 
 function getFullNameWebpageFactory(fullName) {
     const baseUrl = 'https://webercountyutah.gov/parcelsearch/results.php'
-    const nameParam = `name=${encodeUrl(nameCommaReverse(fullName)).replace(
+    const nameParam = `name=${encodeUrl(nameCommaReverse(fullName)).replaceAll(
         '%20',
         '+'
     )}`

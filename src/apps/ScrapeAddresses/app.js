@@ -12,9 +12,9 @@ function parseInput(inputContent) {
     // Trim & sanitize input
     let input = inputContent
         .trim()
-        .replace('\n', '')
-        .replace('\r', '')
-        .replace('\t', ' ')
+        .replaceAll('\n', '')
+        .replaceAll('\r', '')
+        .replaceAll('\t', ' ')
         .toLowerCase()
 
     // Split list
