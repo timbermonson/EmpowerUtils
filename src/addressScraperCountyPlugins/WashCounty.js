@@ -1,11 +1,5 @@
-import {
-    nameCommaReverse,
-    SearchStatus,
-    encodeUrl,
-    getWebpage,
-    lm,
-    lo,
-} from '../utils/lib.js'
+import { nameCommaReverse, SearchStatus, getWebpage } from '../utils/lib.js'
+
 import qs from 'qs'
 import jsdom from 'jsdom'
 

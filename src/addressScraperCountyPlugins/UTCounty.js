@@ -3,7 +3,6 @@ import {
     SearchStatus,
     encodeUrl,
     getWebpage,
-    lm,
 } from '../utils/lib.js'
 
 import searchFullNameFactory from './searchFullNameFactory.js'

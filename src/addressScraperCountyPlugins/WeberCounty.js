@@ -3,9 +3,8 @@ import {
     SearchStatus,
     encodeUrl,
     getWebpage,
-    lm,
-    lo,
 } from '../utils/lib.js'
+
 import { compact } from 'lodash-es'
 import jsdom from 'jsdom'
 
