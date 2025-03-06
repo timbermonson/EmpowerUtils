@@ -1,8 +1,8 @@
 import fs from 'fs'
+import process from 'process'
 import { uniq, compact } from 'lodash-es'
 import { lo, lm, le } from '../../utils/lib.js'
 import countyScraperMap from '../../addressScraperCountyPlugins/index.js'
-const searchFullName = countyScraperMap['Utah County']
 
 function readFileInput(filePath) {
     return fs.readFileSync(filePath, 'utf8')
@@ -28,26 +28,37 @@ function parseInput(inputContent) {
     return compact(uniq(fullNameList))
 }
 
-function writeResultMap(filePath, nameSearchResultMapByCounty) {
-    let outputList = []
+function writeResultMap(
+    filePath,
+    nameSearchResultMapByCounty,
+    { excellable = true }
+) {
+    let output = ''
 
-    for (const countyName in nameSearchResultMapByCounty) {
-        let countyOutput = ''
-        const searchResultMap = nameSearchResultMapByCounty[countyName]
-        countyOutput += `${countyName}\n`
+    if (!excellable) {
+        output = JSON.stringify(nameSearchResultMapByCounty, null, 2)
+    } else {
+        let outputList = []
 
-        for (const fullName in searchResultMap) {
-            const searchResult = searchResultMap[fullName]
-            countyOutput += `${fullName}\t`
-            countyOutput += `${searchResult.addressList
-                .map(({ street, city }) => `${street}, ${city}`)
-                .join(' | ')}\t`
+        for (const countyName in nameSearchResultMapByCounty) {
+            let countyOutput = ''
+            const searchResultMap = nameSearchResultMapByCounty[countyName]
+            countyOutput += `${countyName}\n`
+
+            for (const fullName in searchResultMap) {
+                const searchResult = searchResultMap[fullName]
+                countyOutput += `${fullName}\t`
+                countyOutput += `${searchResult.addressList
+                    .map(({ street, city }) => `${street}, ${city}`)
+                    .join(' | ')}\t`
+            }
+
+            outputList.push(countyOutput)
         }
 
-        outputList.push(countyOutput)
+        output = outputList.join('\n\n')
     }
 
-    const output = outputList.join('\n\n')
     fs.writeFileSync(filePath, output)
 }
 
@@ -84,6 +95,9 @@ function readFullNameList(filePath) {
 }
 
 async function run() {
+    const argList = process.argv.slice(2) // First two args are the node path & this script's path
+    const arg1 = argList[0]
+
     const fullNameList = readFullNameList('./ioFiles/input.txt')
     if (!fullNameList.length) {
         lm('Input list empty!')
@@ -106,7 +120,9 @@ async function run() {
 
     printCountyScores(nameSearchResultMapByCounty)
     lm('writing output to file...')
-    writeResultMap('./ioFiles/output.txt', nameSearchResultMapByCounty)
+    writeResultMap('./ioFiles/output.txt', nameSearchResultMapByCounty, {
+        excellable: arg1 !== 'json',
+    })
     lm('done!')
 }
 
