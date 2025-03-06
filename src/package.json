@@ -20,7 +20,7 @@
         "ext": "js, txt, json"
     },
     "scripts": {
-        "addr": "nodemon ./apps/ScrapeAddresses/app.js",
+        "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/ExtractBusinessPrincipals.js"
     },
     "author": "",
