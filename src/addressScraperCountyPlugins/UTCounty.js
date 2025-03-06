@@ -1,10 +1,12 @@
 import {
+    encodeUrl,
+    getJQWindow,
+    getWebpage,
     nameCommaReverse,
     SearchStatus,
-    encodeUrl,
-    getWebpage,
 } from '../utils/lib.js'
 
+import { compact } from 'lodash-es'
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 function getUniqIdWebpageFactory(id) {
@@ -32,84 +34,123 @@ function getFullNameWebpageFactory(fullName) {
 }
 
 function parseSearchStatus(resp) {
-    const singleResultMatch = `${resp}`.match(/<h1>Property Information<\/h1>/)
+    const window = getJQWindow(resp)
 
-    if (singleResultMatch && singleResultMatch.length) {
+    const singleResultQ = window.$('h1:contains("Property Information")')
+    if (singleResultQ?.length === 1) {
         return SearchStatus.FOUND_RESULTPAGE
     }
 
-    // find page title
-    const pageTitleMatch = `${resp}`.match(
-        /<h1 align="left">Real Property owner  Name Search <\/h1\>/
+    const pageHeaderQ = window.$(
+        'h1:contains("Real Property owner  Name Search")'
     )
-    if (!pageTitleMatch || !pageTitleMatch.length) {
+    if (!pageHeaderQ?.[0]) {
         return SearchStatus.ERROR
     }
 
-    const resultTableMatch = `${resp}`.match(/<table width="100%">/)
-    if (!resultTableMatch || !resultTableMatch.length) {
-        return SearchStatus.NONE
+    const resultTableHeaderQ = pageHeaderQ
+        .parent()
+        ?.find('strong:contains("Owner Name")')
+    if (!resultTableHeaderQ?.[0]) {
+        return SearchStatus.ERROR
     }
 
-    const resultListMatch = [
-        ...`${resp}`.matchAll(/<td><a href="property\.asp[^>]+>([^<]+)/g),
-    ]
-    if (
-        !resultListMatch ||
-        !resultListMatch.length ||
-        !resultListMatch.every((r) => r.length > 1)
-    ) {
-        return SearchStatus.NONE
+    const resultTableQ = resultTableHeaderQ
+        .parent()
+        ?.parent()
+        ?.parent()
+        ?.find('tr')
+        ?.not(':first-child')
+
+    if (resultTableQ?.length) {
+        return SearchStatus.FOUND_MULTIRESULTTABLE
     }
-    return SearchStatus.FOUND_MULTIRESULTTABLE
+
+    return SearchStatus.NONE
 }
 
 function parseMultiResultUniqIdList(resp) {
-    const serialListMatch = [
-        ...`${resp}`.matchAll(/<td><a href="property\.asp[^>]+>([^<]+)/g),
-    ]
+    const window = getJQWindow(resp)
 
-    if (
-        !serialListMatch ||
-        !serialListMatch.length ||
-        !serialListMatch[0].length
-    ) {
-        return []
+    const pageHeaderQ = window.$(
+        'h1:contains("Real Property owner  Name Search")'
+    )
+    if (!pageHeaderQ?.[0]) {
+        return SearchStatus.ERROR
     }
 
-    let serialIdList = []
-    serialListMatch.forEach((result) => {
-        serialIdList.push(result[1])
-    })
+    const resultTableHeaderQ = pageHeaderQ
+        .parent()
+        ?.find('strong:contains("Owner Name")')
+    if (!resultTableHeaderQ?.[0]) {
+        return SearchStatus.ERROR
+    }
+
+    const resultTableQ = resultTableHeaderQ
+        .parent()
+        ?.parent()
+        ?.parent()
+        ?.find('tr')
+        ?.not(':first-child')
+        ?.find('td:nth-child(2)')
+    if (!resultTableQ?.length) return []
+
+    const serialIdList = compact(
+        [...resultTableQ]?.map((n) => n?.textContent?.trim())
+    )
 
     return serialIdList
 }
 
 function parseResultPageAddress(resp) {
-    const streetMatch = `${resp}`.match(/Property Address[^\n>]+>([^\n<-]+)/)
-    const cityMatch = `${resp}`.match(
-        /Property Address[^\n>]+>[^\n-]+-([^\n<]+)/
+    const e = new Error('Could not parse search results!')
+    const window = getJQWindow(resp)
+
+    const pageHeaderQ = window.$('h1:contains("Property Information")')
+
+    const addressQ = pageHeaderQ
+        ?.parent()
+        ?.find('table > tbody > tr:nth-child(3)')
+    const address = addressQ?.[0]?.textContent
+        ?.split(':')
+        ?.slice(1)
+        ?.join(':')
+        ?.trim()
+
+    const addressSplit = address?.split(' - ')
+    const street = addressSplit?.[0]
+    const city = addressSplit?.[1]
+
+    const ownerQ = pageHeaderQ
+        ?.parent()
+        ?.find('.TabbedPanelsContent > table:nth-child(2) > tbody > tr')
+    if (!ownerQ?.length) throw e
+
+    const ownerStringList = compact(
+        [...ownerQ].map((n) => n?.textContent?.trim())
     )
+    const ownerDataList = ownerStringList
+        .map((ownerDataRow) => {
+            const ownerData = compact(
+                ownerDataRow.split('\n').map((n) => n.trim())
+            )
+            return [...ownerData]
+        })
+        .filter((ownerData) => ownerData && ownerData.length === 2)
+    const currentOwnerDataList = ownerDataList.filter((data) =>
+        data[0].includes('...')
+    )
+    const currentOwnerList = currentOwnerDataList.map((n) => n[1])
+    const owner = currentOwnerList.join(' & ')
 
-    const ownerMatch = [
-        ...`${resp}`.matchAll(/\.\.\.[^\?]+\?av_name[^>]+>([^<]+)/g),
-    ]
-
-    if (
-        !streetMatch ||
-        !streetMatch[1].replace('&nbsp;', '').trim() ||
-        !cityMatch ||
-        !cityMatch[1] ||
-        !ownerMatch ||
-        !ownerMatch[0]
-    ) {
-        throw new Error(`could not parse search results!`)
+    if ([owner, city, street].some((n) => !n)) {
+        throw e // throw if any are empty
     }
 
     return {
-        owner: ownerMatch.map((r) => r[1]).join(', '),
-        street: streetMatch[1].trim().replace('&nbsp; ', ''),
-        city: cityMatch[1].trim(),
+        owner,
+        street,
+        city,
         coords: ``,
     }
 }
