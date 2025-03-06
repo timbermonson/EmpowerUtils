@@ -126,25 +126,22 @@ function parseSingleResultAddress(resp) {
     const cityMatch = `${addressContent}`.match(/\/strong>[^,]+,([^<]+)/)
 
     const ownerSearch = document.querySelector(
-        '.accountSummary > tbody > tr:nth-child(2) > td:nth-child(2) > table > tbody > tr:nth-child(1)'
+        '.accountSummary > tbody > tr:nth-child(2) > td:nth-child(2) > table > tbody > tr:nth-child(1) > td'
     )
-    const ownerContent = ownerSearch.innerHTML
-
-    const ownerMatch = `${ownerContent}`.match(/\/b>([^<]+)</)
+    const ownerName = ownerSearch.textContent
 
     if (
         !streetMatch ||
         !streetMatch[1].replace('&nbsp;', '').trim() ||
         !cityMatch ||
         !cityMatch[1] ||
-        !ownerMatch ||
-        !ownerMatch[1]
+        !ownerName
     ) {
         throw new Error(`could not parse search results!`)
     }
 
     return {
-        owner: ownerMatch[1].split(' ').slice(0, 2).reverse().join(' '),
+        owner: ownerName,
         street: streetMatch[1].trim(),
         city: cityMatch[1].trim(),
         coords: ``,
