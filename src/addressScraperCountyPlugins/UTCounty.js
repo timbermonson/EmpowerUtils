@@ -119,7 +119,7 @@ function parseResultPageAddress(resp) {
 
     const addressSplit = address?.split(' - ')
     const street = addressSplit?.[0]
-    const city = addressSplit?.[1]
+    const city = addressSplit?.[1]?.split('\n')?.[0]
 
     const ownerQ = pageHeaderQ
         ?.parent()
