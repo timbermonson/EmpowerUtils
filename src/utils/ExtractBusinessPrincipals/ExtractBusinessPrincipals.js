@@ -1,8 +1,7 @@
-const fs = require('fs')
-const { uniqBy } = require('lodash')
-const clipboard = require('node-clipboardy')
+import fs from 'fs'
+import { uniqBy } from 'lodash-es'
 
-const titleReplacementMap = require('./titleReplacementMap.json')
+import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
 
 function getReplacementTitle(title) {
     const replacement = titleReplacementMap[title.toLowerCase()]
@@ -26,7 +25,7 @@ function capitalizeName(fullName) {
 // Read input data
 let inputData
 try {
-    inputData = fs.readFileSync('../../ioFiles/input.txt')
+    inputData = await fs.readFileSync('./ioFiles/input.txt', 'utf8')
 } catch (e) {
     console.error(e.message)
 }
@@ -56,9 +55,8 @@ inputByLines.forEach((text, index) => {
 // Dedupe
 principalObjectList = uniqBy(principalObjectList, 'name')
 
-boardMemberListString = principalObjectList
+const boardMemberListString = principalObjectList
     .map((principal) => `${principal.title} ${principal.name}`)
     .join(', ')
 
-clipboard.writeSync(boardMemberListString)
-console.log(`Copied to clipboard: "${boardMemberListString}"`)
+fs.writeFileSync('./ioFiles/output.txt', boardMemberListString)
