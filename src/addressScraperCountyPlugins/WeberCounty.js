@@ -1,12 +1,15 @@
 import {
+    encodeUrl,
+    getJQWindow,
+    getWebpage,
     nameCommaReverse,
     SearchStatus,
-    encodeUrl,
-    getWebpage,
+    lm,
 } from '../utils/lib.js'
 
 import { compact } from 'lodash-es'
 import jsdom from 'jsdom'
+import jQuery from 'jquery'
 
 const { JSDOM } = jsdom
 
@@ -41,87 +44,86 @@ function getFullNameWebpageFactory(fullName) {
 }
 
 function parseSearchStatus(resp) {
-    const propertySearch = `${resp}`.match(
-        /strong[^>]+>Property<[^c]+class[^>]+>([^\/]+)/
+    const window = getJQWindow(resp)
+
+    const singleResultQ = window.$(
+        'div.panel-default > div.panel-heading:contains("Ownership Info")'
     )
-    if (propertySearch && propertySearch.length > 1) {
+    if (singleResultQ?.length === 1) {
         return SearchStatus.FOUND_SINGLE
     }
 
-    const document = new JSDOM(resp, {
-        pretendToBeVisual: true,
-        runScripts: 'outside-only',
-    }).window.document
-    const tableDomSearch = document.querySelector('#results')
-    const tableContent = compact(
-        tableDomSearch.textContent.split('\n').map((n) => n.trim())
+    const resultTableQ = window.$(
+        'div.panel-default > .panel-body > table > thead:contains("Parcel #")'
     )
-
-    if (tableContent.length < 3) {
+    if (resultTableQ?.length !== 1) {
         return SearchStatus.ERROR
     }
-    if (tableContent.length === 3) {
-        return SearchStatus.NONE
-    }
 
-    return SearchStatus.FOUND_MULTIPLE
+    const resultTableRowsQ = resultTableQ.parent()?.find('tbody > tr')
+    if (resultTableRowsQ?.length > 0) {
+        return SearchStatus.FOUND_MULTIPLE
+    }
+    return SearchStatus.NONE
 }
 
 function parseMultiResultUniqIdList(resp) {
-    const document = new JSDOM(resp, {
-        pretendToBeVisual: true,
-        runScripts: 'outside-only',
-    }).window.document
-
-    const tableDomSearch = document.querySelector('#results').textContent
-    let tableContent = compact(tableDomSearch.split('\n').map((n) => n.trim()))
-
-    if (tableContent.length < 3) {
+    const window = getJQWindow(resp)
+    const tableQ = window
+        .$(
+            'div.panel-default > .panel-body > table > thead:contains("Parcel #")'
+        )
+        ?.parent()
+        ?.find('tbody > tr > td:nth-child(1)')
+    if (!tableQ?.length) {
         return []
     }
-    if (tableContent.length === 3) {
+
+    const serialIdList = compact(
+        [...tableQ].map((result) => result?.textContent?.trim())
+    )
+    if (!serialIdList.length) {
         return []
     }
-    tableContent = tableContent.slice(3)
-
-    // Every 3rd element is a parcel ID
-    const serialIdList = tableContent.filter((val, ind) => ind % 3 === 0)
 
     return serialIdList
 }
 
 function parseSingleResultAddress(resp) {
-    const propertySearch = `${resp}`.match(
-        /strong[^>]+>Property<[^c]+class[^>]+>([^\/]+)/
-    )
-    if (!propertySearch || propertySearch.length < 2) {
-        throw new Error(`could not parse search results!`)
-    }
-    const addressMatch = propertySearch[1].match(/\s+([^<]+)<br>\s+([^<]+)</)
+    const e = new Error('Could not parse search results!')
+    const window = getJQWindow(resp)
 
-    const ownerMatch = `${resp}`.match(
-        /strong[^>]+>Owner<[^c]+class[^>]+>([^\/]+)/
-    )
-
-    if (
-        !addressMatch ||
-        addressMatch.length < 3 ||
-        !addressMatch[1].trim() ||
-        !addressMatch[2].trim() ||
-        !ownerMatch ||
-        ownerMatch.length < 2
-    ) {
-        throw new Error(`could not parse search results!`)
+    const addressQ = window
+        .$('div.row > div > strong:contains("Property")')
+        .parent()
+        .parent()
+        .find(':nth-child(2)')
+    if (!addressQ?.[0]?.textContent?.trim()) {
+        throw e
     }
+
+    const addressRaw = addressQ[0].textContent.trim()
+    const addressSplit = compact(addressRaw.split('\n').map((n) => n.trim()))
+    if (addressSplit.length < 2) {
+        throw e
+    }
+    const street = addressSplit[0]
+    const city = addressSplit[1]
+
+    const ownerQ = window
+        .$('div.row > div > strong:contains("Owner")')
+        ?.parent()
+        ?.parent()
+        ?.find(':nth-child(2)')
+    if (!ownerQ?.[0]?.textContent?.trim()) {
+        throw e
+    }
+    const owner = ownerQ[0].textContent.trim()
 
     return {
-        owner: ownerMatch[1]
-            .slice(0, -1)
-            .split('<br>')
-            .map((n) => n.trim())
-            .join(', '),
-        street: addressMatch[1].trim(),
-        city: addressMatch[2].trim(),
+        owner,
+        street,
+        city,
         coords: ``,
     }
 }

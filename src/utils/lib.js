@@ -1,5 +1,20 @@
 import axios from 'axios'
 import { compact } from 'lodash-es'
+import jsdom from 'jsdom'
+import jQuery from 'jquery'
+
+const { JSDOM } = jsdom
+
+function getJQWindow(resp) {
+    const { window } = new JSDOM(resp, {
+        pretendToBeVisual: true,
+        runScripts: 'outside-only',
+    })
+
+    window.$ = jQuery(window)
+
+    return window
+}
 
 function nameCommaReverse(fullName) {
     const nameList = compact(fullName.split(' '))
@@ -56,4 +71,13 @@ async function getWebpage(
     return response
 }
 
-export { nameCommaReverse, lo, lm, le, encodeUrl, SearchStatus, getWebpage }
+export {
+    encodeUrl,
+    getJQWindow,
+    getWebpage,
+    le,
+    lm,
+    lo,
+    nameCommaReverse,
+    SearchStatus,
+}
