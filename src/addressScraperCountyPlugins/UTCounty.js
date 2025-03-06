@@ -35,7 +35,7 @@ function parseSearchStatus(resp) {
     const singleResultMatch = `${resp}`.match(/<h1>Property Information<\/h1>/)
 
     if (singleResultMatch && singleResultMatch.length) {
-        return SearchStatus.FOUND_SINGLE
+        return SearchStatus.FOUND_RESULTPAGE
     }
 
     // find page title
@@ -61,7 +61,7 @@ function parseSearchStatus(resp) {
     ) {
         return SearchStatus.NONE
     }
-    return SearchStatus.FOUND_MULTIPLE
+    return SearchStatus.FOUND_MULTIRESULTTABLE
 }
 
 function parseMultiResultUniqIdList(resp) {

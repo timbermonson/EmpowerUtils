@@ -1,7 +1,7 @@
 import fs from 'fs'
 import process from 'process'
 import { uniq, compact } from 'lodash-es'
-import { lo, lm, le } from '../../utils/lib.js'
+import { lm, le } from '../../utils/lib.js'
 import countyScraperMap from '../../addressScraperCountyPlugins/index.js'
 
 function readFileInput(filePath) {

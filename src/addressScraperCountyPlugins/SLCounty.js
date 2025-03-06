@@ -42,13 +42,14 @@ function parseSearchStatus(resp) {
 
     // handle cases
     if (pageTitle === 'parcel details') {
-        return SearchStatus.FOUND_SINGLE
+        return SearchStatus.FOUND_RESULTPAGE
     }
 
     if (pageTitle === 'parcel search results') {
         if (resp.includes('Your search returned no results'))
             return SearchStatus.NONE
-        if (resp.match(/Your search found/s)) return SearchStatus.FOUND_MULTIPLE
+        if (resp.match(/Your search found/s))
+            return SearchStatus.FOUND_MULTIRESULTTABLE
     }
 
     return SearchStatus.ERROR

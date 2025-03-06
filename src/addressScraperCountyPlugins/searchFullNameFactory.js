@@ -19,11 +19,11 @@ export default function searchFullNameFactory({
 
             status = parseSearchStatus(resp)
             switch (status) {
-                case SearchStatus.FOUND_SINGLE:
+                case SearchStatus.FOUND_RESULTPAGE:
                     lm('Found!')
                     addressList = [parseSingleResultAddress(resp)]
                     break
-                case SearchStatus.FOUND_MULTIPLE:
+                case SearchStatus.FOUND_MULTIRESULTTABLE:
                     lm('Found Mulitple! Skipping...')
                     addressList = []
                     break
@@ -59,17 +59,20 @@ export default function searchFullNameFactory({
             status = parseSearchStatus(resp)
 
             switch (status) {
-                case SearchStatus.FOUND_SINGLE:
+                case SearchStatus.FOUND_RESULTPAGE:
                     lm('Found!')
                     addressList = [parseSingleResultAddress(resp)]
                     break
-                case SearchStatus.FOUND_MULTIPLE:
+                case SearchStatus.FOUND_MULTIRESULTTABLE:
                     lm('Found Mulitple! Iterating...')
                     const uniqIdList = parseMultiResultUniqIdList(resp)
                     addressList = []
                     for (const uniqId of uniqIdList) {
                         const uniqIdResult = await searchUniqId(uniqId)
-                        if (uniqIdResult.status === SearchStatus.FOUND_SINGLE) {
+                        if (
+                            uniqIdResult.status ===
+                            SearchStatus.FOUND_RESULTPAGE
+                        ) {
                             addressList.push(uniqIdResult.addressList[0])
                         }
                     }

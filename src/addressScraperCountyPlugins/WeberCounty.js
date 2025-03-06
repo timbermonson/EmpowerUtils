@@ -44,7 +44,7 @@ function parseSearchStatus(resp) {
         'div.panel-default > div.panel-heading:contains("Ownership Info")'
     )
     if (singleResultQ?.length === 1) {
-        return SearchStatus.FOUND_SINGLE
+        return SearchStatus.FOUND_RESULTPAGE
     }
 
     const resultTableQ = window.$(
@@ -56,7 +56,7 @@ function parseSearchStatus(resp) {
 
     const resultTableRowsQ = resultTableQ.parent()?.find('tbody > tr')
     if (resultTableRowsQ?.length > 0) {
-        return SearchStatus.FOUND_MULTIPLE
+        return SearchStatus.FOUND_MULTIRESULTTABLE
     }
     return SearchStatus.NONE
 }

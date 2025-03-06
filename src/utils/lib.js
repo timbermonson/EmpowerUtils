@@ -43,8 +43,8 @@ const encodeUrl = encodeURIComponent
 
 const SearchStatus = Object.freeze({
     ERROR: 'error',
-    FOUND_MULTIPLE: 'found_multiple',
-    FOUND_SINGLE: 'found_single',
+    FOUND_MULTIRESULTTABLE: 'found_multiresulttable',
+    FOUND_RESULTPAGE: 'found_resultpage',
     NONE: 'none',
 })
 

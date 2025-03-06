@@ -58,7 +58,7 @@ function parseSearchStatus(resp) {
         '#middle > h1:first-child:contains("Account")'
     )
     if (singleResultQ?.length === 1) {
-        return SearchStatus.FOUND_SINGLE
+        return SearchStatus.FOUND_RESULTPAGE
     }
 
     const noResultsQ = window.$('p.warning:contains("No results found")')
@@ -70,7 +70,7 @@ function parseSearchStatus(resp) {
         .$('#searchResultsTable > tbody > tr')
         .not(':first-child')
     if (resultTableRowsQ?.length) {
-        return SearchStatus.FOUND_MULTIPLE
+        return SearchStatus.FOUND_MULTIRESULTTABLE
     }
 
     return SearchStatus.ERROR
