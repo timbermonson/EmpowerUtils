@@ -20,8 +20,8 @@
         "ext": "js, txt, json"
     },
     "scripts": {
-        "addr": "nodemon ./utils/ScrapeAddresses/app.js",
-        "ebp": "nodemon ./utils/ExtractBusinessPrincipals/ExtractBusinessPrincipals.js"
+        "addr": "nodemon ./apps/ScrapeAddresses/app.js",
+        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/ExtractBusinessPrincipals.js"
     },
     "author": "",
     "license": "ISC",
