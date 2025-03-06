@@ -4,21 +4,15 @@ import {
     getWebpage,
     nameCommaReverse,
     SearchStatus,
-    lm,
 } from '../utils/lib.js'
 
 import { compact } from 'lodash-es'
-import jsdom from 'jsdom'
-import jQuery from 'jquery'
-
-const { JSDOM } = jsdom
-
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 function getUniqIdWebpageFactory(id) {
     const baseUrl =
         'https://webercountyutah.gov/parcelsearch/ownership-info.php'
-    const param = `id=${id}` // TODO
+    const param = `id=${id}`
 
     return async function getUniqIdWebpage() {
         const resp = await getWebpage(baseUrl, {
@@ -115,10 +109,10 @@ function parseSingleResultAddress(resp) {
         ?.parent()
         ?.parent()
         ?.find(':nth-child(2)')
-    if (!ownerQ?.[0]?.textContent?.trim()) {
+    const owner = ownerQ?.[0]?.textContent?.trim()
+    if (!owner) {
         throw e
     }
-    const owner = ownerQ[0].textContent.trim()
 
     return {
         owner,

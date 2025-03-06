@@ -1,9 +1,12 @@
-import { nameCommaReverse, SearchStatus, getWebpage } from '../utils/lib.js'
+import {
+    getJQWindow,
+    getWebpage,
+    nameCommaReverse,
+    SearchStatus,
+} from '../utils/lib.js'
 
+import { compact } from 'lodash-es'
 import qs from 'qs'
-import jsdom from 'jsdom'
-
-const { JSDOM } = jsdom
 
 import searchFullNameFactory from './searchFullNameFactory.js'
 
@@ -49,101 +52,89 @@ function getFullNameWebpageFactory(fullName) {
 }
 
 function parseSearchStatus(resp) {
-    const document = new JSDOM(resp, {
-        pretendToBeVisual: true,
-        runScripts: 'outside-only',
-    }).window.document
+    const window = getJQWindow(resp)
 
-    const accountDomSearch = document.querySelector('.accountSummary > tbody')
-    if (accountDomSearch) {
+    const singleResultQ = window.$(
+        '#middle > h1:first-child:contains("Account")'
+    )
+    if (singleResultQ?.length === 1) {
         return SearchStatus.FOUND_SINGLE
     }
 
-    const tableDomSearch = document.querySelector('#searchResultsTable')
-    if (!tableDomSearch) {
+    const noResultsQ = window.$('p.warning:contains("No results found")')
+    if (noResultsQ?.length) {
         return SearchStatus.NONE
     }
 
-    const tableDataSearch = document.querySelectorAll(
-        '#searchResultsTable > * > tr > td'
-    )
-    if (!tableDataSearch.length) {
-        return SearchStatus.NONE
+    const resultTableRowsQ = window
+        .$('#searchResultsTable > tbody > tr')
+        .not(':first-child')
+    if (resultTableRowsQ?.length) {
+        return SearchStatus.FOUND_MULTIPLE
     }
 
-    const tableData = [...tableDataSearch].map((r) => r.textContent)
-
-    return SearchStatus.FOUND_MULTIPLE
+    return SearchStatus.ERROR
 }
 
 function parseMultiResultUniqIdList(resp) {
-    const document = new JSDOM(resp, {
-        pretendToBeVisual: true,
-        runScripts: 'outside-only',
-    }).window.document
+    const window = getJQWindow(resp)
 
-    const tableDomSearch = document.querySelector('#searchResultsTable')
-    if (!tableDomSearch) {
+    const resultTableRowsQ = window
+        .$('#searchResultsTable > tbody > tr')
+        .not(':first-child')
+    if (!resultTableRowsQ?.length) {
         return []
     }
 
-    const tableDataSearch = document.querySelectorAll(
-        '#searchResultsTable > * > tr > td'
+    const serialIdListQ = resultTableRowsQ.find('td:first-child > a')
+    if (!serialIdListQ?.length) {
+        return []
+    }
+
+    const serialIdList = compact(
+        [...serialIdListQ].map((result) => result?.textContent?.trim())
     )
-    if (!tableDataSearch.length) {
+    if (!serialIdList.length) {
         return []
     }
-
-    const tableData = [...tableDataSearch].map((r) => r.textContent)
-    const serialIdList = tableData
-        .filter((v, ind) => ind % 2 === 0)
-        .map((id) => id.trim())
 
     return serialIdList
 }
 
 function parseSingleResultAddress(resp) {
     const e = new Error('Could not parse search results!')
-    const document = new JSDOM(resp, {
-        pretendToBeVisual: true,
-        runScripts: 'outside-only',
-    }).window.document
+    const window = getJQWindow(resp)
 
-    const tableDomSearch = document.querySelector('.accountSummary > tbody')
-    if (!tableDomSearch) {
-        throw e
-    }
-
-    const addressSearch = document.querySelector(
-        '.accountSummary > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody > tr:nth-child(5)'
+    const accountInfoQ = window.$(
+        '#middle > table.accountSummary > tbody > tr:nth-child(2)'
     )
-    if (!addressSearch) {
-        throw e
-    }
-    const addressContent = addressSearch.innerHTML
 
-    const streetMatch = `${addressContent}`.match(/\/strong>([^,]+),/)
-    const cityMatch = `${addressContent}`.match(/\/strong>[^,]+,([^<]+)/)
-
-    const ownerSearch = document.querySelector(
-        '.accountSummary > tbody > tr:nth-child(2) > td:nth-child(2) > table > tbody > tr:nth-child(1) > td'
+    const nameQ = accountInfoQ?.find(
+        'td:nth-child(2) > table > tbody > tr:first-child'
     )
-    const ownerName = ownerSearch.textContent
+    const owner = nameQ?.[0]?.textContent
+        ?.trim()
+        ?.split(' ')
+        ?.slice(1)
+        ?.join(' ')
 
-    if (
-        !streetMatch ||
-        !streetMatch[1].replace('&nbsp;', '').trim() ||
-        !cityMatch ||
-        !cityMatch[1] ||
-        !ownerName
-    ) {
-        throw new Error(`could not parse search results!`)
+    const addressQ = accountInfoQ?.find(
+        'td:nth-child(1) > table > tbody > tr:nth-child(5) > td'
+    )
+    const address = addressQ?.[0]?.textContent?.trim()
+    const addressList = address?.split(',')?.map((n) => n?.trim())
+    const city = addressList?.[addressList?.length - 1]
+    addressList?.pop()
+    const street = addressList?.join(', ')
+
+    if ([owner, city, street].some((n) => !n)) {
+        throw e // throw if any are empty
     }
 
     return {
-        owner: ownerName,
-        street: streetMatch[1].trim(),
-        city: cityMatch[1].trim(),
+        owner,
+        street,
+        city,
         coords: ``,
     }
 }
