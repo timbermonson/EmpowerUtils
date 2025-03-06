@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { uniq, compact } from 'lodash-es'
 import { lo, lm, le } from './utils/lib.js'
-import countyScraperMap from './countyScraper/index.js'
+import countyScraperMap from './addressScraperCountyPlugins/index.js'
 const searchFullName = countyScraperMap['Utah County']
 
 function readFileInput(filePath) {
