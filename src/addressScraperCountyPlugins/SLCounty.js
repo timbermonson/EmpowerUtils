@@ -1,9 +1,14 @@
 import {
+    encodeUrl,
+    getJQWindow,
+    getWebpage,
     nameCommaReverse,
     SearchStatus,
-    encodeUrl,
-    getWebpage,
+    lm,
 } from '../utils/lib.js'
+
+import { compact } from 'lodash-es'
+import qs from 'qs'
 
 import searchFullNameFactory from './searchFullNameFactory.js'
 
@@ -32,79 +37,87 @@ function getFullNameWebpageFactory(fullName) {
 }
 
 function parseSearchStatus(resp) {
-    // find page title
-    const pageTitleMatch = `${resp}`.match(/id\=\"MainTitle\".+\>(.+)\</)
+    const window = getJQWindow(resp)
 
-    if (!pageTitleMatch || !pageTitleMatch.length) {
-        return SearchStatus.ERROR
-    }
-    const pageTitle = pageTitleMatch[1].trim().toLowerCase()
-
-    // handle cases
-    if (pageTitle === 'parcel details') {
+    const pageTitleQ = window.$('#MainTitle')
+    if (pageTitleQ?.[0]?.textContent?.trim() === 'Parcel Details') {
         return SearchStatus.FOUND_RESULTPAGE
     }
 
-    if (pageTitle === 'parcel search results') {
-        if (resp.includes('Your search returned no results'))
-            return SearchStatus.NONE
-        if (resp.match(/Your search found/s))
-            return SearchStatus.FOUND_MULTIRESULTTABLE
+    if (pageTitleQ?.[0]?.textContent?.trim() !== 'Parcel Search Results') {
+        return SearchStatus.ERROR
+    }
+
+    const result1Q = window.$('#resultBlock1')
+    if (!result1Q?.length) {
+        return SearchStatus.NONE
+    }
+
+    // Every second table result is an address
+    const resultListQ = result1Q.parent()?.find('tr:nth-child(2n)')
+    if (resultListQ?.length) {
+        return SearchStatus.FOUND_MULTIRESULTTABLE
     }
 
     return SearchStatus.ERROR
 }
 
 function parseMultiResultUniqIdList(resp) {
-    const parcelListMatch = [...`${resp}`.matchAll(/parcel_id\,([0-9]+)\"/g)]
+    const window = getJQWindow(resp)
 
-    if (
-        !parcelListMatch ||
-        !parcelListMatch.length ||
-        !parcelListMatch[0].length
-    ) {
+    const result1Q = window.$('#resultBlock1')
+    if (!result1Q?.length) {
         return []
     }
 
-    let parcelIdList = []
-    parcelListMatch.forEach((result) => {
-        parcelIdList.push(result[1])
-    })
+    const resultInputListQ = result1Q
+        .parent()
+        ?.find('tr:nth-child(2n) > td:nth-child(2) > input')
+    if (!resultInputListQ?.length) {
+        return []
+    }
+    const idList = [...resultInputListQ].map((inp) => inp.getAttribute('value'))
 
-    return parcelIdList
+    return idList
 }
 
 function parseResultPageAddress(resp) {
-    const streetMatch = `${resp}`.match(/Address<\/td>.+right;\"\>(.+)<\/td>/)
-    const cityMatch = `${resp}`.match(
-        /Tax District location<\/td>.+right;\"\>(.+)\/\w<\/td>/
+    const e = new Error('Could not parse search results!')
+    const window = getJQWindow(resp)
+
+    const parcelMainInfoQ = window.$(
+        '#parcelFieldNames > div.valueSummBox:nth-child(2) > div > table > tbody'
     )
+    const ownerQ = parcelMainInfoQ?.find('tr:nth-child(1) > td:nth-child(2)')
+    const ownerList = ownerQ?.[0]?.textContent?.split(';')
+    const owner = compact(ownerList?.map((n) => n.trim()))?.join(' & ')
 
-    const ownerMatch = `${resp}`.match(/Owner.*<\/td>.+right\"\>(.+)<\/td>/)
+    const streetQ = parcelMainInfoQ?.find('tr:nth-child(2) > td:nth-child(2)')
+    const street = streetQ?.[0]?.textContent?.trim()
 
-    const latMatch = `${resp}`.match(/id="polyx" hidden="true">([0-9\-\.]+)</)
-    const longMatch = `${resp}`.match(/id="polyy" hidden="true">([0-9\-\.]+)</)
+    const cityQ = parcelMainInfoQ?.find('tr:nth-child(7) > td:nth-child(2)')
+    const city = cityQ?.[0]?.textContent?.trim().replace(/\/./, '')
 
-    if (
-        !streetMatch ||
-        !streetMatch[1] ||
-        !cityMatch ||
-        !cityMatch[1] ||
-        !ownerMatch ||
-        !ownerMatch[1] ||
-        !latMatch ||
-        !latMatch[1] ||
-        !longMatch ||
-        !longMatch[1]
-    ) {
-        throw new Error(`could not parse search results!`)
+    const coordQ = window.$('#googlemap > a')
+    let coords
+    if (!coordQ?.length) {
+        coords = ''
+    } else {
+        const coordURL = coordQ[0]?.getAttribute('href')
+        const coordURLParams = coordURL?.split('?')?.[1]
+        const coordURLParamObject = qs.parse(coordURLParams)
+        coords = coordURLParamObject?.q ? coordURLParamObject.q : ''
+    }
+
+    if ([owner, city, street].some((n) => !n)) {
+        throw e // throw if any are empty
     }
 
     return {
-        owner: ownerMatch[1].trim(),
-        street: streetMatch[1].trim(),
-        city: cityMatch[1].trim(),
-        coords: `${latMatch[1].trim()}, ${longMatch[1].trim()}`,
+        owner,
+        street,
+        city,
+        coords,
     }
 }
 
