@@ -52,7 +52,7 @@ function parseSearchStatus(resp) {
         .parent()
         ?.find('strong:contains("Owner Name")')
     if (!resultTableHeaderQ?.[0]) {
-        return SearchStatus.ERROR
+        return SearchStatus.NONE
     }
 
     const resultTableQ = resultTableHeaderQ

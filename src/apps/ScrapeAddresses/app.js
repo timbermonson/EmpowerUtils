@@ -36,7 +36,7 @@ function writeResultMap(
     let output = ''
 
     if (!excellable) {
-        output = JSON.stringify(nameSearchResultMapByCounty, null, 2)
+        output = JSON.stringify(nameSearchResultMapByCounty)
     } else {
         let outputList = []
 
