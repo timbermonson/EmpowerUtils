@@ -85,7 +85,7 @@ function parseMultiResultUniqIdList(resp) {
     return serialIdList
 }
 
-function parseSingleResultAddress(resp) {
+function parseResultPageAddress(resp) {
     const streetMatch = `${resp}`.match(/Property Address[^\n>]+>([^\n<-]+)/)
     const cityMatch = `${resp}`.match(
         /Property Address[^\n>]+>[^\n-]+-([^\n<]+)/
@@ -119,7 +119,7 @@ const searchFullName = searchFullNameFactory({
     getUniqIdWebpageFactory,
     parseMultiResultUniqIdList,
     parseSearchStatus,
-    parseSingleResultAddress,
+    parseResultPageAddress,
 })
 
 export default searchFullName

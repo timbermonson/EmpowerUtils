@@ -101,7 +101,7 @@ function parseMultiResultUniqIdList(resp) {
     return serialIdList
 }
 
-function parseSingleResultAddress(resp) {
+function parseResultPageAddress(resp) {
     const e = new Error('Could not parse search results!')
     const window = getJQWindow(resp)
 
@@ -144,7 +144,7 @@ const searchFullName = searchFullNameFactory({
     getUniqIdWebpageFactory,
     parseMultiResultUniqIdList,
     parseSearchStatus,
-    parseSingleResultAddress,
+    parseResultPageAddress,
 })
 
 export default searchFullName

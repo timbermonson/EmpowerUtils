@@ -5,7 +5,7 @@ export default function searchFullNameFactory({
     getUniqIdWebpageFactory,
     parseMultiResultUniqIdList,
     parseSearchStatus,
-    parseSingleResultAddress,
+    parseResultPageAddress,
 }) {
     async function searchUniqId(id) {
         lm(`Getting address for unique identifier ${id}...`)
@@ -21,7 +21,7 @@ export default function searchFullNameFactory({
             switch (status) {
                 case SearchStatus.FOUND_RESULTPAGE:
                     lm('Found!')
-                    addressList = [parseSingleResultAddress(resp)]
+                    addressList = [parseResultPageAddress(resp)]
                     break
                 case SearchStatus.FOUND_MULTIRESULTTABLE:
                     lm('Found Mulitple! Skipping...')
@@ -61,7 +61,7 @@ export default function searchFullNameFactory({
             switch (status) {
                 case SearchStatus.FOUND_RESULTPAGE:
                     lm('Found!')
-                    addressList = [parseSingleResultAddress(resp)]
+                    addressList = [parseResultPageAddress(resp)]
                     break
                 case SearchStatus.FOUND_MULTIRESULTTABLE:
                     lm('Found Mulitple! Iterating...')

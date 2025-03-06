@@ -74,7 +74,7 @@ function parseMultiResultUniqIdList(resp) {
     return parcelIdList
 }
 
-function parseSingleResultAddress(resp) {
+function parseResultPageAddress(resp) {
     const streetMatch = `${resp}`.match(/Address<\/td>.+right;\"\>(.+)<\/td>/)
     const cityMatch = `${resp}`.match(
         /Tax District location<\/td>.+right;\"\>(.+)\/\w<\/td>/
@@ -113,7 +113,7 @@ const searchFullName = searchFullNameFactory({
     getUniqIdWebpageFactory,
     parseMultiResultUniqIdList,
     parseSearchStatus,
-    parseSingleResultAddress,
+    parseResultPageAddress,
 })
 
 export default searchFullName
