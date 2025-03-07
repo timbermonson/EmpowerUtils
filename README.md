@@ -40,7 +40,9 @@ Names must be formatted like: `Title Firstname Lastname, Title Firstname Middlen
 - Duplicates are ignored.
 
 Valid Examples:
+
 `Director John G Smith, Treasurer Timber M Monson, President George Washington`
+
 `D John     Smith, T Timber Monson   , P George Washington `
 
 ### Setup:
