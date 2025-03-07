@@ -4,6 +4,7 @@
         "outputPath": "./ioFiles/output.txt"
     },
     "endato": {
+        "name": "",
         "profileKeyName": "",
         "profileKeyPassword": ""
     }
