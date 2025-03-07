@@ -20,6 +20,7 @@
         "ext": "js, txt, json"
     },
     "scripts": {
+        "end": "nodemon ./apps/EndatoApp/app.js --",
         "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/app.js"
     },
