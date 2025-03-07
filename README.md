@@ -26,7 +26,7 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 - _Intakes:_ A list of full names, formatted as below.
 - _Does:_ A search for every person in every supported county (via real-estate parcel searches).
 - _Outputs:_ For each county, a list of each person's address results.
-- _Console-Logs:_ A "score" for each county. If a county has results for 4 inputted people, its score is 4. If none, its score is 0, and so on. Having multiple results for a single person does not increase the score.
+- _Console-Logs:_ A "score" for each county. If a county has *any* results for all 4 inputted people, its score is 4. If none, its score is 0. This is used to help determine which county all searched people are most likely to reside in.
 
 ### Input Format:
 
