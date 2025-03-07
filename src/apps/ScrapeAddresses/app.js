@@ -37,15 +37,15 @@ function parseInput(inputContent) {
 
 function writeResultMap(
     filePath,
-    nameSearchResultMapByCounty,
+    nameSearchresultMapByCounty,
     { format = 'excel' }
 ) {
-    const jsonOutput = JSON.stringify(nameSearchResultMapByCounty)
+    const jsonOutput = JSON.stringify(nameSearchresultMapByCounty)
 
     let outputList = []
-    for (const countyName in nameSearchResultMapByCounty) {
+    for (const countyName in nameSearchresultMapByCounty) {
         let countyOutput = ''
-        const searchResultMap = nameSearchResultMapByCounty[countyName]
+        const searchResultMap = nameSearchresultMapByCounty[countyName]
         countyOutput += `${countyName}\n`
 
         for (const fullName in searchResultMap) {
@@ -75,11 +75,11 @@ function writeResultMap(
     fs.writeFileSync(filePath, output)
 }
 
-function printCountyScores(nameSearchResultMapByCounty) {
+function printCountyScores(nameSearchresultMapByCounty) {
     lm('--------SCORES--------')
-    for (const countyName in nameSearchResultMapByCounty) {
+    for (const countyName in nameSearchresultMapByCounty) {
         let score = 0
-        const searchResultMap = nameSearchResultMapByCounty[countyName]
+        const searchResultMap = nameSearchresultMapByCounty[countyName]
         for (const fullName in searchResultMap) {
             const searchResult = searchResultMap[fullName]
             score += searchResult.addressList.length ? 1 : 0
@@ -117,23 +117,23 @@ async function run() {
         lm('Exiting...')
         return
     }
-    const nameSearchResultMapByCounty = {}
+    const nameSearchresultMapByCounty = {}
 
     for (const countyName in countyScraperMap) {
         lm(`--------${countyName}--------`)
         const searcher = countyScraperMap[countyName]
-        nameSearchResultMapByCounty[countyName] = {}
+        nameSearchresultMapByCounty[countyName] = {}
 
         for (const fullName of fullNameList) {
-            nameSearchResultMapByCounty[countyName][fullName] = await searcher(
+            nameSearchresultMapByCounty[countyName][fullName] = await searcher(
                 fullName
             )
         }
     }
 
-    printCountyScores(nameSearchResultMapByCounty)
+    printCountyScores(nameSearchresultMapByCounty)
     lm('writing output to file...')
-    writeResultMap(outputFilePath, nameSearchResultMapByCounty, {
+    writeResultMap(outputFilePath, nameSearchresultMapByCounty, {
         format: formattingArg,
     })
     lm('done!')
