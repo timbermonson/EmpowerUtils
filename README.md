@@ -9,7 +9,7 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 **nvm**
 
 - Different for windows/macOS, google is your friend here.
-- macOS' nvm should auto-install the correct version when you use `cd`
+- macOS' nvm should auto-install the correct version when you use `cd ./src`
 - otherwise, ensure you've installed the node.JS version specified in `./src/.nvmrc` by running `node -v`
 - confirm `npm` has also been installed by running `npm --version`
 
