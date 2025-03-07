@@ -5,12 +5,14 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 
 # Initial Install
 
-**nvm**
+**nvm & node**
 
-- Different for windows/macOS, google is your friend here.
-- macOS' nvm should auto-install the correct version when you use `cd ./src`
-- otherwise, ensure you've installed the node.JS version specified in `./src/.nvmrc` by running `node -v`
-- confirm `npm` has also been installed by running `npm --version`
+- Windows: install "windows-nvm" by downloading "nvm-setup.exe" from [Here](https://github.com/coreybutler/nvm-windows/releases).
+- Then, install the proper node version with `nvm install v22.14.0` and `nvm use v22.14.0`
+
+
+- macOS: install "nvm" by following the instructions [Here](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating).
+- macOS' nvm should auto-install & use the correct node version when you use `cd ./src`
 
 **npm packages**
 
