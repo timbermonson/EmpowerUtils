@@ -1,7 +1,6 @@
 # EmpowerUtils
 
-A collection of utils written by Timber Monson for automating office tasks at Empowered HOA and Advanced Community Services.
-
+A collection of utils written by Timber Monson for automating office tasks at an HOA management company.
 Basic usage guides are below, and a developer guide is at `./src/README.md` (TODO)
 
 # Initial Install
