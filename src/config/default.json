@@ -1,0 +1,6 @@
+{
+    "ioFiles": {
+        "inputPath": "./ioFiles/input.txt",
+        "outputPath": "./ioFiles/output.txt"
+    }
+}

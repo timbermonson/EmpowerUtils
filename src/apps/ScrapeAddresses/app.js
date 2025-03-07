@@ -1,6 +1,11 @@
+import { uniq, compact } from 'lodash-es'
+import config from 'config'
 import fs from 'fs'
 import process from 'process'
-import { uniq, compact } from 'lodash-es'
+
+const inputFilePath = config.get('ioFiles.inputPath')
+const outputFilePath = config.get('ioFiles.outputPath')
+
 import { lm, le } from '../../utils/lib.js'
 import countyScraperMap from '../../addressScraperCountyPlugins/index.js'
 
@@ -98,7 +103,7 @@ async function run() {
     const argList = process.argv.slice(2) // First two args are the node path & this script's path
     const arg1 = argList[0]
 
-    const fullNameList = readFullNameList('./ioFiles/input.txt')
+    const fullNameList = readFullNameList(inputFilePath)
     if (!fullNameList.length) {
         lm('Input list empty!')
         lm('Exiting...')
@@ -120,7 +125,7 @@ async function run() {
 
     printCountyScores(nameSearchResultMapByCounty)
     lm('writing output to file...')
-    writeResultMap('./ioFiles/output.txt', nameSearchResultMapByCounty, {
+    writeResultMap(outputFilePath, nameSearchResultMapByCounty, {
         excellable: arg1 !== 'json',
     })
     lm('done!')
