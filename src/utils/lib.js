@@ -1,9 +1,22 @@
-import axios from 'axios'
 import { compact } from 'lodash-es'
-import jsdom from 'jsdom'
+import axios from 'axios'
+import config from 'config'
+import fs from 'fs'
 import jQuery from 'jquery'
+import jsdom from 'jsdom'
 
 const { JSDOM } = jsdom
+
+const inputFilePath = config.get('ioFiles.inputPath')
+const outputFilePath = config.get('ioFiles.outputPath')
+
+function setupIOTextFiles() {
+    ;[inputFilePath, outputFilePath].forEach((filePath) => {
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, '')
+        }
+    })
+}
 
 function getJQWindow(resp) {
     const { window } = new JSDOM(resp, {
@@ -80,4 +93,5 @@ export {
     lo,
     nameCommaReverse,
     SearchStatus,
+    setupIOTextFiles,
 }
