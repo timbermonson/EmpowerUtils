@@ -21,14 +21,14 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 
 # Address Scraper
 
-This app:
+**This app**:
 
 - _Intakes:_ A list of full names, formatted as below.
 - _Does:_ A search for every person in every supported county (via real-estate parcel searches).
 - _Outputs:_ For each county, a list of each person's address results.
 - _Console-Logs:_ A "score" for each county. If a county has results for 4 inputted people, its score is 4. If none, its score is 0, and so on. Having multiple results for a single person does not increase the score.
 
-**Input Format**
+## Input Format
 
 Names must be formatted like: `Title Firstname Lastname, Title Firstname Middlename Lastname`
 
@@ -43,19 +43,19 @@ Valid Examples:
 `Director John G Smith, Treasurer Timber M Monson, President George Washington`
 `D John     Smith, T Timber Monson   , P George Washington `
 
-**Setup**
+## Setup
 
 - `cd ./src`
 - In `src/ioFiles`, create a `input.txt`.
 - Put your name list into `input.txt`
 
-**Execution**
+## Execution
 
 - Ensure `cd ./src` has been run
 - Run app with `npm run addr`
 - Output will appear in `src/ioFiles/output.txt`
 
-**Extra Options**
+## Extra Options
 
 - `npm run addr json` Outputs a newline-less json blob of the results (with a bit more information)
 - `num run addr both` Outputs both.
