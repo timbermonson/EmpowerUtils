@@ -73,8 +73,13 @@ Valid Examples:
 
 This app is designed to help with copying business principals from Utah's business-search into the above-app's required format.
 
+It:
 - _Intakes:_ (from `src/ioFiles/input.txt`) A click-drag copy-paste of the "Business Principals" table on the Utah Business Search website.
 - _Outputs:_ (into `src/ioFiles/output.txt`) The list of business principals, formatted as above & with titles shortened.
+
+**Example Screenshots:**
+![image](https://github.com/user-attachments/assets/5be0f8c1-d24e-4250-a471-e93de877215c)
+![image](https://github.com/user-attachments/assets/b57b57bb-3e9b-4bcd-9f14-0fba94ce968b)
 
 **Execution**
 
