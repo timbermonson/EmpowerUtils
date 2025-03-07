@@ -58,6 +58,7 @@ Valid Examples:
 - Ensure `cd ./src` has been run
 - Run app with `npm run addr`
 - Output will appear in `src/ioFiles/output.txt`
+- Pasting new namelists into `input.txt` will automatically trigger the app to run again.
 
 ### Extra Options:
 
