@@ -1,7 +1,11 @@
-import fs from 'fs'
 import { uniqBy } from 'lodash-es'
+import config from 'config'
+import fs from 'fs'
 
 import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
+
+const inputFilePath = config.get('ioFiles.inputPath')
+const outputFilePath = config.get('ioFiles.outputPath')
 
 function getReplacementTitle(title) {
     const replacement = titleReplacementMap[title.toLowerCase()]
@@ -25,7 +29,7 @@ function capitalizeName(fullName) {
 // Read input data
 let inputData
 try {
-    inputData = await fs.readFileSync('./ioFiles/input.txt', 'utf8')
+    inputData = await fs.readFileSync(inputFilePath, 'utf8')
 } catch (e) {
     console.error(e.message)
 }
@@ -59,4 +63,4 @@ const boardMemberListString = principalObjectList
     .map((principal) => `${principal.title} ${principal.name}`)
     .join(', ')
 
-fs.writeFileSync('./ioFiles/output.txt', boardMemberListString)
+fs.writeFileSync(outputFilePath, boardMemberListString)
