@@ -3,11 +3,11 @@ import config from 'config'
 import fs from 'fs'
 import process from 'process'
 
-const inputFilePath = config.get('ioFiles.inputPath')
-const outputFilePath = config.get('ioFiles.outputPath')
-
 import { lm, le } from '../../utils/lib.js'
 import countyScraperMap from '../../addressScraperCountyPlugins/index.js'
+
+const inputFilePath = config.get('ioFiles.inputPath')
+const outputFilePath = config.get('ioFiles.outputPath')
 
 function readFileInput(filePath) {
     return fs.readFileSync(filePath, 'utf8')

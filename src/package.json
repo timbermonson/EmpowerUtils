@@ -21,7 +21,7 @@
     },
     "scripts": {
         "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
-        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/ExtractBusinessPrincipals.js"
+        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/app.js"
     },
     "author": "",
     "license": "ISC",

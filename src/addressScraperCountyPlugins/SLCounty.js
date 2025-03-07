@@ -1,3 +1,6 @@
+import { compact } from 'lodash-es'
+import qs from 'qs'
+
 import {
     encodeUrl,
     getJQWindow,
@@ -6,10 +9,6 @@ import {
     SearchStatus,
     lm,
 } from '../utils/lib.js'
-
-import { compact } from 'lodash-es'
-import qs from 'qs'
-
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 const baseUrl = 'http://apps.saltlakecounty.gov/assessor/new/resultsMain.cfm'

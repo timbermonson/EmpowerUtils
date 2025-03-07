@@ -1,13 +1,12 @@
+import { compact } from 'lodash-es'
+import qs from 'qs'
+
 import {
     getJQWindow,
     getWebpage,
     nameCommaReverse,
     SearchStatus,
 } from '../utils/lib.js'
-
-import { compact } from 'lodash-es'
-import qs from 'qs'
-
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 function getUniqIdWebpageFactory(id) {

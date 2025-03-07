@@ -1,3 +1,5 @@
+import { compact } from 'lodash-es'
+
 import {
     encodeUrl,
     getJQWindow,
@@ -5,8 +7,6 @@ import {
     nameCommaReverse,
     SearchStatus,
 } from '../utils/lib.js'
-
-import { compact } from 'lodash-es'
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 function getUniqIdWebpageFactory(id) {
