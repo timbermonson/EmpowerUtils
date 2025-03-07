@@ -16,6 +16,7 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 
 **npm packages**
 
+- Install npm/nodemon globally with `npm i -g nodemon`
 - Set your cwd with `cd ./src` (do this before doing anything else, really)
 - Clear out old packages with `rm -Force node_modules` on Windows, or `rm -rf node_modules` on mac.
 - run `npm i` to install all packages.
