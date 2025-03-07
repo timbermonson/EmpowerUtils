@@ -30,7 +30,7 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 - _Outputs:_ For each county, a list of each person's address results.
 - _Console-Logs:_ A "score" for each county. If a county has *any* results for all 4 inputted people, its score is 4. If none, its score is 0. This is used to help determine which county all searched people are most likely to reside in.
 
-**Example Screenshot**
+**Example Screenshot** (ignore duplicated score lines, it was a rendering issue on my end)
 ![image](https://github.com/user-attachments/assets/78fcc6ea-6973-4946-9eb3-8d88d4574e66)
 
 
