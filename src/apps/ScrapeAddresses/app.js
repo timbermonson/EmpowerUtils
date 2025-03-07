@@ -36,32 +36,38 @@ function parseInput(inputContent) {
 function writeResultMap(
     filePath,
     nameSearchResultMapByCounty,
-    { excellable = true }
+    { format = 'excel' }
 ) {
-    let output = ''
+    const jsonOutput = JSON.stringify(nameSearchResultMapByCounty)
 
-    if (!excellable) {
-        output = JSON.stringify(nameSearchResultMapByCounty)
-    } else {
-        let outputList = []
+    let outputList = []
+    for (const countyName in nameSearchResultMapByCounty) {
+        let countyOutput = ''
+        const searchResultMap = nameSearchResultMapByCounty[countyName]
+        countyOutput += `${countyName}\n`
 
-        for (const countyName in nameSearchResultMapByCounty) {
-            let countyOutput = ''
-            const searchResultMap = nameSearchResultMapByCounty[countyName]
-            countyOutput += `${countyName}\n`
-
-            for (const fullName in searchResultMap) {
-                const searchResult = searchResultMap[fullName]
-                countyOutput += `${fullName}\t`
-                countyOutput += `${searchResult.addressList
-                    .map(({ street, city }) => `${street}, ${city}`)
-                    .join(' | ')}\t`
-            }
-
-            outputList.push(countyOutput)
+        for (const fullName in searchResultMap) {
+            const searchResult = searchResultMap[fullName]
+            countyOutput += `${fullName}\t`
+            countyOutput += `${searchResult.addressList
+                .map(({ street, city }) => `${street}, ${city}`)
+                .join(' | ')}\t`
         }
 
-        output = outputList.join('\n\n')
+        outputList.push(countyOutput)
+    }
+    const excelOutput = outputList.join('\n\n')
+
+    let output = ''
+    switch (format) {
+        case 'json':
+            output = jsonOutput
+            break
+        case 'both':
+            output = `${jsonOutput}\n\n${excelOutput}`
+            break
+        default:
+            output = excelOutput
     }
 
     fs.writeFileSync(filePath, output)
@@ -101,7 +107,7 @@ function readFullNameList(filePath) {
 
 async function run() {
     const argList = process.argv.slice(2) // First two args are the node path & this script's path
-    const arg1 = argList[0]
+    const formattingArg = argList[0]
 
     const fullNameList = readFullNameList(inputFilePath)
     if (!fullNameList.length) {
@@ -126,7 +132,7 @@ async function run() {
     printCountyScores(nameSearchResultMapByCounty)
     lm('writing output to file...')
     writeResultMap(outputFilePath, nameSearchResultMapByCounty, {
-        excellable: arg1 !== 'json',
+        format: formattingArg,
     })
     lm('done!')
 }
