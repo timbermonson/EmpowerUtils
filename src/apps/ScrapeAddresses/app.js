@@ -3,7 +3,8 @@ import config from 'config'
 import fs from 'fs'
 import process from 'process'
 
-import { lm, le, setupIOTextFiles } from '../../utils/lib.js'
+import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
+import { pickBestCountyAndAddresses } from './lib.js'
 import countyScraperMap from '../../addressScraperCountyPlugins/index.js'
 
 const inputFilePath = config.get('ioFiles.inputPath')
@@ -35,30 +36,17 @@ function parseInput(inputContent) {
     return compact(uniq(fullNameList))
 }
 
-function writeResultMap(
-    filePath,
-    nameSearchresultMapByCounty,
-    { format = 'excel' }
-) {
-    const jsonOutput = JSON.stringify(nameSearchresultMapByCounty)
+function writeResultMap(filePath, searchresultMapByName, { format = 'excel' }) {
+    const jsonOutput = JSON.stringify(searchresultMapByName)
 
-    let outputList = []
-    for (const countyName in nameSearchresultMapByCounty) {
-        let countyOutput = ''
-        const searchResultMap = nameSearchresultMapByCounty[countyName]
-        countyOutput += `${countyName}\n`
-
-        for (const fullName in searchResultMap) {
-            const searchResult = searchResultMap[fullName]
-            countyOutput += `${fullName}\t`
-            countyOutput += `${searchResult.addressList
-                .map(({ street, city }) => `${street}, ${city}`)
-                .join(' | ')}\t`
-        }
-
-        outputList.push(countyOutput)
+    let excelOutput = ''
+    for (const fullName in searchresultMapByName) {
+        const searchResult = searchresultMapByName[fullName]
+        excelOutput += `${fullName}\t`
+        excelOutput += `${searchResult.addressList
+            .map(({ street, city }) => `${street}, ${city}`)
+            .join(' | ')}\t`
     }
-    const excelOutput = outputList.join('\n\n')
 
     let output = ''
     switch (format) {
@@ -66,27 +54,13 @@ function writeResultMap(
             output = jsonOutput
             break
         case 'both':
-            output = `${jsonOutput}\n\n${excelOutput}`
+            output = `${jsonOutput}\t${excelOutput}`
             break
         default:
             output = excelOutput
     }
 
     fs.writeFileSync(filePath, output)
-}
-
-function printCountyScores(nameSearchresultMapByCounty) {
-    lm('--------SCORES--------')
-    for (const countyName in nameSearchresultMapByCounty) {
-        let score = 0
-        const searchResultMap = nameSearchresultMapByCounty[countyName]
-        for (const fullName in searchResultMap) {
-            const searchResult = searchResultMap[fullName]
-            score += searchResult.addressList.length ? 1 : 0
-        }
-        lm(`${countyName}:\t${score}`)
-    }
-    lm('----------------------')
 }
 
 function readFullNameList(filePath) {
@@ -131,9 +105,14 @@ async function run() {
         }
     }
 
-    printCountyScores(nameSearchresultMapByCounty)
+    lm('---------COUNTY SCORES:-------')
+    const searchresultMapByName = pickBestCountyAndAddresses(
+        nameSearchresultMapByCounty
+    )
+    lm('------------------------------')
+
     lm('writing output to file...')
-    writeResultMap(outputFilePath, nameSearchresultMapByCounty, {
+    writeResultMap(outputFilePath, searchresultMapByName, {
         format: formattingArg,
     })
     lm('done!')
