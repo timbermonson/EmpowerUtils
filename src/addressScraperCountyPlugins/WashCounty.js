@@ -124,7 +124,10 @@ function parseResultPageAddress(resp) {
     const addressList = address?.split(',')?.map((n) => n?.trim())
     const city = addressList?.[addressList?.length - 1]
     addressList?.pop()
-    const street = addressList?.join(', ')
+    const street = addressList
+        ?.join(', ')
+        ?.replace(/situs/i, '')
+        .replaceAll(/\s+/, ' ')
 
     if ([owner, city, street].some((n) => !n)) {
         throw e // throw if any are empty
