@@ -5,7 +5,7 @@ import process from 'process'
 
 import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
 import { pickBestCountyAndAddresses } from './lib.js'
-import countyScraperMap from '../../addressScraperCountyPlugins/index.js'
+import countyScraperMap from './countyPlugins/index.js'
 
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')

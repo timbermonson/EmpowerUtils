@@ -8,7 +8,7 @@ import {
     nameCommaReverse,
     SearchStatus,
     lm,
-} from '../utils/lib.js'
+} from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 const baseUrl = 'http://apps.saltlakecounty.gov/assessor/new/resultsMain.cfm'

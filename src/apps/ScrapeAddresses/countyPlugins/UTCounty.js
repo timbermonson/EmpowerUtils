@@ -6,7 +6,7 @@ import {
     getWebpage,
     nameCommaReverse,
     SearchStatus,
-} from '../utils/lib.js'
+} from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 function getUniqIdWebpageFactory(id) {
