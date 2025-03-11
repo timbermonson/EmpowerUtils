@@ -18,6 +18,8 @@ const httpsAgent = new https.Agent({
     rejectUnauthorized: false, // (NOTE: this will disable client verification)
 })
 
+// Search Page: https://erecording.tooeleco.gov/eaglesoftware/taxweb/search.jsp
+
 function getFullNameWebpageFactory(fullName) {
     const baseUrl =
         'https://erecording.tooeleco.gov/eaglesoftware/taxweb/results.jsp'

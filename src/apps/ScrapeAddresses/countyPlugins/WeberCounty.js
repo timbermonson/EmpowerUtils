@@ -9,6 +9,8 @@ import {
 } from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
 
+// Search page: https://webercountyutah.gov/parcelsearch/
+
 function getUniqIdWebpageFactory(id) {
     const baseUrl =
         'https://webercountyutah.gov/parcelsearch/ownership-info.php'

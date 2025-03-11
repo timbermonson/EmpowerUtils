@@ -11,6 +11,8 @@ import {
 } from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
 
+// Search page: https://apps.saltlakecounty.gov/assessor/new/query.cfm
+
 const baseUrl = 'http://apps.saltlakecounty.gov/assessor/new/resultsMain.cfm'
 
 function getUniqIdWebpageFactory(id) {

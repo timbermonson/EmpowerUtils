@@ -9,6 +9,8 @@ import {
 } from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
 
+// Search Page: https://eweb.washco.utah.gov:8443/recorder/taxweb/search.jsp
+
 function getUniqIdWebpageFactory(id) {
     const baseUrl =
         'https://eweb.washco.utah.gov:8443/recorder/taxweb/account.jsp'
