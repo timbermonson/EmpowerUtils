@@ -63,7 +63,7 @@ const SearchStatus = Object.freeze({
 
 async function getWebpage(
     baseUrl,
-    { headers, data, queryParamList, method = 'GET' }
+    { headers, data, queryParamList, method = 'GET', httpsAgent }
 ) {
     let urlAppendage = ''
     if (queryParamList && queryParamList.length) {
@@ -72,10 +72,11 @@ async function getWebpage(
 
     const url = `${baseUrl}${urlAppendage}`
     const options = {
-        url,
-        method,
-        headers,
         data,
+        headers,
+        httpsAgent,
+        method,
+        url,
         withCredentials: true,
     }
 
