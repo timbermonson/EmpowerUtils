@@ -246,7 +246,6 @@ function countyHasSimilarAddressPair(searchresultMapByName) {
 
             if (!address1 || !address2) continue
             if (!citiesAreSimilar(address1.city, address2.city)) continue
-            if (address1.street === address2.street) continue // street addresses (including house numbers) shouldn't be exactly the same
 
             if (streetsAreSimilar(address1.street, address2.street)) {
                 return true
