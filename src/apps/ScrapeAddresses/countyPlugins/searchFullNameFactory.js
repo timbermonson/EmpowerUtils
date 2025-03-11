@@ -64,7 +64,7 @@ export default function searchFullNameFactory({
                     addressList = [parseResultPageAddress(resp)]
                     break
                 case SearchStatus.FOUND_MULTIRESULTTABLE:
-                    lm('\tFound a result table! Iterating...')
+                    lm('Found a result table! Iterating...')
                     const uniqIdList = parseMultiResultUniqIdList(resp)
                     addressList = []
                     for (const uniqId of uniqIdList) {
