@@ -2,6 +2,7 @@ import { uniq, compact } from 'lodash-es'
 import config from 'config'
 import fs from 'fs'
 import process from 'process'
+import clipboard from 'clipboardy'
 
 import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
 import { pickBestCountyAndAddresses } from './lib.js'
@@ -36,7 +37,11 @@ function parseInput(inputContent) {
     return compact(uniq(fullNameList))
 }
 
-function writeResultMap(filePath, searchresultMapByName, { format = 'excel' }) {
+function writeResultMap(
+    filePath,
+    searchresultMapByName,
+    { format = 'excel', clipboardWrite = false }
+) {
     const jsonOutput = JSON.stringify(searchresultMapByName)
 
     let excelOutput = ''
@@ -58,6 +63,11 @@ function writeResultMap(filePath, searchresultMapByName, { format = 'excel' }) {
             break
         default:
             output = excelOutput
+    }
+
+    if (clipboardWrite) {
+        lm('writing to clipboard...')
+        clipboard.writeSync(output)
     }
 
     fs.writeFileSync(filePath, output)
@@ -84,6 +94,7 @@ function readFullNameList(filePath) {
 async function run() {
     const argList = process.argv.slice(2) // First two args are the node path & this script's path
     const formattingArg = argList[0]
+    const cliparg = argList[1]
 
     const fullNameList = readFullNameList(inputFilePath)
     if (!fullNameList.length) {
@@ -114,6 +125,7 @@ async function run() {
     lm('writing output to file...')
     writeResultMap(outputFilePath, searchresultMapByName, {
         format: formattingArg,
+        clipboardWrite: cliparg === 'clipboard',
     })
     lm('done!')
 }
