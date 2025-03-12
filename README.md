@@ -21,39 +21,25 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 - Clear out old packages with `rm -Force node_modules` on Windows, or `rm -rf node_modules` on mac.
 - run `npm i` to install all packages.
 
-# Endato Searcher
+# Business Principal Extractor
+
+This app is designed to help with copying business principals from Utah's business-search into the below-app's required format.
 
 **This app**:
 
-- _Intakes:_ The Address Scraper's output. (Containing names and addresses)
+- _Intakes:_ A click-drag copy-paste of the "Business Principals" table on the Utah Business Search website. (in `src/ioFiles/input.txt`)
+- _Outputs:_ The list of business principals, formatted as below & with titles shortened. (into `src/ioFiles/output.txt`)
 
-- _Does:_ Requests to the Endato "Contact Enrich" API, using names/addresses to lookup contact info.
+**Example Screenshots**
 
-- _Outputs:_ Each person's name, latest address, latest phone #, and emails-- formatted for paste into Excel.
+![image](https://github.com/user-attachments/assets/5be0f8c1-d24e-4250-a471-e93de877215c)
+![image](https://github.com/user-attachments/assets/b57b57bb-3e9b-4bcd-9f14-0fba94ce968b)
 
-### Input Format
-
-The input must be a json object, produced by the Address Scraper in `json` mode (see below).
-
-### Example Screenshots
-
-The console output is not human-readable for now, pending further work & dev stabilization.
-![image](https://github.com/user-attachments/assets/0de5484b-27d1-41ab-89fc-1f7a65d6d6c8)
-
-Excel paste:
-A note is appended if the person's searched/latest addr differ.
-![image](https://github.com/user-attachments/assets/4a71a58d-2356-44b4-b5fc-569f11f073e6)
-
-To avoid wasting API requests, each one prompts for confirmation.
-![image](https://github.com/user-attachments/assets/90271c04-212b-4554-b901-4753499a17a2)
-
-### Execution
+**Execution**
 
 - Set cwd: `cd ./src`
-- In `src/ioFiles`, create an `input.txt` & paste one `json` output of Address Scraper
-- Run app with `npm run end`
+- Run app with `npm run ebp`
 - Output will appear in `src/ioFiles/output.txt`
-- Pasting new `json`s into `input.txt` will automatically trigger the app to run again.
 
 # Address Scraper
 
@@ -93,22 +79,36 @@ Valid Examples:
 - `npm run addr json` Outputs a newline-less json blob of the results (with a bit more information)
 - `num run addr both` Outputs both.
 
-# Business Principal Extractor
-
-This app is designed to help with copying business principals from Utah's business-search into the above-app's required format.
+# Endato Searcher
 
 **This app**:
 
-- _Intakes:_ A click-drag copy-paste of the "Business Principals" table on the Utah Business Search website. (in `src/ioFiles/input.txt`)
-- _Outputs:_ The list of business principals, formatted as above & with titles shortened. (into `src/ioFiles/output.txt`)
+- _Intakes:_ The Address Scraper's output. (Containing names and addresses)
 
-**Example Screenshots**
+- _Does:_ Requests to the Endato "Contact Enrich" API, using names/addresses to lookup contact info.
 
-![image](https://github.com/user-attachments/assets/5be0f8c1-d24e-4250-a471-e93de877215c)
-![image](https://github.com/user-attachments/assets/b57b57bb-3e9b-4bcd-9f14-0fba94ce968b)
+- _Outputs:_ Each person's name, latest address, latest phone #, and emails-- formatted for paste into Excel.
 
-**Execution**
+### Input Format
+
+The input must be a json object, produced by the Address Scraper in `json` mode (see above).
+
+### Example Screenshots
+
+The console output is not human-readable for now, pending further work & dev stabilization.
+![image](https://github.com/user-attachments/assets/0de5484b-27d1-41ab-89fc-1f7a65d6d6c8)
+
+Excel paste:
+A note is appended if the person's searched/latest addr differ.
+![image](https://github.com/user-attachments/assets/4a71a58d-2356-44b4-b5fc-569f11f073e6)
+
+To avoid wasting API requests, each one prompts for confirmation.
+![image](https://github.com/user-attachments/assets/90271c04-212b-4554-b901-4753499a17a2)
+
+### Execution
 
 - Set cwd: `cd ./src`
-- Run app with `npm run ebp`
+- In `src/ioFiles`, create an `input.txt` & paste one `json` output of Address Scraper
+- Run app with `npm run end`
 - Output will appear in `src/ioFiles/output.txt`
+- Pasting new `json`s into `input.txt` will automatically trigger the app to run again.
