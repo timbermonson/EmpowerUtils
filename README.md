@@ -45,6 +45,7 @@ A note is appended if the person's searched/latest addr differ.
 ![image](https://github.com/user-attachments/assets/4a71a58d-2356-44b4-b5fc-569f11f073e6)
 
 To avoid wasting API requests, each one prompts for confirmation.
+![image](https://github.com/user-attachments/assets/90271c04-212b-4554-b901-4753499a17a2)
 
 ### Execution
 
