@@ -9,6 +9,7 @@ import {
     getFuzzyCityMatch,
     lm,
     lo,
+    normalizeCardinalDirection,
     prepAddressSearchTerm,
 } from '../../utils/lib.js'
 
@@ -186,10 +187,12 @@ function getFuzzyAddressMatch(
     const cityFuse = new Fuse(searchList, cityFuseOptions)
 
     const streetResult = streetFuse.search(
-        prepAddressSearchTerm(street, {
-            removeStreetNum: false,
-            removeSingleLetters: false,
-        })
+        normalizeCardinalDirection(
+            prepAddressSearchTerm(street, {
+                removeStreetNum: false,
+                removeSingleLetters: false,
+            })
+        )
     )
     const cityResult = cityFuse.search(
         prepAddressSearchTerm(city.replace(/\d+\s*$/, ''))
