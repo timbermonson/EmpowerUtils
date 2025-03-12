@@ -1,14 +1,66 @@
-import { compact } from 'lodash-es'
+import { compact, reverse, sortBy } from 'lodash-es'
 import axios from 'axios'
 import config from 'config'
 import fs from 'fs'
+import Fuse from 'fuse.js'
 import jQuery from 'jquery'
 import jsdom from 'jsdom'
+import readline from 'readline'
+
+const cityCountyMap = importJSON('./utils/cityCountyMap.json')
 
 const { JSDOM } = jsdom
 
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
+
+async function awaitConsoleInput(query) {
+    // Credit for this goes to https://stackoverflow.com/a/50890409
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    })
+
+    return await new Promise((resolve) =>
+        rl.question(query, (ans) => {
+            rl.close()
+            resolve(ans)
+        })
+    )
+}
+
+function importJSON(filePath) {
+    const fileContent = fs.readFileSync(filePath, 'utf-8')
+    return JSON.parse(fileContent)
+}
+
+function getFuzzyCityMatch(cityName) {
+    const cityNameList = Object.keys(cityCountyMap)
+
+    const fuseOptions = {
+        isCaseSensitive: false,
+        includeScore: true,
+        ignoreDiacritics: true,
+        // shouldSort: true,
+        // includeMatches: false,
+        findAllMatches: true,
+        minMatchCharLength: 3,
+        // location: 0,
+        threshold: 0.3,
+        // distance: 100,
+        // useExtendedSearch: false,
+        ignoreLocation: true,
+        ignoreFieldNorm: false,
+        // fieldNormWeight: 1,
+    }
+
+    const fuse = new Fuse(cityNameList, fuseOptions)
+    const fuseResult = reverse(sortBy(fuse.search(cityName), 'score'))
+
+    const closestMatch = fuseResult[0]?.item || ''
+
+    return closestMatch
+}
 
 function setupIOTextFiles() {
     ;[inputFilePath, outputFilePath].forEach((filePath) => {
@@ -86,7 +138,9 @@ async function getWebpage(
 }
 
 export {
+    awaitConsoleInput,
     encodeUrl,
+    getFuzzyCityMatch,
     getJQWindow,
     getWebpage,
     le,
