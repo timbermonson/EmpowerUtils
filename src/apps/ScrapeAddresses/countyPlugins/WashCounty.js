@@ -6,8 +6,10 @@ import {
     getWebpage,
     nameCommaReverse,
     SearchStatus,
-} from '../utils/lib.js'
+} from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
+
+// Search Page: https://eweb.washco.utah.gov:8443/recorder/taxweb/search.jsp
 
 function getUniqIdWebpageFactory(id) {
     const baseUrl =
@@ -117,14 +119,22 @@ function parseResultPageAddress(resp) {
         ?.slice(1)
         ?.join(' ')
 
-    const addressQ = accountInfoQ?.find(
+    let addressQ = accountInfoQ?.find(
         'td:nth-child(1) > table > tbody > tr:nth-child(5) > td'
     )
+    if (addressQ.get(0).textContent.replace(/^Situs /, '').length < 5) {
+        addressQ = accountInfoQ?.find(
+            'td:nth-child(2) > table > tbody > tr:nth-child(2)'
+        )
+    }
     const address = addressQ?.[0]?.textContent?.trim()
     const addressList = address?.split(',')?.map((n) => n?.trim())
     const city = addressList?.[addressList?.length - 1]
     addressList?.pop()
-    const street = addressList?.join(', ')
+    const street = addressList
+        ?.join(', ')
+        ?.replace(/situs/i, '')
+        .replaceAll(/\s+/g, ' ')
 
     if ([owner, city, street].some((n) => !n)) {
         throw e // throw if any are empty

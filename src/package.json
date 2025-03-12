@@ -20,6 +20,7 @@
         "ext": "js, txt, json"
     },
     "scripts": {
+        "end": "nodemon ./apps/EndatoApp/app.js --",
         "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/app.js"
     },
@@ -27,8 +28,11 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
+        "ajv": "^8.17.1",
         "axios": "^1.8.1",
+        "clipboardy": "^4.0.0",
         "config": "^3.3.12",
+        "fuse.js": "^7.1.0",
         "jquery": "^3.7.1",
         "jsdom": "^26.0.0",
         "lodash": "^4.17.21",

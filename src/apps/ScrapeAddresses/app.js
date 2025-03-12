@@ -2,9 +2,11 @@ import { uniq, compact } from 'lodash-es'
 import config from 'config'
 import fs from 'fs'
 import process from 'process'
+import clipboard from 'clipboardy'
 
-import { lm, le, setupIOTextFiles } from '../../utils/lib.js'
-import countyScraperMap from '../../addressScraperCountyPlugins/index.js'
+import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
+import { pickBestCountyAndAddresses } from './lib.js'
+import countyScraperMap from './countyPlugins/index.js'
 
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
@@ -37,28 +39,19 @@ function parseInput(inputContent) {
 
 function writeResultMap(
     filePath,
-    nameSearchResultMapByCounty,
-    { format = 'excel' }
+    searchresultMapByName,
+    { format = 'excel', clipboardWrite = false }
 ) {
-    const jsonOutput = JSON.stringify(nameSearchResultMapByCounty)
+    const jsonOutput = JSON.stringify(searchresultMapByName)
 
-    let outputList = []
-    for (const countyName in nameSearchResultMapByCounty) {
-        let countyOutput = ''
-        const searchResultMap = nameSearchResultMapByCounty[countyName]
-        countyOutput += `${countyName}\n`
-
-        for (const fullName in searchResultMap) {
-            const searchResult = searchResultMap[fullName]
-            countyOutput += `${fullName}\t`
-            countyOutput += `${searchResult.addressList
-                .map(({ street, city }) => `${street}, ${city}`)
-                .join(' | ')}\t`
-        }
-
-        outputList.push(countyOutput)
+    let excelOutput = ''
+    for (const fullName in searchresultMapByName) {
+        const searchResult = searchresultMapByName[fullName]
+        excelOutput += `${fullName}\t`
+        excelOutput += `${searchResult.addressList
+            .map(({ street, city }) => `${street}, ${city}`)
+            .join(' | ')}\t`
     }
-    const excelOutput = outputList.join('\n\n')
 
     let output = ''
     switch (format) {
@@ -66,27 +59,18 @@ function writeResultMap(
             output = jsonOutput
             break
         case 'both':
-            output = `${jsonOutput}\n\n${excelOutput}`
+            output = `${jsonOutput}\t${excelOutput}`
             break
         default:
             output = excelOutput
     }
 
-    fs.writeFileSync(filePath, output)
-}
-
-function printCountyScores(nameSearchResultMapByCounty) {
-    lm('--------SCORES--------')
-    for (const countyName in nameSearchResultMapByCounty) {
-        let score = 0
-        const searchResultMap = nameSearchResultMapByCounty[countyName]
-        for (const fullName in searchResultMap) {
-            const searchResult = searchResultMap[fullName]
-            score += searchResult.addressList.length ? 1 : 0
-        }
-        lm(`${countyName}:\t${score}`)
+    if (clipboardWrite) {
+        lm('writing to clipboard...')
+        clipboard.writeSync(output)
     }
-    lm('----------------------')
+
+    fs.writeFileSync(filePath, output)
 }
 
 function readFullNameList(filePath) {
@@ -110,6 +94,7 @@ function readFullNameList(filePath) {
 async function run() {
     const argList = process.argv.slice(2) // First two args are the node path & this script's path
     const formattingArg = argList[0]
+    const cliparg = argList[1]
 
     const fullNameList = readFullNameList(inputFilePath)
     if (!fullNameList.length) {
@@ -117,24 +102,30 @@ async function run() {
         lm('Exiting...')
         return
     }
-    const nameSearchResultMapByCounty = {}
+    const nameSearchresultMapByCounty = {}
 
     for (const countyName in countyScraperMap) {
         lm(`--------${countyName}--------`)
         const searcher = countyScraperMap[countyName]
-        nameSearchResultMapByCounty[countyName] = {}
+        nameSearchresultMapByCounty[countyName] = {}
 
         for (const fullName of fullNameList) {
-            nameSearchResultMapByCounty[countyName][fullName] = await searcher(
+            nameSearchresultMapByCounty[countyName][fullName] = await searcher(
                 fullName
             )
         }
     }
 
-    printCountyScores(nameSearchResultMapByCounty)
+    lm('---------COUNTY SCORES:-------')
+    const searchresultMapByName = pickBestCountyAndAddresses(
+        nameSearchresultMapByCounty
+    )
+    lm('------------------------------')
+
     lm('writing output to file...')
-    writeResultMap(outputFilePath, nameSearchResultMapByCounty, {
+    writeResultMap(outputFilePath, searchresultMapByName, {
         format: formattingArg,
+        clipboardWrite: cliparg === 'clipboard',
     })
     lm('done!')
 }

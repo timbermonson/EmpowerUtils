@@ -6,8 +6,10 @@ import {
     getWebpage,
     nameCommaReverse,
     SearchStatus,
-} from '../utils/lib.js'
+} from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
+
+// Search page: https://www.utahcounty.gov/landrecords/NameSearchForm.asp
 
 function getUniqIdWebpageFactory(id) {
     const baseUrl = 'https://www.utahcounty.gov/landrecords/property.asp'

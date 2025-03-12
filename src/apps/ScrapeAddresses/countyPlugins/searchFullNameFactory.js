@@ -1,4 +1,4 @@
-import { SearchStatus, lm } from '../utils/lib.js'
+import { SearchStatus, lm } from '../../../utils/lib.js'
 
 export default function searchFullNameFactory({
     getFullNameWebpageFactory,
@@ -8,7 +8,7 @@ export default function searchFullNameFactory({
     parseResultPageAddress,
 }) {
     async function searchUniqId(id) {
-        lm(`Getting address for unique identifier ${id}...`)
+        lm(`\tGetting address for unique identifier ${id}...`)
         const getUniqIdWebpage = getUniqIdWebpageFactory(id)
         let status = ''
         let addressList = []
@@ -20,19 +20,19 @@ export default function searchFullNameFactory({
             status = parseSearchStatus(resp)
             switch (status) {
                 case SearchStatus.FOUND_RESULTPAGE:
-                    lm('Found!')
+                    lm('\t\tFound!')
                     addressList = [parseResultPageAddress(resp)]
                     break
                 case SearchStatus.FOUND_MULTIRESULTTABLE:
-                    lm('Found Mulitple! Skipping...')
+                    lm('\t\tFound Mulitple! Skipping...')
                     addressList = []
                     break
                 case SearchStatus.NONE:
-                    lm('No results.')
+                    lm('\t\tNo results.')
                     addressList = []
                     break
                 case SearchStatus.ERROR:
-                    lm('Search Failed!')
+                    lm('\t\tSearch Failed!')
                     addressList = []
                     break
                 default:
@@ -60,7 +60,7 @@ export default function searchFullNameFactory({
 
             switch (status) {
                 case SearchStatus.FOUND_RESULTPAGE:
-                    lm('Found!')
+                    lm('\tFound!')
                     addressList = [parseResultPageAddress(resp)]
                     break
                 case SearchStatus.FOUND_MULTIRESULTTABLE:
@@ -78,11 +78,11 @@ export default function searchFullNameFactory({
                     }
                     break
                 case SearchStatus.NONE:
-                    lm('No results.')
+                    lm('\tNo results.')
                     addressList = []
                     break
                 case SearchStatus.ERROR:
-                    lm('Search Failed!')
+                    lm('\tSearch Failed!')
                     addressList = []
                     break
                 default:
