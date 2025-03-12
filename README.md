@@ -46,6 +46,14 @@ A note is appended if the person's searched/latest addr differ.
 
 To avoid wasting API requests, each one prompts for confirmation.
 
+### Execution
+
+- Set cwd: `cd ./src`
+- In `src/ioFiles`, create an `input.txt` & paste one `json` output of Address Scraper
+- Run app with `npm run end`
+- Output will appear in `src/ioFiles/output.txt`
+- Pasting new `json`s into `input.txt` will automatically trigger the app to run again.
+
 # Address Scraper
 
 **This app**:
