@@ -30,11 +30,11 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
   
 - _Does:_ A property search for every person in each (supported) county, then intelligently narrows results to 1 county with 1 result per-person.
   
-- _Outputs:_ Each person's name and address, formatted to paste into Excel. 
+- _Outputs:_ Each person's name and address, formatted for paste into Excel. 
 
 **Example Screenshot**
-![image](https://github.com/user-attachments/assets/9b96cd3c-7747-40da-9523-0a4993c91c96)
 
+![image](https://github.com/user-attachments/assets/9b96cd3c-7747-40da-9523-0a4993c91c96)
 
 
 ### Input Format:
@@ -71,6 +71,7 @@ This app is designed to help with copying business principals from Utah's busine
 - _Outputs:_ The list of business principals, formatted as above & with titles shortened. (into `src/ioFiles/output.txt`)
 
 **Example Screenshots:**
+
 ![image](https://github.com/user-attachments/assets/5be0f8c1-d24e-4250-a471-e93de877215c)
 ![image](https://github.com/user-attachments/assets/b57b57bb-3e9b-4bcd-9f14-0fba94ce968b)
 
