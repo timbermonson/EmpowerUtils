@@ -5,10 +5,11 @@ import config from 'config'
 import Fuse from 'fuse.js'
 
 import {
+    awaitConsoleInput,
+    getFuzzyCityMatch,
     lm,
     lo,
-    getFuzzyCityMatch,
-    awaitConsoleInput,
+    prepAddressSearchTerm,
 } from '../../utils/lib.js'
 
 const apiKeyName = config.get('endato.profileKeyName')
@@ -152,12 +153,16 @@ async function apiContactEnrichCall(body) {
     }
 }
 
-function hasAddressFuzzyMatch(address, searchList) {
+function getFuzzyAddressMatch(
+    address,
+    searchList,
+    { streetThreshold, cityThreshold } = {}
+) {
     const { city: cityRaw, street } = address
 
     const city = getFuzzyCityMatch(cityRaw)
 
-    const fuseOptions = {
+    const streetFuseOptions = {
         isCaseSensitive: false,
         includeScore: true,
         ignoreDiacritics: true,
@@ -166,7 +171,7 @@ function hasAddressFuzzyMatch(address, searchList) {
         findAllMatches: true,
         minMatchCharLength: 3,
         // location: 0,
-        threshold: 0.2,
+        threshold: streetThreshold || 0.6,
         // distance: 100,
         // useExtendedSearch: false,
         ignoreLocation: true,
@@ -174,13 +179,24 @@ function hasAddressFuzzyMatch(address, searchList) {
         // fieldNormWeight: 1,
         keys: ['city', 'street'],
     }
-    const fuse = new Fuse(searchList, fuseOptions)
+    const cityFuseOptions = cloneDeep(streetFuseOptions)
+    cityFuseOptions.threshold = cityThreshold || 0.6
 
-    const streetResult = fuse.search(`${street}`)
-    const cityResult = fuse.search(`${city}`)
+    const streetFuse = new Fuse(searchList, streetFuseOptions)
+    const cityFuse = new Fuse(searchList, cityFuseOptions)
+
+    const streetResult = streetFuse.search(
+        prepAddressSearchTerm(street, {
+            removeStreetNum: false,
+            removeSingleLetters: false,
+        })
+    )
+    const cityResult = cityFuse.search(
+        prepAddressSearchTerm(city.replace(/\d+\s*$/, ''))
+    )
 
     if (streetResult.length && cityResult.length) {
-        return true
+        return streetResult[0].item
     }
     return false
 }
@@ -204,6 +220,26 @@ async function getConfirmation(query) {
     if (inp !== 'y' && inp !== 'yes') throw new Error('Confirmation Refused!')
 }
 
+function stringifyApiAddress(apiAddress) {
+    const unitNum = apiAddress.unit ? `#${apiAddress.unit}` : ''
+    const output =
+        `${apiAddress.street} ${unitNum}, ${apiAddress.city}, ${apiAddress.state} ${apiAddress.zip}`
+            .trim()
+            .replaceAll(' ,', ',')
+            .replaceAll(/\s+/g, ' ')
+
+    return output
+}
+
+function stringifyPersonAddress(apiAddress) {
+    const output = `${apiAddress.street}, ${apiAddress.city}`
+        .trim()
+        .replaceAll(' ,', ',')
+        .replaceAll(/\s+/g, ' ')
+
+    return output
+}
+
 async function getEnrichedContact(person, simulatedResponse = false) {
     const personAddress = person.addressList[0]
     const apiSearchBody = convertToApiSearchBody(person)
@@ -211,6 +247,7 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     lm('-------------------------------')
     lo(apiSearchBody)
     lm('-------------------------------')
+    if (simulatedResponse) lm('USING SIMULATED RESPONSE')
     await getConfirmation(
         'Does the above body look correct for an API search?\n'
     )
@@ -227,7 +264,11 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     apiAssertResponseSchema(response)
 
     const apiPerson = response.data.person
-    if (!hasAddressFuzzyMatch(personAddress, apiPerson.addresses)) {
+    const apiFuzzyPrevAddr = getFuzzyAddressMatch(
+        personAddress,
+        apiPerson.addresses
+    )
+    if (!apiFuzzyPrevAddr) {
         throw new Error('Endato match did not have a fuzzy-matching address!')
     }
 
@@ -242,15 +283,17 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     }
 
     const latestAddr = apiGetLastReported(apiPerson.addresses)
-    enrichedContact.address =
-        `${latestAddr.street} ${latestAddr.unit}, ${latestAddr.city}, ${latestAddr.state} ${latestAddr.zip}`
-            .trim()
-            .replaceAll(' ,', ',')
-            .replaceAll(/\s+/g, ' ')
+    enrichedContact.address = stringifyApiAddress(latestAddr)
 
-    if (!hasAddressFuzzyMatch(personAddress, [latestAddr])) {
+    if (
+        !getFuzzyAddressMatch(personAddress, [latestAddr], {
+            streetThreshold: 0.1,
+        })
+    ) {
         enrichedContact.noteList.push(
-            "Prev. addr matched parcel record lookup, but this most-recent addr doesn't"
+            `Prev. addr matched parcel record lookup, but this most-recent addr doesn't. Prev addr ${stringifyPersonAddress(
+                personAddress
+            )}`
         )
     }
 

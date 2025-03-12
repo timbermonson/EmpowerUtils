@@ -14,19 +14,47 @@ const { JSDOM } = jsdom
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
 
+function prepAddressSearchTerm(
+    str,
+    { removeStreetNum = true, removeSingleLetters = true } = {
+        removeStreetNum: true,
+        removeSingleLetters: true,
+    }
+) {
+    let output = str
+        .toLowerCase()
+        .split('#')[0] // remove appt numbers
+        .replaceAll(/[^A-ZA-z0-9\s]/g, '') // remove anything that isn't letters, numbers, or spaces
+        .trim()
+        .replaceAll(/\s+/g, ' ') // combine spaces
+        .trim()
+        .replace(/^(north|south|east|west)\s+/, '') // remove leftover direction from beginning of street address
+
+    if (removeSingleLetters) {
+        output = output.replaceAll(/(^|(?<=\s))\w(?=\s)/g, '') // remove any single letter bordered by spaces/starts
+    }
+    if (removeStreetNum) {
+        output = output.replace(/^\s*\d+\W/, '') // remove street number
+    }
+
+    return output
+}
+
 async function awaitConsoleInput(query) {
     // Credit for this goes to https://stackoverflow.com/a/50890409
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,
+        terminal: false,
     })
 
-    return await new Promise((resolve) =>
-        rl.question(query, (ans) => {
-            rl.close()
-            resolve(ans)
-        })
-    )
+    const answer = await new Promise((resolve) => {
+        rl.question(query, resolve)
+    })
+
+    rl.close()
+
+    return answer
 }
 
 function importJSON(filePath) {
@@ -54,8 +82,13 @@ function getFuzzyCityMatch(cityName) {
         // fieldNormWeight: 1,
     }
 
+    let cityNameNormalized = prepAddressSearchTerm(
+        cityName.replace(/\d+\s*$/, ''),
+        { removeStreetNum: false }
+    )
+
     const fuse = new Fuse(cityNameList, fuseOptions)
-    const fuseResult = reverse(sortBy(fuse.search(cityName), 'score'))
+    const fuseResult = sortBy(fuse.search(cityNameNormalized), 'score')
 
     const closestMatch = fuseResult[0]?.item || ''
 
@@ -137,6 +170,14 @@ async function getWebpage(
     return response
 }
 
+function normalizeCardinalDirection(addr) {
+    return addr
+        .replace(/west/i, 'w')
+        .replace(/east/i, 'e')
+        .replace(/north/i, 'n')
+        .replace(/south/i, 's')
+}
+
 export {
     awaitConsoleInput,
     encodeUrl,
@@ -147,6 +188,8 @@ export {
     lm,
     lo,
     nameCommaReverse,
+    normalizeCardinalDirection,
+    prepAddressSearchTerm,
     SearchStatus,
     setupIOTextFiles,
 }

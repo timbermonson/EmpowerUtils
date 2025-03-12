@@ -1,27 +1,14 @@
 import { uniq, max, compact } from 'lodash-es'
 import Fuse from 'fuse.js'
 
-import { lm, lo } from '../../utils/lib.js'
+import { lm, lo, prepAddressSearchTerm } from '../../utils/lib.js'
 
 function pickRandom(list) {
     return list[Math.floor(Math.random() * list.length)]
 }
 
-function prepStreetSearchTerm(str) {
-    return str
-        .toLowerCase()
-        .split('#')[0] // remove appt numbers
-        .replaceAll(/[^A-ZA-z0-9\s]/g, '') // remove anything that isn't letters, numbers, or spaces
-        .replaceAll(/(^|(?<=\s))\w(?=\s)/g, '') // remove any single letter bordered by spaces/starts
-        .trim()
-        .replace(/^\s*\d+\W/, '')
-        .replaceAll(/\s+/g, ' ') // combine spaces
-        .trim()
-        .replace(/^(north|south|east|west)\s+/, '') // remove leftover direction from beginning of street address
-}
-
 function prepStreetSearchList(strList) {
-    return strList.map((str) => prepStreetSearchTerm(str))
+    return strList.map((str) => prepAddressSearchTerm(str))
 }
 
 function fuzzyStreetCompare(unpreppedStreet1, unpreppedStreet2) {
@@ -70,7 +57,7 @@ function fuzzyStreetSearch(searchList, searchTerm) {
 
     const fuse = new Fuse(prepStreetSearchList(searchList), fuseOptions)
     const fuseResult = fuse
-        .search(prepStreetSearchTerm(searchTerm))
+        .search(prepAddressSearchTerm(searchTerm))
         .map(({ item }) => item)
 
     return fuseResult
