@@ -3,6 +3,13 @@ import config from 'config'
 import fs from 'fs'
 import process from 'process'
 import clipboard from 'clipboardy'
+import commandLineArgs from 'command-line-args'
+
+const argDefinitions = [
+    { name: 'output', alias: 'o', type: String, defaultOption: 'excel' },
+    { name: 'clipboard', alias: 'c', type: Boolean, defaultOption: false },
+    { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
+]
 
 import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
 import { pickBestCountyAndAddresses } from './lib.js'
@@ -13,11 +20,22 @@ const outputFilePath = config.get('ioFiles.outputPath')
 
 setupIOTextFiles()
 
-function readFileInput(filePath) {
-    return fs.readFileSync(filePath, 'utf8')
+function readFileInput() {
+    return fs.readFileSync(inputFilePath, 'utf8')
 }
 
 function parseInput(inputContent) {
+    return parseInputLine(inputContent)
+}
+
+function parseInputMultiple(inputContent) {
+    const inputSplit = compact(
+        inputContent.split('\n').map((line) => line.trim())
+    ).map((line) => parseInputLine(line))
+    return inputSplit
+}
+
+function parseInputLine(inputContent) {
     // Trim & sanitize input
     let input = inputContent
         .trim()
@@ -37,11 +55,7 @@ function parseInput(inputContent) {
     return compact(uniq(fullNameList))
 }
 
-function writeResultMap(
-    filePath,
-    searchresultMapByName,
-    { format = 'excel', clipboardWrite = false }
-) {
+function getOutputText(searchresultMapByName, { format = 'excel' }) {
     const jsonOutput = JSON.stringify(searchresultMapByName)
 
     let excelOutput = ''
@@ -65,12 +79,7 @@ function writeResultMap(
             output = excelOutput
     }
 
-    if (clipboardWrite) {
-        lm('writing to clipboard...')
-        clipboard.writeSync(output)
-    }
-
-    fs.writeFileSync(filePath, output)
+    return output
 }
 
 function readFullNameList(filePath) {
@@ -91,17 +100,7 @@ function readFullNameList(filePath) {
     return fullNameList
 }
 
-async function run() {
-    const argList = process.argv.slice(2) // First two args are the node path & this script's path
-    const formattingArg = argList[0]
-    const cliparg = argList[1]
-
-    const fullNameList = readFullNameList(inputFilePath)
-    if (!fullNameList.length) {
-        lm('Input list empty!')
-        lm('Exiting...')
-        return
-    }
+async function getSearchresultMapByName(nameList) {
     const nameSearchresultMapByCounty = {}
 
     for (const countyName in countyScraperMap) {
@@ -109,7 +108,7 @@ async function run() {
         const searcher = countyScraperMap[countyName]
         nameSearchresultMapByCounty[countyName] = {}
 
-        for (const fullName of fullNameList) {
+        for (const fullName of nameList) {
             nameSearchresultMapByCounty[countyName][fullName] = await searcher(
                 fullName
             )
@@ -122,11 +121,39 @@ async function run() {
     )
     lm('------------------------------')
 
-    lm('writing output to file...')
-    writeResultMap(outputFilePath, searchresultMapByName, {
-        format: formattingArg,
-        clipboardWrite: cliparg === 'clipboard',
-    })
+    return searchresultMapByName
+}
+
+async function run() {
+    const parsedArgs = commandLineArgs(argDefinitions)
+    const {
+        output: argsOutput,
+        clipboard: argsClipboard,
+        multiple: argsMultiple,
+    } = parsedArgs
+    lo(parsedArgs)
+
+    const inputContent = readFileInput()
+    let nameListList = !!argsMultiple
+        ? parseInputMultiple(inputContent)
+        : [parseInputLine(inputContent)]
+
+    fs.writeFileSync(outputFilePath, '')
+    const outputList = []
+    for (const nameList of nameListList) {
+        lm(`NEW NAMELIST: ${nameList}`)
+        const searchresultMapByName = await getSearchresultMapByName(nameList)
+
+        lm('Appending output to file...')
+        let output =
+            getOutputText(searchresultMapByName, { format: argsOutput }) + '\n'
+        fs.appendFileSync(outputFilePath, output)
+    }
+
+    if (argsClipboard) {
+        lm('writing outputs to clipboard...')
+        clipboard.writeSync(output)
+    }
     lm('done!')
 }
 
