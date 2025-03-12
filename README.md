@@ -30,7 +30,6 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 - _Does:_ Requests to the Endato "Contact Enrich" API, using names/addresses to lookup contact info.
 
 - _Outputs:_ Each person's name, latest address, latest phone #, and emails-- formatted for paste into Excel.
-- A note is also appended, explaining when their searched/latest addr differ.
 
 ### Input Format
 
@@ -42,6 +41,7 @@ The console output is not human-readable for now, pending further work & dev sta
 ![image](https://github.com/user-attachments/assets/0de5484b-27d1-41ab-89fc-1f7a65d6d6c8)
 
 Excel paste:
+A note is appended if the person's searched/latest addr differ.
 ![image](https://github.com/user-attachments/assets/4a71a58d-2356-44b4-b5fc-569f11f073e6)
 
 To avoid wasting API requests, each one prompts for confirmation.
