@@ -72,10 +72,10 @@ function getFuzzyCityMatch(cityName) {
         findAllMatches: true,
         minMatchCharLength: 3,
         // location: 0,
-        threshold: 0.3,
+        threshold: 0.4,
         // distance: 100,
         // useExtendedSearch: false,
-        ignoreLocation: true,
+        // ignoreLocation: true,
         ignoreFieldNorm: false,
         // fieldNormWeight: 1,
     }
@@ -84,11 +84,22 @@ function getFuzzyCityMatch(cityName) {
         cityName.replace(/\d+\s*$/, ''),
         { removeStreetNum: false }
     )
+    if (cityNameNormalized.match(/slc/))
+        cityNameNormalized = cityNameNormalized.replace('slc', 'salt lake city')
+    if (cityNameNormalized.match(/wvc/))
+        cityNameNormalized = cityNameNormalized.replace(
+            'wvc',
+            'west valley city'
+        )
 
     const fuse = new Fuse(cityNameList, fuseOptions)
     const fuseResult = sortBy(fuse.search(cityNameNormalized), 'score')
 
     const closestMatch = fuseResult[0]?.item || ''
+    if (!closestMatch.length) {
+        lm(`AAAAAAAAAAAAAAAAAAAAAAA`)
+        lm(cityName)
+    }
 
     return closestMatch
 }

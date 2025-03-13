@@ -53,7 +53,7 @@ function excelFormatEnrichedContactList(enrichedContactList) {
         outputList.push(
             `${firstName}\t${lastName}\t${address}\t${phone}\t${email}\t\t${noteList.join(
                 ', '
-            )}`
+            )} `
         )
     }
     return outputList.join('\n')
@@ -88,7 +88,7 @@ async function doFilterRequestListPrompt(personList) {
     return filteredList
 }
 
-const simResponse = {}
+// const simResponse = {}
 
 async function run() {
     const inputMap = getInputJson()
@@ -100,10 +100,7 @@ async function run() {
     const enrichedContactList = []
     for (const person of personListFiltered) {
         try {
-            const enrichedContact = await getEnrichedContact(
-                person,
-                simResponse
-            )
+            const enrichedContact = await getEnrichedContact(person)
             enrichedContactList.push(enrichedContact)
         } catch (e) {
             const errorOutput = `Failed to enrich contact for ${person.fullName}!\n\tError: ${e.message}`

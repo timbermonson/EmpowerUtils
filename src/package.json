@@ -17,6 +17,7 @@
             "./ioFiles/logs.txt",
             "./ioFiles/output.txt"
         ],
+        "restartable": false,
         "verbose": false,
         "ext": "js, txt, json"
     },

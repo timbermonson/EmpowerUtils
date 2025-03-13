@@ -17,7 +17,7 @@ const apiKeyPassword = config.get('endato.profileKeyPassword')
 
 const ajv = new Ajv()
 
-const inputPersonMapKeyRegex = '^\\w[\\w\\s]+\\w$'
+const inputPersonMapKeyRegex = '^\\w[-\\w\\s]+\\w$'
 const inputPersonMapSchema = {
     type: 'object',
     patternProperties: {
@@ -238,12 +238,16 @@ function stringifyPersonAddress(apiAddress) {
 }
 
 function apiAssertHasMatches(response) {
-    if (
-        response?.data?.pagination?.totalResults === 0 &&
-        response?.data?.pagination?.totalPages === 0
-    ) {
+    if (apiHasNoMatches(response)) {
         throw new Error('Endato did not have any matches!')
     }
+}
+
+function apiHasNoMatches(response) {
+    return (
+        response?.data?.pagination?.totalResults === 0 &&
+        response?.data?.pagination?.totalPages === 0
+    )
 }
 
 function apiAssertHasFuzzyMatchAddress(personAddressOld, apiPerson) {
@@ -295,8 +299,19 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     lm('-------------------------------------------')
     if (simulatedResponse) lm('USING SIMULATED RESPONSE')
 
-    const response =
+    let response =
         simulatedResponse || (await apiContactEnrichCall(apiSearchBody))
+
+    if (apiHasNoMatches(response)) {
+        // lm('Got no results, trying again with no street address...')
+        // apiSearchBody.Address.addressLine1 = ''
+        // lm('-------------[Searching]:------------------')
+        // lo(apiSearchBody)
+        // lm('-------------------------------------------')
+        // if (simulatedResponse) lm('USING SIMULATED RESPONSE')
+        // response =
+        //     simulatedResponse || (await apiContactEnrichCall(apiSearchBody))
+    }
 
     lm('[RESPONSE DATA]')
     lo(response.data)
