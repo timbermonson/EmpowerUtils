@@ -139,7 +139,7 @@ async function run() {
         : [parseInputLine(inputContent)]
 
     fs.writeFileSync(outputFilePath, '')
-    const outputList = []
+
     for (const nameList of nameListList) {
         lm(`NEW NAMELIST: ${nameList}`)
         const searchresultMapByName = await getSearchresultMapByName(nameList)
@@ -147,12 +147,13 @@ async function run() {
         lm('Appending output to file...')
         let output =
             getOutputText(searchresultMapByName, { format: argsOutput }) + '\n'
+
         fs.appendFileSync(outputFilePath, output)
     }
 
     if (argsClipboard) {
         lm('writing outputs to clipboard...')
-        clipboard.writeSync(output)
+        clipboard.writeSync(fs.readFileSync(inputFilePath, 'utf8'))
     }
     lm('done!')
 }
