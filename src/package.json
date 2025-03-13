@@ -14,13 +14,14 @@
             "./"
         ],
         "ignore": [
-            "output.txt"
+            "./ioFiles/logs.txt",
+            "./ioFiles/output.txt"
         ],
         "verbose": false,
         "ext": "js, txt, json"
     },
     "scripts": {
-        "end": "nodemon ./apps/EndatoApp/app.js --",
+        "end": "nodemon ./apps/EndatoApp/app.js --no-stdin",
         "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
         "addrAll": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c",
         "addrAllMultiple": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c -m",
@@ -36,10 +37,12 @@
         "command-line-args": "^6.0.1",
         "config": "^3.3.12",
         "fuse.js": "^7.1.0",
+        "inquirer": "^12.4.3",
         "jquery": "^3.7.1",
         "jsdom": "^26.0.0",
         "lodash": "^4.17.21",
         "lodash-es": "^4.17.21",
+        "moment": "^2.30.1",
         "qs": "^6.14.0"
     }
 }

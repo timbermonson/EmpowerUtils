@@ -1,11 +1,10 @@
-import { uniq, max, compact, cloneDeep, sortBy } from 'lodash-es'
+import { compact, cloneDeep, sortBy } from 'lodash-es'
 import Ajv from 'ajv'
 import axios from 'axios'
 import config from 'config'
 import Fuse from 'fuse.js'
 
 import {
-    awaitConsoleInput,
     getFuzzyCityMatch,
     lm,
     lo,
@@ -17,6 +16,7 @@ const apiKeyName = config.get('endato.profileKeyName')
 const apiKeyPassword = config.get('endato.profileKeyPassword')
 
 const ajv = new Ajv()
+
 const inputPersonMapKeyRegex = '^\\w[\\w\\s]+\\w$'
 const inputPersonMapSchema = {
     type: 'object',
@@ -217,12 +217,6 @@ function apiGetLastReported(list) {
     return listSorted[listSorted.length - 1]
 }
 
-async function getConfirmation(query) {
-    const inpRaw = await awaitConsoleInput(query)
-    const inp = (inpRaw || '').trim().toLowerCase()
-    if (inp !== 'y' && inp !== 'yes') throw new Error('Confirmation Refused!')
-}
-
 function stringifyApiAddress(apiAddress) {
     const unitNum = apiAddress.unit ? `#${apiAddress.unit}` : ''
     const output =
@@ -243,38 +237,27 @@ function stringifyPersonAddress(apiAddress) {
     return output
 }
 
-async function getEnrichedContact(person, simulatedResponse = false) {
-    const personAddress = person.addressList[0]
-    const apiSearchBody = convertToApiSearchBody(person)
-
-    lm('-------------------------------')
-    lo(apiSearchBody)
-    lm('-------------------------------')
-    if (simulatedResponse) lm('USING SIMULATED RESPONSE')
-    await getConfirmation(
-        'Does the above body look correct for an API search?\n'
-    )
-
-    const response =
-        simulatedResponse || (await apiContactEnrichCall(apiSearchBody))
-    lo(response.data)
+function apiAssertHasMatches(response) {
     if (
         response?.data?.pagination?.totalResults === 0 &&
         response?.data?.pagination?.totalPages === 0
     ) {
         throw new Error('Endato did not have any matches!')
     }
-    apiAssertResponseSchema(response)
+}
 
-    const apiPerson = response.data.person
+function apiAssertHasFuzzyMatchAddress(personAddressOld, apiPerson) {
     const apiFuzzyPrevAddr = getFuzzyAddressMatch(
-        personAddress,
+        personAddressOld,
         apiPerson.addresses
     )
+
     if (!apiFuzzyPrevAddr) {
         throw new Error('Endato match did not have a fuzzy-matching address!')
     }
+}
 
+function formatEnrichedContact(personAddressOld, apiPerson) {
     const enrichedContact = {
         firstName: apiPerson.name.firstName,
         lastName:
@@ -289,13 +272,13 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     enrichedContact.address = stringifyApiAddress(latestAddr)
 
     if (
-        !getFuzzyAddressMatch(personAddress, [latestAddr], {
+        !getFuzzyAddressMatch(personAddressOld, [latestAddr], {
             streetThreshold: 0.1,
         })
     ) {
         enrichedContact.noteList.push(
             `Prev. addr matched parcel record lookup, but this most-recent addr doesn't. Prev addr ${stringifyPersonAddress(
-                personAddress
+                personAddressOld
             )}`
         )
     }
@@ -303,4 +286,31 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     return enrichedContact
 }
 
-export { assertPersonMapSchema, getEnrichedContact }
+async function getEnrichedContact(person, simulatedResponse = false) {
+    const personAddressOld = person.addressList[0]
+    const apiSearchBody = convertToApiSearchBody(person)
+
+    lm('-------------[Searching]:------------------')
+    lo(apiSearchBody)
+    lm('-------------------------------------------')
+    if (simulatedResponse) lm('USING SIMULATED RESPONSE')
+
+    const response =
+        simulatedResponse || (await apiContactEnrichCall(apiSearchBody))
+
+    lm('[RESPONSE DATA]')
+    lo(response.data)
+
+    apiAssertHasMatches(response)
+    apiAssertResponseSchema(response)
+
+    const apiPerson = response.data.person
+
+    apiAssertHasFuzzyMatchAddress(personAddressOld, apiPerson)
+
+    const enrichedContact = formatEnrichedContact(personAddressOld, apiPerson)
+
+    return enrichedContact
+}
+
+export { assertPersonMapSchema, getEnrichedContact, convertToApiSearchBody }

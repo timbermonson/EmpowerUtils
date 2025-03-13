@@ -1,7 +1,8 @@
 {
     "ioFiles": {
         "inputPath": "./ioFiles/input.txt",
-        "outputPath": "./ioFiles/output.txt"
+        "outputPath": "./ioFiles/output.txt",
+        "logPath": "./ioFiles/logs.txt"
     },
     "endato": {
         "name": "",

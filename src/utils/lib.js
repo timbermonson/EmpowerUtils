@@ -5,14 +5,29 @@ import fs from 'fs'
 import Fuse from 'fuse.js'
 import jQuery from 'jquery'
 import jsdom from 'jsdom'
-import readline from 'readline'
-
-const cityCountyMap = importJSON('./utils/cityCountyMap.json')
+import moment from 'moment'
 
 const { JSDOM } = jsdom
 
+const cityCountyMap = importJSON('./utils/cityCountyMap.json')
+
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
+const logFilePath = config.get('ioFiles.logPath')
+
+const logSettings = {
+    toFile: false,
+    toTerminal: true,
+}
+
+const logSep =
+    '------------------------------------------------------------------'
+
+function addLogFileStart() {
+    const timestamp = moment().format('HH:mm:ss - YYYY-MM-DD')
+
+    fs.appendFileSync(logFilePath, `\n\n♦[NEW APP START]♦\n${timestamp}\n\n`)
+}
 
 function prepAddressSearchTerm(
     str,
@@ -38,23 +53,6 @@ function prepAddressSearchTerm(
     }
 
     return output
-}
-
-async function awaitConsoleInput(query) {
-    // Credit for this goes to https://stackoverflow.com/a/50890409
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        terminal: false,
-    })
-
-    const answer = await new Promise((resolve) => {
-        rl.question(query, resolve)
-    })
-
-    rl.close()
-
-    return answer
 }
 
 function importJSON(filePath) {
@@ -126,11 +124,16 @@ function nameCommaReverse(fullName) {
 }
 
 function lo(inp) {
-    console.log(JSON.stringify(inp, null, 2))
+    lm(JSON.stringify(inp, null, 2))
 }
 
 function lm(inp) {
-    console.log(inp)
+    if (logSettings.toTerminal) {
+        console.log(inp)
+    }
+    if (logSettings.toFile) {
+        fs.appendFileSync(logFilePath, `${inp}\n`)
+    }
 }
 
 function le(error, message) {
@@ -179,7 +182,7 @@ function normalizeCardinalDirection(addr) {
 }
 
 export {
-    awaitConsoleInput,
+    addLogFileStart,
     encodeUrl,
     getFuzzyCityMatch,
     getJQWindow,
@@ -187,6 +190,8 @@ export {
     le,
     lm,
     lo,
+    logSettings,
+    logSep,
     nameCommaReverse,
     normalizeCardinalDirection,
     prepAddressSearchTerm,
