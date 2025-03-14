@@ -14,29 +14,6 @@ getInput()
     searchNextBusinessName()
 }
 
-searchNextBusinessName() {
-    clearSearch()
-    enterBusinessName(FirstBusiness)
-    Sleep 100
-    Send "{Enter 2}"
-
-    ind := waitForImages(["bizSearchNoResults.png", "bizResultsTable.png"], 200, 5000)
-
-    if (ind != 2) {
-        if (ind = 1) {
-            Sleep(500)
-            SetKeyDelay 100
-            SendEvent "{Tab}{Enter}"
-            waitForImages(["bizSearchContains.png"], 100)
-            Sleep 200
-            putCursorAtEnd()
-        }
-        return
-    }
-
-    Send "{Tab 3}"
-}
-
 ^2:: {
     returnFromSearchTable()
 }
@@ -89,6 +66,29 @@ searchNextBusinessName() {
     FileAppend(StrJoin(BusinessList, "`n"), inputPath)
     Sleep 100
     getInput()
+}
+
+searchNextBusinessName() {
+    clearSearch()
+    enterBusinessName(FirstBusiness)
+    Sleep 100
+    Send "{Enter 2}"
+
+    ind := waitForImages(["bizSearchNoResults.png", "bizResultsTable.png"], 200, 5000)
+
+    if (ind != 2) {
+        if (ind = 1) {
+            Sleep(500)
+            SetKeyDelay 100
+            SendEvent "{Tab}{Enter}"
+            waitForImages(["bizSearchContains.png"], 100)
+            Sleep 200
+            putCursorAtEnd()
+        }
+        return
+    }
+
+    Send "{Tab 3}"
 }
 
 getPrincipals() {
