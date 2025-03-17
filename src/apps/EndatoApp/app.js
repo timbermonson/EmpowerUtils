@@ -110,7 +110,8 @@ async function doFilterRequestListPrompt(personList) {
         .map((person) => toPromptOption(person))
 
     if (!choiceList?.length) {
-        throw new Error('No inputs with addresses!')
+        lm('No inputs with addresses!')
+        return []
     }
 
     const filteredList = await inquirerCheckbox({
