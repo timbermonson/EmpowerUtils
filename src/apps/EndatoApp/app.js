@@ -80,6 +80,10 @@ async function doFilterRequestListPrompt(personList) {
         .filter(({ addressList }) => !!addressList.length)
         .map((person) => toPromptOption(person))
 
+    if (!choiceList?.length) {
+        throw new Error('No inputs with addresses!')
+    }
+
     const filteredList = await inquirerCheckbox({
         message: `${logSep}\nAddresses to be used for the search are below.\nDeselect entries that appear incorrect.\n${logSep}\n`,
         choices: choiceList,

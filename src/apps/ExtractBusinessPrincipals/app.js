@@ -1,6 +1,13 @@
 import { uniqBy } from 'lodash-es'
 import config from 'config'
 import fs from 'fs'
+import commandLineArgs from 'command-line-args'
+
+import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
+
+const argDefinitions = [
+    { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
+]
 
 // TODO: convert to the util/lib.js > importJson (to satisfy prettier)
 import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
@@ -27,41 +34,109 @@ function capitalizeName(fullName) {
     return capitalizedName.trim()
 }
 
-// Read input data
-let inputData
-try {
-    inputData = await fs.readFileSync(inputFilePath, 'utf8')
-} catch (e) {
-    console.error(e.message)
-}
-if (!inputData) {
-    console.error('No data found.')
-}
+function run() {
+    const parsedArgs = commandLineArgs(argDefinitions)
+    const { multiple: argsMultiple } = parsedArgs
 
-// Trim & remove header line
-let inputByLines = inputData.trim().split('\n')
-if (inputByLines[0].toLowerCase().startsWith('title')) {
-    inputByLines.splice(0, 1)
-}
-
-// Extract first two cols, put into array of json objects
-let principalObjectList = []
-inputByLines.forEach((text, index) => {
-    let rowData = text.split('\t')
-    if (!rowData || rowData.length < 2) return
-
-    const principal = {
-        title: getReplacementTitle(rowData[0]),
-        name: capitalizeName(rowData[1]),
+    if (!argsMultiple) {
+        runSingle()
+    } else {
+        runMultipleAHKOutput()
     }
-    principalObjectList.push(principal)
-})
+}
 
-// Dedupe
-principalObjectList = uniqBy(principalObjectList, 'name')
+function runMultipleAHKOutput() {
+    lm('running ebp with multiple!')
+    fs.writeFileSync(outputFilePath, '')
 
-const boardMemberListString = principalObjectList
-    .map((principal) => `${principal.title} ${principal.name}`)
-    .join(', ')
+    let inputData = ''
+    try {
+        inputData = fs.readFileSync(inputFilePath, 'utf8')
+    } catch (e) {
+        console.error(e.message)
+    }
+    if (!inputData) {
+        console.error('No data found.')
+    }
+    let inputByLines = inputData.trim().split('\n')
 
-fs.writeFileSync(outputFilePath, boardMemberListString)
+    for (const line of inputByLines) {
+        const lineExpanded = line
+            .replaceAll('<tab>', '\t')
+            .replaceAll('<newline>', '\n')
+            .trim()
+
+        if (lineExpanded.trim().length === 0) {
+            fs.appendFileSync(outputFilePath, '\n')
+            continue
+        }
+
+        fs.appendFileSync(outputFilePath, `${getBoardMemberListString(lineExpanded.split('\n'))}\n`)
+    }
+}
+
+function runSingle() {
+    // Read input data
+    let inputData
+    try {
+        inputData = fs.readFileSync(inputFilePath, 'utf8')
+    } catch (e) {
+        console.error(e.message)
+    }
+    if (!inputData) {
+        console.error('No data found.')
+    }
+
+    // Trim & remove header line
+    let inputByLines = inputData.trim().split('\n')
+    if (inputByLines[0].toLowerCase().startsWith('title')) {
+        inputByLines.splice(0, 1)
+    }
+
+    // Extract first two cols, put into array of json objects
+    let principalObjectList = []
+    inputByLines.forEach((text, index) => {
+        let rowData = text.split('\t')
+        if (!rowData || rowData.length < 2) return
+
+        const principal = {
+            title: getReplacementTitle(rowData[0]),
+            name: capitalizeName(rowData[1]),
+        }
+        principalObjectList.push(principal)
+    })
+
+    // Dedupe
+    principalObjectList = uniqBy(principalObjectList, 'name')
+
+    const boardMemberListString = principalObjectList
+        .map((principal) => `${principal.title} ${principal.name}`)
+        .join(', ')
+
+    fs.writeFileSync(outputFilePath, boardMemberListString)
+}
+
+function getBoardMemberListString(inputWithTabsAndNewlines) {
+    let principalObjectList = []
+    inputWithTabsAndNewlines.forEach((text, index) => {
+        let rowData = text.split('\t')
+        if (!rowData || rowData.length < 2) return
+
+        const principal = {
+            title: getReplacementTitle(rowData[0]),
+            name: capitalizeName(rowData[1]),
+        }
+        principalObjectList.push(principal)
+    })
+
+    // Dedupe
+    principalObjectList = uniqBy(principalObjectList, 'name')
+
+    const boardMemberListString = principalObjectList
+        .map((principal) => `${principal.title} ${principal.name}`)
+        .join(', ')
+
+    return boardMemberListString
+}
+
+run()

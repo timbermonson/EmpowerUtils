@@ -29,9 +29,10 @@ function parseInput(inputContent) {
 }
 
 function parseInputMultiple(inputContent) {
-    const inputSplit = compact(
-        inputContent.split('\n').map((line) => line.trim())
-    ).map((line) => parseInputLine(line))
+    const inputSplit = inputContent
+        .split('\n')
+        .map((line) => line.trim())
+        .map((line) => parseInputLine(line))
     return inputSplit
 }
 

@@ -24,8 +24,9 @@
     "scripts": {
         "addr": "nodemon ./apps/ScrapeAddresses/app.js --no-stdin --",
         "addrAll": "nodemon ./apps/ScrapeAddresses/app.js --no-stdin -- -o both -c",
-        "addrAllMultiple": "nodemon ./apps/ScrapeAddresses/app.js --no-stdin -- -o both -c -m",
-        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/app.js",
+        "addrAllMult": "nodemon ./apps/ScrapeAddresses/app.js --no-stdin -- -o both -c -m",
+        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/app.js --no-stdin",
+        "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/app.js --no-stdin -- -m",
         "end": "nodemon ./apps/EndatoApp/app.js --no-stdin"
     },
     "author": "",

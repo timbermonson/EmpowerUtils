@@ -17,7 +17,7 @@ const apiKeyPassword = config.get('endato.profileKeyPassword')
 
 const ajv = new Ajv()
 
-const inputPersonMapKeyRegex = '^\\w[-\\w\\s]+\\w$'
+const inputPersonMapKeyRegex = "^\\w[-\\w\\s\\.']+[\\w\\.]$"
 const inputPersonMapSchema = {
     type: 'object',
     patternProperties: {

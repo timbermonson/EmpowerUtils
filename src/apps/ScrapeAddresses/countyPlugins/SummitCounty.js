@@ -122,13 +122,12 @@ function parseResultPageAddress(resp) {
         ?.join(' ')
 
     const cityQ = accountInfoQ?.find(
-        'td:nth-child(2) > table > tbody > tr:nth-child(2) > td'
+        'td:nth-child(1) > table > tbody > tr:nth-child(4) > td'
     )
     const city = cityQ
         ?.get(0)
-        ?.innerHTML.split('<br>')?.[1]
-        ?.split(', ')?.[0]
-        ?.toLowerCase()
+        ?.innerHTML.split('-')?.[1]
+        ?.split(/(?<=\s)\w(?=($|[,\s]))/)?.[0]
         ?.trim()
 
     const streetQ = accountInfoQ?.find(
