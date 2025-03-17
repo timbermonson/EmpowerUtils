@@ -74,7 +74,7 @@ searchNextBusinessName() {
     Sleep 100
     Send "{Enter 2}"
 
-    ind := waitForImages(["bizSearchNoResults.png", "bizResultsTable.png"], 200, 5000)
+    ind := waitForImages(["bizSearchNoResults.png", "bizResultsTable.png"], 200, 8000)
 
     if (ind != 2) {
         if (ind = 1) {
@@ -88,7 +88,8 @@ searchNextBusinessName() {
         return
     }
 
-    Send "{Tab 3}"
+    searchClickImage("bizResultsTable.png")
+    Send "{Tab 2}"
 }
 
 getPrincipals() {
@@ -200,18 +201,18 @@ returnFromRecord() {
     y := -1
     topY := -1
     firstButtons := ImageSearch(&x, &topY, 0, 0, 2000, 2000, "*n100 " . A_ScriptDir . "/images/" .
-        "bizRecordReturn.png")
+        "bizRecordReturnOtherButtons.png")
 
     exitButtons := ImageSearch(&x, &y, 0, topY + 5, 2000, 2000, "*n100 " . A_ScriptDir . "/images/" .
         "bizRecordReturn.png")
-    MouseMove x + 35, y - 10
+    MouseMove x + 35, y + 10
     MouseClick
 }
 
 returnFromSearchTable() {
     Send "{Ctrl down}{End}{Ctrl up}"
     Sleep(500)
-    searchClickImage("bizRecordReturn.png", 35, -10)
+    searchClickImage("bizSearchResultsReturn.png", 35, 10)
     waitForImages(["bizSearchContains.png"], 100, 10000)
     putCursorAtEnd()
 }
