@@ -1,9 +1,15 @@
 import config from 'config'
 import fs from 'fs'
-import { checkbox as inquirerCheckbox } from '@inquirer/prompts'
+import {
+    checkbox as inquirerCheckbox,
+    editor as inquirerEditor,
+    select as inquirerSelect,
+    confirm as inquirerConfirm,
+} from '@inquirer/prompts'
 
 import {
     addLogFileStart,
+    lo,
     lm,
     logSep,
     logSettings,
@@ -24,11 +30,34 @@ addLogFileStart()
 
 setupIOTextFiles()
 
-function getInputJson() {
-    const inputContent = fs.readFileSync(inputFilePath, 'utf-8')
+async function handleEmptyLine(inputList) {
+    if (
+        !(await inquirerConfirm({
+            message: 'Empty newline(s) detected. Trim off inputfile?',
+        }))
+    ) {
+        throw new Error('Empty line given as input!')
+    }
+
+    const newStartIndex = inputList.findIndex((n) => !!n?.trim()?.length)
+    if (newStartIndex < 1) {
+        throw new Error('Could not find next filled line!')
+    }
+
+    const outputContent = inputList.slice(newStartIndex).join('\n')
+    fs.writeFileSync(inputFilePath, outputContent)
+}
+
+async function getInputJson() {
+    const inputList = fs.readFileSync(inputFilePath, 'utf-8').split('\n')
+    const inputLine = inputList[0]
+    if (inputLine.trim() === '') {
+        await handleEmptyLine(inputList)
+        process.exit()
+    }
 
     try {
-        const inputJson = JSON.parse(inputContent)
+        const inputJson = JSON.parse(inputLine)
         return inputJson
     } catch (e) {
         lm('Could not parse input!')
@@ -92,17 +121,91 @@ async function doFilterRequestListPrompt(personList) {
     return filteredList
 }
 
+async function getEditedPersonList(personList) {
+    const newList = await inquirerEditor({
+        message: 'Make sure to save the editor before closing.',
+        waitForUseInput: false,
+        default: JSON.stringify(personList),
+        postfix: '.json',
+    })
+
+    return JSON.parse(newList)
+}
+
+async function promptGetRetryList(personListNoResults) {
+    if (!personListNoResults?.length) return []
+
+    const nameList = personListNoResults.map(({ fullName }) => fullName)
+    let messageString = `${logSep}\n`
+    messageString += 'The following names had not Endato results:\n'
+    messageString += `${JSON.stringify(nameList, null, 2)}\n`
+    messageString += `${logSep}\n`
+
+    const answer = await inquirerSelect({
+        message: messageString,
+        choices: [
+            {
+                value: 0,
+                name: 'Retry without street addresses',
+            },
+            {
+                value: 1,
+                name: 'Edit JSON manually',
+            },
+            {
+                value: 2,
+                name: 'Continue without edits/retries',
+            },
+        ],
+    })
+
+    switch (answer) {
+        case 0:
+            lm('Retrying failed searches without street addresses.')
+            return personListNoResults.map((person) => {
+                person.addressList[0].street = ''
+                return person
+            })
+        case 1:
+            return getEditedPersonList(personListNoResults)
+        default:
+            return []
+    }
+}
+
+function removeInputLine() {
+    lm('Removing line!')
+    const inputContent = fs.readFileSync(inputFilePath, 'utf-8').split('\n')
+    const outputContent =
+        inputContent.length > 1 ? inputContent.slice(1).join('\n') : ''
+    fs.writeFileSync(inputFilePath, outputContent)
+}
+
 // const simResponse = {}
 
 async function run() {
-    const inputMap = getInputJson()
+    const inputMap = await getInputJson()
     assertPersonMapSchema(inputMap)
     const personList = Object.values(inputMap)
 
     const personListFiltered = await doFilterRequestListPrompt(personList)
+    const personListNoResults = []
 
     const enrichedContactList = []
     for (const person of personListFiltered) {
+        try {
+            const enrichedContact = await getEnrichedContact(person)
+            enrichedContactList.push(enrichedContact)
+        } catch (e) {
+            personListNoResults.push(person)
+            const errorOutput = `Failed to enrich contact for ${person.fullName}!\n\tError: ${e.message}`
+            lm(errorOutput)
+        }
+    }
+
+    const retryPersonList = await promptGetRetryList(personListNoResults)
+
+    for (const person of retryPersonList) {
         try {
             const enrichedContact = await getEnrichedContact(person)
             enrichedContactList.push(enrichedContact)
@@ -112,9 +215,19 @@ async function run() {
         }
     }
 
+    lm('Writing to output file...')
     const excelOutput = excelFormatEnrichedContactList(enrichedContactList)
     writeOutput(excelOutput)
-    return
+    lm('Done!')
+
+    lm(logSep)
+    if (
+        await inquirerConfirm({
+            message: 'Remove this search JSON from the input file?',
+        })
+    ) {
+        removeInputLine()
+    }
 }
 
 run()

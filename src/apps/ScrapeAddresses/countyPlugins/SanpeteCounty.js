@@ -134,6 +134,7 @@ function parseResultPageAddress(resp) {
     const city = cityQ
         ?.get(0)
         ?.innerHTML.split('-')?.[1]
+        ?.replace('city', '')
         ?.split(/(?<=\s)\w(?=($|[,\s]))/)?.[0]
         ?.trim()
 

@@ -201,6 +201,9 @@ function getFuzzyAddressMatch(
     if (streetResult.length && cityResult.length) {
         return streetResult[0].item
     }
+    if (!street?.length && cityResult.length) {
+        return cityResult[0].item
+    }
     return false
 }
 

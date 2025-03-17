@@ -67,13 +67,16 @@ export default function searchFullNameFactory({
                     lm('Found a result table! Iterating...')
                     const uniqIdList = parseMultiResultUniqIdList(resp)
                     addressList = []
+                    let uniqIterationCount = 0
                     for (const uniqId of uniqIdList) {
+                        if (uniqIterationCount === 15) continue
                         const uniqIdResult = await searchUniqId(uniqId)
                         if (
                             uniqIdResult.status ===
                             SearchStatus.FOUND_RESULTPAGE
                         ) {
                             addressList.push(uniqIdResult.addressList[0])
+                            uniqIterationCount += 1
                         }
                     }
                     break

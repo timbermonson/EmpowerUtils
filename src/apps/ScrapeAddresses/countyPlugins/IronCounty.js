@@ -123,13 +123,22 @@ function parseResultPageAddress(resp) {
     let addressQ = accountInfoQ?.find(
         'td:nth-child(1) > table > tbody > tr:nth-child(5) > td'
     )
+
+    let addressList = []
     if (addressQ.get(0).textContent.replace(/^Situs /, '').length < 5) {
         addressQ = accountInfoQ?.find(
             'td:nth-child(2) > table > tbody > tr:nth-child(2)'
         )
+        addressList = addressQ?.[0]?.innerHTML
+            ?.replaceAll(/<\/*(([^b>][^r>])|(\w))>/g, '')
+            ?.split(/<br>|,/)
+            ?.map((n) => n?.trim())
+        addressList.pop()
+    } else {
+        address = addressQ?.[0]?.textContent?.trim()
+        addressList = address?.split(',')?.map((n) => n?.trim())
     }
-    const address = addressQ?.[0]?.textContent?.trim()
-    const addressList = address?.split(',')?.map((n) => n?.trim())
+
     const city = addressList?.[addressList?.length - 1]
     addressList?.pop()
     const street = addressList
