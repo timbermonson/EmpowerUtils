@@ -22,9 +22,9 @@
         "ext": "js, txt, json"
     },
     "scripts": {
-        "addr": "nodemon ./apps/ScrapeAddresses/app.js --no-stdin --",
-        "addrAll": "nodemon ./apps/ScrapeAddresses/app.js --no-stdin -- -o both -c",
-        "addrAllMult": "nodemon ./apps/ScrapeAddresses/app.js --no-stdin -- -o both -c -m",
+        "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
+        "addrAll": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c",
+        "addrAllMult": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c -m",
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/app.js --no-stdin",
         "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/app.js --no-stdin -- -m",
         "end": "nodemon ./apps/EndatoApp/app.js --no-stdin"
