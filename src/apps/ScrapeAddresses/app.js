@@ -11,7 +11,7 @@ const argDefinitions = [
     { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
 ]
 
-import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
+import { lm, lo, logSep, le, setupIOTextFiles } from '../../utils/lib.js'
 import { pickBestCountyAndAddresses } from './lib.js'
 import countyScraperMap from './countyPlugins/index.js'
 
@@ -120,7 +120,7 @@ async function getSearchresultMapByName(nameList) {
     const searchresultMapByName = pickBestCountyAndAddresses(
         nameSearchresultMapByCounty
     )
-    lm('------------------------------')
+    lm(logSep)
 
     return searchresultMapByName
 }
@@ -143,13 +143,15 @@ async function run() {
 
     for (const nameList of nameListList) {
         lm(`NEW NAMELIST: ${nameList}`)
-        const searchresultMapByName = await getSearchresultMapByName(nameList)
+        const searchresultMapByName =
+            nameList.length > 0 ? await getSearchresultMapByName(nameList) : {}
 
         lm('Appending output to file...')
         let output =
             getOutputText(searchresultMapByName, { format: argsOutput }) + '\n'
 
         fs.appendFileSync(outputFilePath, output)
+        lm(logSep)
     }
 
     if (argsClipboard) {
