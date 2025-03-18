@@ -135,7 +135,7 @@ function parseResultPageAddress(resp) {
             ?.map((n) => n?.trim())
         addressList.pop()
     } else {
-        address = addressQ?.[0]?.textContent?.trim()
+        let address = addressQ?.[0]?.textContent?.trim()
         addressList = address?.split(',')?.map((n) => n?.trim())
     }
 
