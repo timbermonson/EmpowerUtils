@@ -5,6 +5,7 @@ import SLCountySearch from './SLCounty.js'
 import SummitCountySearch from './SummitCounty.js'
 import TooeleCountySearch from './TooeleCounty.js'
 import UTCountySearch from './UTCounty.js'
+import WasatchCountySearch from './WasatchCounty.js'
 import WashingtonCountySearch from './WashCounty.js'
 import WeberCountySearch from './WeberCounty.js'
 
@@ -16,6 +17,7 @@ export default {
     'Summit County': SummitCountySearch,
     'Tooele County': TooeleCountySearch,
     'Utah County': UTCountySearch,
+    'Wasatch County': WasatchCountySearch,
     'Wash. County': WashingtonCountySearch,
     'Weber County': WeberCountySearch,
 }
