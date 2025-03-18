@@ -4,7 +4,7 @@ import {
     encodeUrl,
     getJQWindow,
     getWebpage,
-    nameCommaReverse,
+    nameReverse,
     SearchStatus,
 } from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
@@ -26,7 +26,7 @@ function getUniqIdWebpageFactory(id) {
 
 function getFullNameWebpageFactory(fullName) {
     const baseUrl = 'https://webercountyutah.gov/parcelsearch/results.php'
-    const nameParam = `name=${encodeUrl(nameCommaReverse(fullName)).replaceAll(
+    const nameParam = `name=${encodeUrl(nameReverse(fullName)).replaceAll(
         '%20',
         '+'
     )}`

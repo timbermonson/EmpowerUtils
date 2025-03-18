@@ -5,7 +5,7 @@ import https from 'https'
 import {
     getJQWindow,
     getWebpage,
-    nameCommaReverse,
+    nameReverse,
     SearchStatus,
     lm,
     lo,
@@ -44,7 +44,7 @@ function getFullNameWebpageFactory(fullName) {
         httpsAgent,
         method: 'POST',
         data: qs.stringify({
-            OwnerIDSearchString: nameCommaReverse(fullName),
+            OwnerIDSearchString: nameReverse(fullName),
             OwnerIDSearchType: 'Normal',
             AllTypes: 'ALL',
             docTypeTotal: 3,

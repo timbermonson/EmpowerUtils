@@ -5,7 +5,7 @@ import {
     encodeUrl,
     getJQWindow,
     getWebpage,
-    nameCommaReverse,
+    nameReverse,
     SearchStatus,
     lm,
 } from '../../../utils/lib.js'
@@ -27,7 +27,7 @@ function getUniqIdWebpageFactory(id) {
 }
 
 function getFullNameWebpageFactory(fullName) {
-    const param = `itemname=${encodeUrl(nameCommaReverse(fullName))}`
+    const param = `itemname=${encodeUrl(nameReverse(fullName))}`
 
     return async function getFullNameWebpage() {
         const resp = await getWebpage(baseUrl, {

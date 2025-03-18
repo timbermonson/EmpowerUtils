@@ -4,7 +4,7 @@ import {
     encodeUrl,
     getJQWindow,
     getWebpage,
-    nameCommaReverse,
+    nameReverse,
     SearchStatus,
 } from '../../../utils/lib.js'
 import searchFullNameFactory from './searchFullNameFactory.js'
@@ -25,7 +25,7 @@ function getUniqIdWebpageFactory(id) {
 
 function getFullNameWebpageFactory(fullName) {
     const baseUrl = 'https://www.utahcounty.gov/landrecords/NameSearch.asp'
-    const param = `av_name=${encodeUrl(nameCommaReverse(fullName))}`
+    const param = `av_name=${encodeUrl(nameReverse(fullName))}`
 
     return async function getFullNameWebpage() {
         const resp = await getWebpage(baseUrl, {

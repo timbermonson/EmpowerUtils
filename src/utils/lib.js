@@ -123,13 +123,13 @@ function getJQWindow(resp) {
     return window
 }
 
-function nameCommaReverse(fullName) {
+function nameReverse(fullName, separator = ', ') {
     const nameList = compact(fullName.split(' '))
 
     const lastName = nameList[nameList.length - 1]
     const beginning = nameList.slice(0, nameList.length - 1).join(' ')
 
-    const reversedName = `${lastName}, ${beginning}`
+    const reversedName = `${lastName}${separator}${beginning}`
 
     return reversedName
 }
@@ -203,7 +203,7 @@ export {
     lo,
     logSettings,
     logSep,
-    nameCommaReverse,
+    nameReverse,
     normalizeCardinalDirection,
     prepAddressSearchTerm,
     SearchStatus,

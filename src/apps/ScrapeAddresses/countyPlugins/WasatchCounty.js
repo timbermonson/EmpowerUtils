@@ -4,7 +4,7 @@ import {
     encodeUrl,
     getJQWindow,
     getWebpage,
-    nameCommaReverse,
+    nameReverse,
     SearchStatus,
     lm,
     lo,
@@ -39,9 +39,7 @@ function getUniqIdWebpageFactory(identifier) {
 function getFullNameWebpageFactory(fullName) {
     const baseUrl =
         'https://emprep.wasatch.utah.gov/Property-Tax-Information-Lookup/Current-Year-Property-Tax-Lookup'
-    const param = `own=${encodeUrl(
-        nameCommaReverse(fullName, { hasComma: false })
-    )}`
+    const param = `own=${encodeUrl(nameReverse(fullName, ' '))}`
 
     return async function getFullNameWebpage() {
         const resp = await getWebpage(baseUrl, {

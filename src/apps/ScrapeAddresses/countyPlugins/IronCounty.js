@@ -4,7 +4,7 @@ import qs from 'qs'
 import {
     getJQWindow,
     getWebpage,
-    nameCommaReverse,
+    nameReverse,
     SearchStatus,
     lm,
 } from '../../../utils/lib.js'
@@ -36,7 +36,7 @@ function getFullNameWebpageFactory(fullName) {
     const options = {
         method: 'POST',
         data: qs.stringify({
-            OwnerIDSearchString: nameCommaReverse(fullName),
+            OwnerIDSearchString: nameReverse(fullName),
             OwnerIDSearchType: 'Normal',
             AllDocuments: 'ALL',
             docTypeTotal: 2,
