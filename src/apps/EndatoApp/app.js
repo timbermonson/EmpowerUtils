@@ -9,12 +9,11 @@ import {
 } from '@inquirer/prompts'
 
 import {
-    addLogFileStart,
     lo,
     lm,
     logSep,
-    logSettings,
     setupIOTextFiles,
+    commandLineArgsWrapper,
 } from '../../utils/lib.js'
 
 import {
@@ -30,9 +29,6 @@ import {
 
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
-
-logSettings.toFile = true
-addLogFileStart()
 
 setupIOTextFiles()
 
@@ -243,6 +239,7 @@ async function scratchParse() {
 }
 
 async function run() {
+    commandLineArgsWrapper()
     // const inputMap = await getInputJson()
     const { inputAssociation, inputMap } = await scratchParse()
 

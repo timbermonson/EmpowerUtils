@@ -1,19 +1,24 @@
 import { uniqBy } from 'lodash-es'
 import config from 'config'
 import fs from 'fs'
-import commandLineArgs from 'command-line-args'
 
-import { lm, lo, le, setupIOTextFiles } from '../../utils/lib.js'
+import {
+    lm,
+    commandLineArgsWrapper,
+    setupIOTextFiles,
+} from '../../utils/lib.js'
 
 const argDefinitions = [
     { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
 ]
 
 // TODO: convert to the util/lib.js > importJson (to satisfy prettier)
-import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
+// import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
 
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
+
+setupIOTextFiles()
 
 function getReplacementTitle(title) {
     const replacement = titleReplacementMap[title.toLowerCase()]
@@ -32,17 +37,6 @@ function capitalizeName(fullName) {
     })
 
     return capitalizedName.trim()
-}
-
-function run() {
-    const parsedArgs = commandLineArgs(argDefinitions)
-    const { multiple: argsMultiple } = parsedArgs
-
-    if (!argsMultiple) {
-        runSingle()
-    } else {
-        runMultipleAHKOutput()
-    }
 }
 
 function runMultipleAHKOutput() {
@@ -71,7 +65,10 @@ function runMultipleAHKOutput() {
             continue
         }
 
-        fs.appendFileSync(outputFilePath, `${getBoardMemberListString(lineExpanded.split('\n'))}\n`)
+        fs.appendFileSync(
+            outputFilePath,
+            `${getBoardMemberListString(lineExpanded.split('\n'))}\n`
+        )
     }
 }
 
@@ -137,6 +134,17 @@ function getBoardMemberListString(inputWithTabsAndNewlines) {
         .join(', ')
 
     return boardMemberListString
+}
+
+function run() {
+    const parsedArgs = commandLineArgsWrapper(argDefinitions)
+    const { multiple: argsMultiple } = parsedArgs
+
+    if (!argsMultiple) {
+        runSingle()
+    } else {
+        runMultipleAHKOutput()
+    }
 }
 
 run()
