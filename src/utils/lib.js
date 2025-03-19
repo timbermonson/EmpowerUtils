@@ -1,5 +1,6 @@
 import { compact, reverse, sortBy } from 'lodash-es'
 import axios from 'axios'
+import commandLineArgs from 'command-line-args'
 import config from 'config'
 import fs from 'fs'
 import Fuse from 'fuse.js'
@@ -27,6 +28,43 @@ function addLogFileStart() {
     const timestamp = moment().format('HH:mm:ss - YYYY-MM-DD')
 
     fs.appendFileSync(logFilePath, `\n\n♦[NEW APP START]♦\n${timestamp}\n\n`)
+}
+
+/**
+ * definition example:
+ *
+ * [
+ *     { name: 'output', alias: 'o', type: String, defaultOption: 'excel' }
+ * ]
+ */
+function commandLineArgsWrapper(definitions) {
+    const logArgDefinition = {
+        alias: 'l',
+        defaultOption: false,
+        name: 'logToFile',
+        type: Boolean,
+    }
+
+    if (!definitions?.length) {
+        definitions = []
+    }
+
+    definitions.push(logArgDefinition)
+
+    const args = commandLineArgs(definitions)
+
+    commandLineArgsLogHandle(args)
+    lm(args)
+    return args
+}
+
+function commandLineArgsLogHandle(args) {
+    if (!args?.logToFile) {
+        return
+    }
+
+    logSettings.toFile = true
+    addLogFileStart()
 }
 
 function prepAddressSearchTerm(
@@ -194,6 +232,7 @@ function normalizeCardinalDirection(addr) {
 
 export {
     addLogFileStart,
+    commandLineArgsWrapper,
     encodeUrl,
     getFuzzyCityMatch,
     getJQWindow,
