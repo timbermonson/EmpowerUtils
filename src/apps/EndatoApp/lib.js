@@ -305,17 +305,6 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     let response =
         simulatedResponse || (await apiContactEnrichCall(apiSearchBody))
 
-    if (apiHasNoMatches(response)) {
-        // lm('Got no results, trying again with no street address...')
-        // apiSearchBody.Address.addressLine1 = ''
-        // lm('-------------[Searching]:------------------')
-        // lo(apiSearchBody)
-        // lm('-------------------------------------------')
-        // if (simulatedResponse) lm('USING SIMULATED RESPONSE')
-        // response =
-        //     simulatedResponse || (await apiContactEnrichCall(apiSearchBody))
-    }
-
     lm('[RESPONSE DATA]')
     lo(response.data)
 
