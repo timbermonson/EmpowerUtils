@@ -1,5 +1,6 @@
 import config from 'config'
 import fs from 'fs'
+import clipboard from 'clipboardy'
 import {
     checkbox as inquirerCheckbox,
     editor as inquirerEditor,
@@ -48,6 +49,26 @@ async function handleEmptyLine(inputList) {
     fs.writeFileSync(inputFilePath, outputContent)
 }
 
+async function handleEmptyLineScratch(inputList) {
+    if (
+        !(await inquirerConfirm({
+            message: 'Empty newline(s) detected. Trim off inputfile?',
+        }))
+    ) {
+        throw new Error('Empty line given as input!')
+    }
+
+    const newStartIndex = inputList.findIndex(
+        (n) => !!n.split('\t')?.[2]?.length
+    )
+    if (newStartIndex < 1) {
+        throw new Error('Could not find next filled line!')
+    }
+
+    const outputContent = inputList.slice(newStartIndex).join('\n')
+    fs.writeFileSync(inputFilePath, outputContent)
+}
+
 async function getInputJson() {
     const inputList = fs.readFileSync(inputFilePath, 'utf-8').split('\n')
     const inputLine = inputList[0]
@@ -67,6 +88,16 @@ async function getInputJson() {
 
 function writeOutput(content) {
     fs.writeFileSync(outputFilePath, content)
+}
+
+function writeOutputScratch(content, association) {
+    const associatedContent = content
+        .split('\n')
+        .map((ln) => `${association}\t${ln}`)
+        .join('\n')
+
+    clipboard.writeSync(associatedContent)
+    fs.writeFileSync(outputFilePath, associatedContent)
 }
 
 function excelFormatEnrichedContactList(enrichedContactList) {
@@ -184,8 +215,32 @@ function removeInputLine() {
 
 // const simResponse = {}
 
+async function scratchParse() {
+    const inputList = fs.readFileSync(inputFilePath, 'utf-8').split('\n')
+    const inputLine = inputList[0]
+    const inputData = inputLine.split('\t')?.[3]
+
+    if (inputData.trim() === '') {
+        await handleEmptyLineScratch(inputList)
+        process.exit()
+    }
+
+    let inputJson = {}
+
+    try {
+        inputJson = JSON.parse(inputData)
+    } catch (e) {
+        lm('Could not parse input!')
+        throw e
+    }
+
+    return { inputAssociation: inputLine.split('\t')?.[0], inputMap: inputJson }
+}
+
 async function run() {
-    const inputMap = await getInputJson()
+    // const inputMap = await getInputJson()
+    const { inputAssociation, inputMap } = await scratchParse()
+
     assertPersonMapSchema(inputMap)
     const personList = Object.values(inputMap)
 
@@ -218,7 +273,10 @@ async function run() {
 
     lm('Writing to output file...')
     const excelOutput = excelFormatEnrichedContactList(enrichedContactList)
-    writeOutput(excelOutput)
+    // writeOutput(excelOutput)
+    clipboard.writeSync(excelOutput.trim())
+    // writeOutputScratch(excelOutput)
+    writeOutputScratch(excelOutput, inputAssociation)
     lm('Done!')
 
     lm(logSep)
