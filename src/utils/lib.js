@@ -17,6 +17,13 @@ const outputFilePath = config.get('ioFiles.outputPath')
 const logFilePath = config.get('ioFiles.logPath')
 
 const logSettings = {
+    logArgDefinition: {
+        alias: 'l',
+        defaultOption: false,
+        name: 'logToFile',
+        type: Boolean,
+    },
+
     toFile: false,
     toTerminal: true,
 }
@@ -38,18 +45,11 @@ function addLogFileStart() {
  * ]
  */
 function commandLineArgsWrapper(definitions) {
-    const logArgDefinition = {
-        alias: 'l',
-        defaultOption: false,
-        name: 'logToFile',
-        type: Boolean,
-    }
-
     if (!definitions?.length) {
         definitions = []
     }
 
-    definitions.push(logArgDefinition)
+    definitions.push(logSettings.logArgDefinition)
 
     const args = commandLineArgs(definitions)
 
@@ -59,7 +59,7 @@ function commandLineArgsWrapper(definitions) {
 }
 
 function commandLineArgsLogHandle(args) {
-    if (!args?.logToFile) {
+    if (!args?.[logSettings.logArgDefinition.name]) {
         return
     }
 
