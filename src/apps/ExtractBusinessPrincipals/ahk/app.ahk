@@ -200,19 +200,19 @@ returnFromRecord() {
     x := -1
     y := -1
     topY := -1
-    firstButtons := ImageSearch(&x, &topY, 0, 0, 2000, 2000, "*n100 " . A_ScriptDir . "/images/" .
+    firstButtons := ImageSearch(&x, &topY, 0, 0, 2000, 2000, "*n200 " . A_ScriptDir . "/images/" .
         "bizRecordReturnOtherButtons.png")
 
-    exitButtons := ImageSearch(&x, &y, 0, topY + 5, 2000, 2000, "*n100 " . A_ScriptDir . "/images/" .
+    exitButtons := ImageSearch(&x, &y, 0, topY + 20, 2000, 2000, "*n200 " . A_ScriptDir . "/images/" .
         "bizRecordReturn.png")
-    MouseMove x + 35, y + 10
+    MouseMove x + 240, y
     MouseClick
 }
 
 returnFromSearchTable() {
     Send "{Ctrl down}{End}{Ctrl up}"
     Sleep(500)
-    searchClickImage("bizSearchResultsReturn.png", 35, 10)
+    searchClickImage("bizSearchResultsReturn.png", 200, 10)
     waitForImages(["bizSearchContains.png"], 100, 10000)
     putCursorAtEnd()
 }
