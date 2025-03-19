@@ -23,6 +23,11 @@ import {
     convertToApiSearchBody,
 } from './lib.js'
 
+// "Scratch" methods are alternate importer/exporters.
+// The scratch importer expects an excel paste (tab-separated columns): associationName \t (ignored) \t (ignored) \t jsonData
+// The scratch exporter appends the association name as a column before each person's contact info.
+// These are for improved readability in the export excel.
+
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
 
@@ -273,10 +278,12 @@ async function run() {
 
     lm('Writing to output file...')
     const excelOutput = excelFormatEnrichedContactList(enrichedContactList)
+
     // writeOutput(excelOutput)
+
     clipboard.writeSync(excelOutput.trim())
-    // writeOutputScratch(excelOutput)
     writeOutputScratch(excelOutput, inputAssociation)
+
     lm('Done!')
 
     lm(logSep)
