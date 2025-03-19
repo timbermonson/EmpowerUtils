@@ -1,19 +1,24 @@
 import { uniq, compact } from 'lodash-es'
 import config from 'config'
 import fs from 'fs'
-import process from 'process'
 import clipboard from 'clipboardy'
-import commandLineArgs from 'command-line-args'
+
+import {
+    lm,
+    lo,
+    logSep,
+    le,
+    setupIOTextFiles,
+    commandLineArgsWrapper,
+} from '../../utils/lib.js'
+import { pickBestCountyAndAddresses } from './lib.js'
+import countyScraperMap from './countyPlugins/index.js'
 
 const argDefinitions = [
-    { name: 'output', alias: 'o', type: String, defaultOption: 'excel' },
+    { name: 'output', alias: 'o', type: String, defaultOption: 'excel' }, // 'json' for JUST the object, 'both' for both.
     { name: 'clipboard', alias: 'c', type: Boolean, defaultOption: false },
     { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
 ]
-
-import { lm, lo, logSep, le, setupIOTextFiles } from '../../utils/lib.js'
-import { pickBestCountyAndAddresses } from './lib.js'
-import countyScraperMap from './countyPlugins/index.js'
 
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
@@ -126,7 +131,7 @@ async function getSearchresultMapByName(nameList) {
 }
 
 async function run() {
-    const parsedArgs = commandLineArgs(argDefinitions)
+    const parsedArgs = commandLineArgsWrapper(argDefinitions)
     const {
         output: argsOutput,
         clipboard: argsClipboard,
