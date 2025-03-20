@@ -4,9 +4,9 @@ import {
     combineSpaces,
     commandLineArgsWrapper,
     getInputData,
-    writeOutputData,
     lm,
     setupIOTextFiles,
+    writeOutputData,
 } from '../../utils/lib.js'
 
 const argDefinitions = [
@@ -16,23 +16,20 @@ const argDefinitions = [
 // TODO: convert to the util/lib.js > importJson (to satisfy prettier)
 import titleReplacementMap from './titleReplacementMap.json' with { type: 'json' }
 
-setupIOTextFiles()
-
 function getReplacementTitle(title) {
     const normalizedTitle = combineSpaces(title.trim())
-    const replacement = titleReplacementMap[normalizedTitle
-.toLowerCase()]
+    const replacement = titleReplacementMap[normalizedTitle.toLowerCase()]
 
     if (!replacement) return normalizedTitle
     return replacement
 }
 
 function getPrincipalListString(rowTextList) {
-    if(!rowTextList) return ""
+    if (!rowTextList) return ''
     let principalObjectList = []
 
     rowTextList.forEach((text) => {
-        if(!text) return
+        if (!text) return
         let rowData = combineSpaces(text.trim()).split('\t')
 
         if (!rowData || rowData.length < 2) return
@@ -54,11 +51,13 @@ function getPrincipalListString(rowTextList) {
 }
 
 function multiInputLineToTableRowList(line) {
-    return compact(line
-        .trim()
-        .replaceAll('\t', '')
-        .replaceAll('<tab>', '\t')
-        .split('<newline>'))
+    return compact(
+        line
+            .trim()
+            .replaceAll('\t', '')
+            .replaceAll('<tab>', '\t')
+            .split('<newline>')
+    )
 }
 
 function runMultipleAHKOutput(inputData) {
@@ -71,14 +70,14 @@ function runMultipleAHKOutput(inputData) {
         const tableRowTextList = multiInputLineToTableRowList(line)
 
         if (tableRowTextList.length === 0) {
-            outputList.push("")
+            outputList.push('')
             continue
         }
 
         outputList.push(getPrincipalListString(tableRowTextList))
     }
 
-    return outputList.join("\n")
+    return outputList.join('\n')
 }
 
 function runSingle(inputData) {
@@ -92,6 +91,7 @@ function runSingle(inputData) {
 }
 
 function run() {
+    setupIOTextFiles()
     const parsedArgs = commandLineArgsWrapper(argDefinitions)
     const { multiple: argsMultiple } = parsedArgs
 

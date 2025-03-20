@@ -39,6 +39,10 @@ function writeOutputData(output) {
     return fs.writeFileSync(outputFilePath, output)
 }
 
+function appendOutputData(output) {
+    fs.appendFileSync(outputFilePath, output)
+}
+
 function addLogFileStart() {
     const timestamp = moment().format('HH:mm:ss - YYYY-MM-DD')
 
@@ -266,14 +270,14 @@ function capitalizeName(fullName) {
 }
 
 export {
-    getInputData,
-    writeOutputData,
     addLogFileStart,
+    appendOutputData,
     capitalizeName,
     combineSpaces,
     commandLineArgsWrapper,
     encodeUrl,
     getFuzzyCityMatch,
+    getInputData,
     getJQWindow,
     getWebpage,
     le,
@@ -286,4 +290,5 @@ export {
     prepAddressSearchTerm,
     SearchStatus,
     setupIOTextFiles,
+    writeOutputData,
 }

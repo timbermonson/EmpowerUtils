@@ -22,13 +22,14 @@
         "ext": "js, txt, json"
     },
     "scripts": {
-        "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
-        "addrAll": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c",
-        "addrAllMult": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c -m",
+        "addr": "nodemon ./apps/ScrapeAddresses/run.js --",
+        "addrAll": "nodemon ./apps/ScrapeAddresses/run.js -- -o both -c",
+        "addrAllMult": "nodemon ./apps/ScrapeAddresses/run.js -- -o both -c -m",
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/run.js --no-stdin",
         "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/run.js --no-stdin -- -m",
         "end": "nodemon ./apps/EndatoApp/app.js --no-stdin",
-        "test": "vitest"
+        "test": "vitest",
+        "coverage": "vitest run --coverage"
     },
     "author": "",
     "license": "ISC",
@@ -49,6 +50,7 @@
         "qs": "^6.14.0"
     },
     "devDependencies": {
+        "@vitest/coverage-v8": "^3.0.9",
         "vitest": "^3.0.9"
     }
 }

@@ -15,8 +15,11 @@ vi.mock('../../utils/lib.js', async () => {
         commandLineArgsWrapper: vi.fn(() => {
             return {}
         }),
+        appendOutputData: vi.fn(),
         getInputData: vi.fn(() => ''),
         lm: vi.fn(),
+        lo: vi.fn(),
+        setupIOTextFiles: vi.fn(),
         writeOutputData: vi.fn(),
     }
 })
