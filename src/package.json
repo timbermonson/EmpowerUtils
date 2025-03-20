@@ -21,13 +21,19 @@
         "verbose": false,
         "ext": "js, txt, json"
     },
+    "jest": {
+        "verbose": true,
+        "collectCoverage": 1,
+        "bail": 1
+    },
     "scripts": {
         "addr": "nodemon ./apps/ScrapeAddresses/app.js --",
         "addrAll": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c",
         "addrAllMult": "nodemon ./apps/ScrapeAddresses/app.js -- -o both -c -m",
-        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/app.js --no-stdin",
-        "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/app.js --no-stdin -- -m",
-        "end": "nodemon ./apps/EndatoApp/app.js --no-stdin"
+        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/run.js --no-stdin",
+        "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/run.js --no-stdin -- -m",
+        "end": "nodemon ./apps/EndatoApp/app.js --no-stdin",
+        "test": "jest"
     },
     "author": "",
     "license": "ISC",
@@ -46,5 +52,8 @@
         "lodash-es": "^4.17.21",
         "moment": "^2.30.1",
         "qs": "^6.14.0"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0"
     }
 }

@@ -117,4 +117,13 @@ function run() {
     writeOutputData(output)
 }
 
-run()
+export { 
+    getInputData,
+    getPrincipalListString,
+    getReplacementTitle,
+    multiInputLineToTableRowList,
+    run,
+    runMultipleAHKOutput,
+    runSingle,
+    writeOutputData
+}
