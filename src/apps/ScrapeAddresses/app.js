@@ -5,6 +5,7 @@ import clipboard from 'clipboardy'
 
 import {
     appendOutputData,
+    combineSpaces,
     commandLineArgsWrapper,
     getInputData,
     lm,
@@ -32,12 +33,14 @@ function parseInputMultiple(inputContent) {
 
 function parseInputLine(inputContent) {
     // Trim & sanitize input
-    let input = inputContent
-        .trim()
-        .replaceAll('\n', '')
-        .replaceAll('\r', '')
-        .replaceAll('\t', ' ')
-        .toLowerCase()
+    let input = combineSpaces(
+        inputContent
+            .trim()
+            .replaceAll('\n', '')
+            .replaceAll('\r', '')
+            .replaceAll('\t', ' ')
+            .toLowerCase()
+    )
 
     // Split list
     const inputList = input.split(',')

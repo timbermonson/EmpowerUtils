@@ -23,7 +23,7 @@
     },
     "scripts": {
         "addr": "nodemon ./apps/ScrapeAddresses/run.js",
-        "addrAll": "nodemon ./apps/ScrapeAddresses/run.js -- -o both -c",
+        "addrAll": "nodemon ./apps/ScrapeAddresses/run.js -- -o both",
         "addrAllMult": "nodemon ./apps/ScrapeAddresses/run.js -- -o both -c -m",
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/run.js",
         "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/run.js -- -m",
