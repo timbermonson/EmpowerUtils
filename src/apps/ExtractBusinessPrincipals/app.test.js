@@ -12,8 +12,11 @@ vi.mock('../../utils/lib.js', async () => {
     const actual = await import('../../utils/lib.js')
     return {
         ...actual,
+        commandLineArgsWrapper: vi.fn(() => {
+            return {}
+        }),
+        getInputData: vi.fn(() => ''),
         lm: vi.fn(),
-        getInputData: vi.fn(),
         writeOutputData: vi.fn(),
     }
 })
@@ -128,10 +131,7 @@ describe('Extract Business Principals', () => {
         })
         test('Handles ahk input', () => {
             lib.getInputData.mockReturnValueOnce(ahkTest)
-
-            lib.commandLineArgsWrapper = vi
-                .fn()
-                .mockReturnValueOnce({ multiple: true })
+            lib.commandLineArgsWrapper.mockReturnValueOnce({ multiple: true })
 
             run()
             expect(lib.writeOutputData).toBeCalledTimes(1)

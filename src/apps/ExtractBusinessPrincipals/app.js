@@ -27,6 +27,32 @@ function getReplacementTitle(title) {
     return replacement
 }
 
+function getPrincipalListString(rowTextList) {
+    if(!rowTextList) return ""
+    let principalObjectList = []
+
+    rowTextList.forEach((text) => {
+        if(!text) return
+        let rowData = combineSpaces(text.trim()).split('\t')
+
+        if (!rowData || rowData.length < 2) return
+
+        principalObjectList.push({
+            title: getReplacementTitle(rowData[0]),
+            name: capitalizeName(rowData[1]),
+        })
+    })
+
+    // Dedupe
+    principalObjectList = uniqBy(principalObjectList, 'name')
+
+    const boardMemberListString = principalObjectList
+        .map((principal) => `${principal.title} ${principal.name}`)
+        .join(', ')
+
+    return boardMemberListString
+}
+
 function multiInputLineToTableRowList(line) {
     return compact(line
         .trim()
@@ -63,32 +89,6 @@ function runSingle(inputData) {
     }
 
     return getPrincipalListString(inputByLines)
-}
-
-function getPrincipalListString(rowTextList) {
-    if(!rowTextList) return ""
-    let principalObjectList = []
-
-    rowTextList.forEach((text) => {
-        if(!text) return
-        let rowData = combineSpaces(text.trim()).split('\t')
-
-        if (!rowData || rowData.length < 2) return
-
-        principalObjectList.push({
-            title: getReplacementTitle(rowData[0]),
-            name: capitalizeName(rowData[1]),
-        })
-    })
-
-    // Dedupe
-    principalObjectList = uniqBy(principalObjectList, 'name')
-
-    const boardMemberListString = principalObjectList
-        .map((principal) => `${principal.title} ${principal.name}`)
-        .join(', ')
-
-    return boardMemberListString
 }
 
 function run() {
