@@ -4,12 +4,14 @@ import fs from 'fs'
 import clipboard from 'clipboardy'
 
 import {
+    appendOutputData,
+    commandLineArgsWrapper,
+    getInputData,
     lm,
     lo,
     logSep,
-    le,
     setupIOTextFiles,
-    commandLineArgsWrapper,
+    writeOutputData,
 } from '../../utils/lib.js'
 import { pickBestCountyAndAddresses } from './lib.js'
 import countyScraperMap from './countyPlugins/index.js'
@@ -19,19 +21,6 @@ const argDefinitions = [
     { name: 'clipboard', alias: 'c', type: Boolean, defaultOption: false },
     { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
 ]
-
-const inputFilePath = config.get('ioFiles.inputPath')
-const outputFilePath = config.get('ioFiles.outputPath')
-
-setupIOTextFiles()
-
-function readFileInput() {
-    return fs.readFileSync(inputFilePath, 'utf8')
-}
-
-function parseInput(inputContent) {
-    return parseInputLine(inputContent)
-}
 
 function parseInputMultiple(inputContent) {
     const inputSplit = inputContent
@@ -88,24 +77,6 @@ function getOutputText(searchresultMapByName, { format = 'excel' }) {
     return output
 }
 
-function readFullNameList(filePath) {
-    let inputFileContent = ''
-    try {
-        inputFileContent = readFileInput(filePath)
-    } catch (e) {
-        le(e, 'Could not read inputfile')
-    }
-
-    let fullNameList = []
-    try {
-        fullNameList = parseInput(inputFileContent)
-    } catch (e) {
-        le(e, 'Could not parse inputfile')
-    }
-
-    return fullNameList
-}
-
 async function getSearchresultMapByName(nameList) {
     const nameSearchresultMapByCounty = {}
 
@@ -131,6 +102,7 @@ async function getSearchresultMapByName(nameList) {
 }
 
 async function run() {
+    setupIOTextFiles()
     const parsedArgs = commandLineArgsWrapper(argDefinitions)
     const {
         output: argsOutput,
@@ -139,12 +111,12 @@ async function run() {
     } = parsedArgs
     lo(parsedArgs)
 
-    const inputContent = readFileInput()
+    const inputContent = getInputData()
     let nameListList = !!argsMultiple
         ? parseInputMultiple(inputContent)
         : [parseInputLine(inputContent)]
 
-    fs.writeFileSync(outputFilePath, '')
+    writeOutputData('')
 
     for (const nameList of nameListList) {
         lm(`NEW NAMELIST: ${nameList}`)
@@ -155,15 +127,23 @@ async function run() {
         let output =
             getOutputText(searchresultMapByName, { format: argsOutput }) + '\n'
 
-        fs.appendFileSync(outputFilePath, output)
+        appendOutputData(output)
         lm(logSep)
     }
 
     if (argsClipboard) {
         lm('writing outputs to clipboard...')
-        clipboard.writeSync(fs.readFileSync(inputFilePath, 'utf8'))
+        clipboard.writeSync(getInputData())
     }
     lm('done!')
 }
 
-run()
+export {
+    getOutputText,
+    getSearchresultMapByName,
+    parseInputLine,
+    parseInputMultiple,
+    run,
+}
+
+export default run
