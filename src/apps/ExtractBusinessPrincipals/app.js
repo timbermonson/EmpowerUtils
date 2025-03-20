@@ -1,11 +1,10 @@
-import { uniqBy } from 'lodash-es'
-import config from 'config'
-import fs from 'fs'
-
+import { compact, uniqBy } from 'lodash-es'
 import {
     capitalizeName,
     combineSpaces,
     commandLineArgsWrapper,
+    getInputData,
+    writeOutputData,
     lm,
     setupIOTextFiles,
 } from '../../utils/lib.js'
@@ -15,32 +14,30 @@ const argDefinitions = [
 ]
 
 // TODO: convert to the util/lib.js > importJson (to satisfy prettier)
-import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
-
-const inputFilePath = config.get('ioFiles.inputPath')
-const outputFilePath = config.get('ioFiles.outputPath')
+import titleReplacementMap from './titleReplacementMap.json' with { type: 'json' }
 
 setupIOTextFiles()
 
 function getReplacementTitle(title) {
-    const trimmedTitle = title.trim()
-    const replacement = titleReplacementMap[trimmedTitle.toLowerCase()]
+    const normalizedTitle = combineSpaces(title.trim())
+    const replacement = titleReplacementMap[normalizedTitle
+.toLowerCase()]
 
-    if (!replacement) return trimmedTitle
+    if (!replacement) return normalizedTitle
     return replacement
 }
 
 function multiInputLineToTableRowList(line) {
-    return line
+    return compact(line
         .trim()
         .replaceAll('\t', '')
         .replaceAll('<tab>', '\t')
-        .split('<newline>')
+        .split('<newline>'))
 }
 
 function runMultipleAHKOutput(inputData) {
     lm('running ebp with multiple!')
-    let output = ''
+    let outputList = []
 
     let inputByLines = inputData.trim().split('\n')
 
@@ -48,21 +45,20 @@ function runMultipleAHKOutput(inputData) {
         const tableRowTextList = multiInputLineToTableRowList(line)
 
         if (tableRowTextList.length === 0) {
-            output += '\n'
+            outputList.push("")
             continue
         }
 
-        output += getPrincipalListString(tableRowTextList)
-        output += '\n'
+        outputList.push(getPrincipalListString(tableRowTextList))
     }
 
-    return output
+    return outputList.join("\n")
 }
 
 function runSingle(inputData) {
     // Trim & remove header line
     let inputByLines = inputData.trim().split('\n')
-    if (inputByLines[0].toLowerCase().startsWith('title')) {
+    if (inputByLines[0].trim().toLowerCase().startsWith('title')) {
         inputByLines.splice(0, 1)
     }
 
@@ -70,9 +66,11 @@ function runSingle(inputData) {
 }
 
 function getPrincipalListString(rowTextList) {
+    if(!rowTextList) return ""
     let principalObjectList = []
 
     rowTextList.forEach((text) => {
+        if(!text) return
         let rowData = combineSpaces(text.trim()).split('\t')
 
         if (!rowData || rowData.length < 2) return
@@ -93,19 +91,12 @@ function getPrincipalListString(rowTextList) {
     return boardMemberListString
 }
 
-function getInputData() {
-    return fs.readFileSync(inputFilePath, 'utf8')
-}
-
-function writeOutputData(output) {
-    return fs.writeFileSync(outputFilePath, output)
-}
-
 function run() {
     const parsedArgs = commandLineArgsWrapper(argDefinitions)
     const { multiple: argsMultiple } = parsedArgs
 
     const inputData = getInputData()
+    lm(inputData)
 
     let output = ''
     if (!argsMultiple) {
@@ -117,7 +108,7 @@ function run() {
     writeOutputData(output)
 }
 
-export { 
+export {
     getInputData,
     getPrincipalListString,
     getReplacementTitle,
@@ -125,5 +116,5 @@ export {
     run,
     runMultipleAHKOutput,
     runSingle,
-    writeOutputData
+    writeOutputData,
 }

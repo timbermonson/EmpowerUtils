@@ -31,6 +31,14 @@ const logSettings = {
 const logSep =
     '------------------------------------------------------------------'
 
+function getInputData() {
+    return fs.readFileSync(inputFilePath, 'utf8')
+}
+
+function writeOutputData(output) {
+    return fs.writeFileSync(outputFilePath, output)
+}
+
 function addLogFileStart() {
     const timestamp = moment().format('HH:mm:ss - YYYY-MM-DD')
 
@@ -49,7 +57,13 @@ function commandLineArgsWrapper(definitions) {
         definitions = []
     }
 
-    definitions.push(logSettings.logArgDefinition)
+    if (
+        definitions.findIndex(
+            ({ name }) => name === logSettings.logArgDefinition.name
+        ) < 0
+    ) {
+        definitions.push(logSettings.logArgDefinition)
+    }
 
     const args = commandLineArgs(definitions)
 
@@ -94,7 +108,7 @@ function prepAddressSearchTerm(
 }
 
 function combineSpaces(str) {
-    return (str || '').replaceAll(/( )+/g, ' ')
+    return str.replaceAll(/( )+/g, ' ')
 }
 
 function importJSON(filePath) {
@@ -247,6 +261,8 @@ function capitalizeName(fullName) {
 }
 
 export {
+    getInputData,
+    writeOutputData,
     addLogFileStart,
     capitalizeName,
     combineSpaces,
