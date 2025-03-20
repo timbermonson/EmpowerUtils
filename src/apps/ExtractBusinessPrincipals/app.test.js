@@ -120,7 +120,7 @@ describe('Extract Business Principals', () => {
 
     describe('run()', () => {
         test('Handles single input', () => {
-            lib.getInputData = vi.fn().mockReturnValueOnce(singleTest)
+            lib.getInputData.mockReturnValueOnce(singleTest)
 
             run()
             expect(lib.writeOutputData).toBeCalledTimes(1)

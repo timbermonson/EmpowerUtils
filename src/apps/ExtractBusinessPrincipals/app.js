@@ -117,3 +117,5 @@ export {
     runSingle,
     writeOutputData,
 }
+
+export default run
