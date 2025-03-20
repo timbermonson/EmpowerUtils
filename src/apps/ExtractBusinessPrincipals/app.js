@@ -3,8 +3,10 @@ import config from 'config'
 import fs from 'fs'
 
 import {
-    lm,
+    capitalizeName,
+    combineSpaces,
     commandLineArgsWrapper,
+    lm,
     setupIOTextFiles,
 } from '../../utils/lib.js'
 
@@ -13,7 +15,7 @@ const argDefinitions = [
 ]
 
 // TODO: convert to the util/lib.js > importJson (to satisfy prettier)
-// import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
+import titleReplacementMap from './titleReplacementMap.json' with { type: "json" }
 
 const inputFilePath = config.get('ioFiles.inputPath')
 const outputFilePath = config.get('ioFiles.outputPath')
@@ -21,109 +23,64 @@ const outputFilePath = config.get('ioFiles.outputPath')
 setupIOTextFiles()
 
 function getReplacementTitle(title) {
-    const replacement = titleReplacementMap[title.toLowerCase()]
+    const trimmedTitle = title.trim()
+    const replacement = titleReplacementMap[trimmedTitle.toLowerCase()]
 
-    if (!replacement) return title
+    if (!replacement) return trimmedTitle
     return replacement
 }
 
-function capitalizeName(fullName) {
-    const nameList = fullName.toLowerCase().split(' ')
-    let capitalizedName = ''
-
-    nameList.forEach((name) => {
-        capitalizedName +=
-            ' ' + `${name.charAt(0)}`.toUpperCase() + name.slice(1)
-    })
-
-    return capitalizedName.trim()
+function multiInputLineToTableRowList(line) {
+    return line
+        .trim()
+        .replaceAll('\t', '')
+        .replaceAll('<tab>', '\t')
+        .split('<newline>')
 }
 
-function runMultipleAHKOutput() {
+function runMultipleAHKOutput(inputData) {
     lm('running ebp with multiple!')
-    fs.writeFileSync(outputFilePath, '')
+    let output = ''
 
-    let inputData = ''
-    try {
-        inputData = fs.readFileSync(inputFilePath, 'utf8')
-    } catch (e) {
-        console.error(e.message)
-    }
-    if (!inputData) {
-        console.error('No data found.')
-    }
     let inputByLines = inputData.trim().split('\n')
 
     for (const line of inputByLines) {
-        const lineExpanded = line
-            .replaceAll('<tab>', '\t')
-            .replaceAll('<newline>', '\n')
-            .trim()
+        const tableRowTextList = multiInputLineToTableRowList(line)
 
-        if (lineExpanded.trim().length === 0) {
-            fs.appendFileSync(outputFilePath, '\n')
+        if (tableRowTextList.length === 0) {
+            output += '\n'
             continue
         }
 
-        fs.appendFileSync(
-            outputFilePath,
-            `${getBoardMemberListString(lineExpanded.split('\n'))}\n`
-        )
+        output += getPrincipalListString(tableRowTextList)
+        output += '\n'
     }
+
+    return output
 }
 
-function runSingle() {
-    // Read input data
-    let inputData
-    try {
-        inputData = fs.readFileSync(inputFilePath, 'utf8')
-    } catch (e) {
-        console.error(e.message)
-    }
-    if (!inputData) {
-        console.error('No data found.')
-    }
-
+function runSingle(inputData) {
     // Trim & remove header line
     let inputByLines = inputData.trim().split('\n')
     if (inputByLines[0].toLowerCase().startsWith('title')) {
         inputByLines.splice(0, 1)
     }
 
-    // Extract first two cols, put into array of json objects
-    let principalObjectList = []
-    inputByLines.forEach((text, index) => {
-        let rowData = text.split('\t')
-        if (!rowData || rowData.length < 2) return
-
-        const principal = {
-            title: getReplacementTitle(rowData[0]),
-            name: capitalizeName(rowData[1]),
-        }
-        principalObjectList.push(principal)
-    })
-
-    // Dedupe
-    principalObjectList = uniqBy(principalObjectList, 'name')
-
-    const boardMemberListString = principalObjectList
-        .map((principal) => `${principal.title} ${principal.name}`)
-        .join(', ')
-
-    fs.writeFileSync(outputFilePath, boardMemberListString)
+    return getPrincipalListString(inputByLines)
 }
 
-function getBoardMemberListString(inputWithTabsAndNewlines) {
+function getPrincipalListString(rowTextList) {
     let principalObjectList = []
-    inputWithTabsAndNewlines.forEach((text, index) => {
-        let rowData = text.split('\t')
+
+    rowTextList.forEach((text) => {
+        let rowData = combineSpaces(text.trim()).split('\t')
+
         if (!rowData || rowData.length < 2) return
 
-        const principal = {
+        principalObjectList.push({
             title: getReplacementTitle(rowData[0]),
             name: capitalizeName(rowData[1]),
-        }
-        principalObjectList.push(principal)
+        })
     })
 
     // Dedupe
@@ -136,15 +93,28 @@ function getBoardMemberListString(inputWithTabsAndNewlines) {
     return boardMemberListString
 }
 
+function getInputData() {
+    return fs.readFileSync(inputFilePath, 'utf8')
+}
+
+function writeOutputData(output) {
+    return fs.writeFileSync(outputFilePath, output)
+}
+
 function run() {
     const parsedArgs = commandLineArgsWrapper(argDefinitions)
     const { multiple: argsMultiple } = parsedArgs
 
+    const inputData = getInputData()
+
+    let output = ''
     if (!argsMultiple) {
-        runSingle()
+        output = runSingle(inputData)
     } else {
-        runMultipleAHKOutput()
+        output = runMultipleAHKOutput(inputData)
     }
+
+    writeOutputData(output)
 }
 
 run()

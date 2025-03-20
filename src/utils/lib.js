@@ -93,6 +93,10 @@ function prepAddressSearchTerm(
     return output
 }
 
+function combineSpaces(str) {
+    return (str || '').replaceAll(/( )+/g, ' ')
+}
+
 function importJSON(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf-8')
     return JSON.parse(fileContent)
@@ -230,8 +234,22 @@ function normalizeCardinalDirection(addr) {
         .replace(/south/i, 's')
 }
 
+function capitalizeName(fullName) {
+    const nameList = combineSpaces(fullName).toLowerCase().split(' ')
+    let capitalizedName = ''
+
+    nameList.forEach((name) => {
+        capitalizedName +=
+            ' ' + `${name.charAt(0)}`.toUpperCase() + name.slice(1)
+    })
+
+    return capitalizedName.trim()
+}
+
 export {
     addLogFileStart,
+    capitalizeName,
+    combineSpaces,
     commandLineArgsWrapper,
     encodeUrl,
     getFuzzyCityMatch,
@@ -240,8 +258,8 @@ export {
     le,
     lm,
     lo,
-    logSettings,
     logSep,
+    logSettings,
     nameReverse,
     normalizeCardinalDirection,
     prepAddressSearchTerm,
