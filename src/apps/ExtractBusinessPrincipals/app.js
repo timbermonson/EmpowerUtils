@@ -96,7 +96,6 @@ function run() {
     const { multiple: argsMultiple } = parsedArgs
 
     const inputData = getInputData()
-    lm(inputData)
 
     let output = ''
     if (!argsMultiple) {

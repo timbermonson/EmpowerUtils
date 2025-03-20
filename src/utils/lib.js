@@ -68,7 +68,6 @@ function commandLineArgsWrapper(definitions) {
     const args = commandLineArgs(definitions)
 
     commandLineArgsLogHandle(args)
-    lm(args)
     return args
 }
 
@@ -191,7 +190,13 @@ function nameReverse(fullName, separator = ', ') {
 }
 
 function lo(inp) {
-    lm(JSON.stringify(inp, null, 2))
+    const strInp = JSON.stringify(inp, null, 2)
+    if (logSettings.toTerminal) {
+        console.log(strInp)
+    }
+    if (logSettings.toFile) {
+        fs.appendFileSync(logFilePath, `${strInp}\n`)
+    }
 }
 
 function lm(inp) {

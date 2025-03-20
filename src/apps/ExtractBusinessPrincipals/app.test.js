@@ -12,6 +12,7 @@ vi.mock('../../utils/lib.js', async () => {
     const actual = await import('../../utils/lib.js')
     return {
         ...actual,
+        lm: vi.fn(),
         getInputData: vi.fn(),
         writeOutputData: vi.fn(),
     }
@@ -34,7 +35,7 @@ const ahkResult = 'ab Ab, T Dc, VP Ef\nab Cd, ef Gh'
 const singleTest = 'ab\tab\ntreasurer\tdc\n\t\n   viCE  presiDent   \tef'
 const singleResult = 'ab Ab, T Dc, VP Ef'
 
-describe('App: Extract Business Principals', () => {
+describe('Extract Business Principals', () => {
     describe('getReplacementTitle()', () => {
         test('Replaces titles', () => {
             expect.assertions(7)
@@ -120,7 +121,6 @@ describe('App: Extract Business Principals', () => {
     describe('run()', () => {
         test('Handles single input', () => {
             lib.getInputData = vi.fn().mockReturnValueOnce(singleTest)
-            lib.writeOutputData = vi.fn()
 
             run()
             expect(lib.writeOutputData).toBeCalledTimes(1)
@@ -128,7 +128,6 @@ describe('App: Extract Business Principals', () => {
         })
         test('Handles ahk input', () => {
             lib.getInputData.mockReturnValueOnce(ahkTest)
-            lib.writeOutputData = vi.fn()
 
             lib.commandLineArgsWrapper = vi
                 .fn()
@@ -141,6 +140,6 @@ describe('App: Extract Business Principals', () => {
     })
 
     beforeEach(() => {
-        vi.resetAllMocks()
+        vi.clearAllMocks()
     })
 })
