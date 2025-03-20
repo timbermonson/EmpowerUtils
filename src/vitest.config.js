@@ -2,7 +2,10 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
     test: {
-        include: ['**/*.test.js'],
+        coverage: {
+            clean: true,
+        },
         globals: true,
+        include: ['**/*.test.js'],
     },
 })
