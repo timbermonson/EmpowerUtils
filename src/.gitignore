@@ -3,6 +3,7 @@ ioFiles/*
 config/*
 !config/default.json
 !config/test.json
+!config/development.json
 
 # Logs
 logs
