@@ -283,5 +283,33 @@ describe('Address Scraper library', () => {
                 countyMap.countyB
             )
         })
+
+        test("When both have corr=2, don't give fuzzmatch bonus for identical streets", () => {
+            const cor2res4County = Object.assign(
+                {},
+                countyGen('a', 'sameCity', 'something'),
+                countyGen('b', 'sameCity', 'different'),
+                countyGen('c'),
+                countyGen('d')
+            )
+
+            const cor2res2County = Object.assign(
+                {},
+                countyGen('a', 'sameCity', 'sameStreet'),
+                countyGen('b', 'sameCity', 'sameStreet')
+            )
+
+            const countyMap = {
+                countyA: cor2res4County,
+                countyB: cor2res2County,
+            }
+
+            expect(getCountyResultScore(countyMap.countyA)).toEqual(4)
+            expect(getCountyResultScore(countyMap.countyB)).toEqual(2)
+
+            expect(pickBestCountyAndAddresses(countyMap)).toEqual(
+                countyMap.countyA
+            )
+        })
     })
 })

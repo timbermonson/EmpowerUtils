@@ -230,7 +230,11 @@ function countyHasSimilarAddressPair(searchresultMapByName) {
             if (!address1 || !address2) continue
             if (!citiesAreSimilar(address1.city, address2.city)) continue
 
-            if (!!fuzzyStreetCompare(address1.street, address2.street)) {
+            if (
+                !!fuzzyStreetCompare(address1.street, address2.street) &&
+                address1.street.trim().toLowerCase() !==
+                    address2.street.trim().toLowerCase()
+            ) {
                 return true
             }
         }
