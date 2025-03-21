@@ -1,4 +1,4 @@
-import { compact, reverse, sortBy } from 'lodash-es'
+import { cloneDeep, compact, sortBy } from 'lodash-es'
 import axios from 'axios'
 import commandLineArgs from 'command-line-args'
 import config from 'config'
@@ -16,7 +16,7 @@ const inputFilePath = config.get('io.files.inputPath')
 const outputFilePath = config.get('io.files.outputPath')
 const logFilePath = config.get('io.files.logPath')
 const ioDisable = config.get('io.disable')
-const logSettings = config.get('io.log')
+const logSettings = cloneDeep(config.get('io.log'))
 
 const logSep =
     '------------------------------------------------------------------'
@@ -73,12 +73,15 @@ function commandLineArgsWrapper(definitions) {
 }
 
 function commandLineArgsLogHandle(args) {
-    if (!args?.[logSettings.logFileOverrideArgDef.name]) {
-        return
+    // checking for undefined because we don't care about the value of the arg (ex. -l true), just that it's present
+    if (args?.[logSettings.logFileOverrideArgDef.name] !== undefined) {
+        logSettings.toFile = true
     }
 
-    logSettings.toFile = true
-    addLogFileStart()
+    // Might already be set true by config, thus no early return
+    if (logSettings.toFile) {
+        addLogFileStart()
+    }
 }
 
 function prepAddressSearchTerm(
@@ -153,7 +156,7 @@ function getFuzzyCityMatch(cityName) {
 
     const closestMatch = fuseResult[0]?.item || ''
     if (!closestMatch.length) {
-        lm(`AAAAAAAAAAAAAAAAAAAAAAA`)
+        lm(`FAILED TO MATCH CITY`)
         lm(cityName)
     }
 

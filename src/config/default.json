@@ -3,7 +3,6 @@
         "log": {
             "logFileOverrideArgDef": {
                 "alias": "l",
-                "defaultOption": false,
                 "name": "logFileOverride"
             },
             "toFile": false,

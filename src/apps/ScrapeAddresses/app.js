@@ -126,12 +126,12 @@ async function getSearchresultMapByName(nameList) {
 async function run() {
     setupIOTextFiles()
     const parsedArgs = commandLineArgsWrapper(argDefinitions)
+
     const {
         output: argsOutput,
         clipboard: argsClipboard,
         multiple: argsMultiple,
     } = parsedArgs
-    lo(parsedArgs)
 
     const inputContent = getInputData()
     let nameListList = !!argsMultiple
