@@ -2,6 +2,7 @@ ioFiles/*
 
 config/*
 !config/default.json
+!config/test.json
 
 # Logs
 logs
