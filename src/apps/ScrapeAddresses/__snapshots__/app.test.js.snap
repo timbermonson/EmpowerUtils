@@ -1,0 +1,57 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Address Scraper App > getOutputText() > Both output > Handles 1 name 1`] = `"{"george washington":{"fullName":"georg washton","addressList":[{"street":" pick this ","city":" city"},{"street":" don't pick this ","city":"bad city "}]}}	george washington	 pick this ,  city |  don't pick this , bad city "`;
+
+exports[`Address Scraper App > getOutputText() > Both output > Handles 2 names 1`] = `"{"george washington":{"fullName":"georg washton","addressList":[{"street":" pick this ","city":" city"},{"street":" don't pick this ","city":"bad city "}]},"john smith":{"fullName":"johnathan smithson","addressList":[{"street":" jpick this ","city":" jcity"},{"street":" jdon't pick this ","city":"jbad city "}]}}	george washington	 pick this ,  city |  don't pick this , bad city 	john smith	 jpick this ,  jcity |  jdon't pick this , jbad city "`;
+
+exports[`Address Scraper App > getOutputText() > Excel output > Handles 1 name 1`] = `"george washington	 pick this ,  city |  don't pick this , bad city "`;
+
+exports[`Address Scraper App > getOutputText() > Excel output > Handles 2 names 1`] = `"george washington	 pick this ,  city |  don't pick this , bad city 	john smith	 jpick this ,  jcity |  jdon't pick this , jbad city "`;
+
+exports[`Address Scraper App > getOutputText() > JSON output > Handles 1 name 1`] = `"{"george washington":{"fullName":"georg washton","addressList":[{"street":" pick this ","city":" city"},{"street":" don't pick this ","city":"bad city "}]}}"`;
+
+exports[`Address Scraper App > getOutputText() > JSON output > Handles 2 names 1`] = `"{"george washington":{"fullName":"georg washton","addressList":[{"street":" pick this ","city":" city"},{"street":" don't pick this ","city":"bad city "}]},"john smith":{"fullName":"johnathan smithson","addressList":[{"street":" jpick this ","city":" jcity"},{"street":" jdon't pick this ","city":"jbad city "}]}}"`;
+
+exports[`Address Scraper App > getSearchresultMapByName() > Handles 1 names 1`] = `
+[
+  [
+    {
+      "countyA": {
+        "george washington": {
+          "fullName": "george washington",
+        },
+      },
+      "countyB": {
+        "george washington": {
+          "fullName": "george washington",
+        },
+      },
+    },
+  ],
+]
+`;
+
+exports[`Address Scraper App > getSearchresultMapByName() > Handles 2 names 1`] = `
+[
+  [
+    {
+      "countyA": {
+        "george washington": {
+          "fullName": "george washington",
+        },
+        "john smith": {
+          "fullName": "john smith",
+        },
+      },
+      "countyB": {
+        "george washington": {
+          "fullName": "george washington",
+        },
+        "john smith": {
+          "fullName": "john smith",
+        },
+      },
+    },
+  ],
+]
+`;
