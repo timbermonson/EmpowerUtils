@@ -27,6 +27,8 @@ function fuzzyStreetCompare(unpreppedStreet1, unpreppedStreet2) {
 }
 
 function citiesAreSimilar(city1, city2) {
+    // Within the same county, all addresses come from the same dataset with the same weird names.
+    // Thus, simple string matching is good enough.
     return city1?.toLowerCase()?.trim() === city2?.toLowerCase()?.trim()
 }
 
@@ -89,6 +91,7 @@ function getAllAddresses(searchresultMapByName) {
 }
 
 function getMostCorrelatedAddress(searchresultMapByName, name) {
+    if (!searchresultMapByName || !name) return
     // Temporarily remove the person's addressList so it doesn't get matched against itself
     const addressList = searchresultMapByName[name].addressList
     if (!addressList.length) return
@@ -108,17 +111,17 @@ function getMostCorrelatedAddress(searchresultMapByName, name) {
         cityScoreObjectList.map(({ score }) => score)
     )
 
-    const mostCorrelatedCityList = cityScoreObjectList
+    const cityNamesWithMaxCorrelation = cityScoreObjectList
         .filter(({ score }) => score === maxCorrelationScore)
         .map(({ name }) => name)
 
-    const cityCorrelatedAddressList = addressList.filter(({ city }) =>
-        mostCorrelatedCityList.includes(city)
+    const addressListMaxCityCorrelation = addressList.filter(({ city }) =>
+        cityNamesWithMaxCorrelation.includes(city)
     )
 
     // Step 2: For each of those, try to find a fuzzy street match in the same city
     const allOtherAddressList = getAllAddresses(searchresultMapByName)
-    const streetCorrelatedAddressList = cityCorrelatedAddressList.filter(
+    const streetCorrelatedAddressList = addressListMaxCityCorrelation.filter(
         ({ city, street }) => {
             const matchingCityAddressStreetList = allOtherAddressList
                 .filter((address) => address.city === city)
@@ -146,7 +149,7 @@ function getMostCorrelatedAddress(searchresultMapByName, name) {
 
     const bestAddress = hasStreetCorrelations
         ? pickRandom(streetCorrelatedAddressList)
-        : pickRandom(cityCorrelatedAddressList)
+        : pickRandom(addressListMaxCityCorrelation)
 
     searchresultMapByName[name].addressList = addressList
     return bestAddress
@@ -364,4 +367,19 @@ function pickBestCountyAndAddresses(nameSearchresultMapByCounty) {
     return nameSearchresultMapByCounty[winningCountyName]
 }
 
-export { pickBestCountyAndAddresses }
+export {
+    citiesAreSimilar,
+    countyHasSimilarAddressPair,
+    filterAllAddressListsToBest,
+    getAllAddresses,
+    getAllCountyScoreList,
+    getCountyCityCorrelationScore,
+    getCountyResultScore,
+    getMostCorrelatedAddress,
+    getNameListSortedByNumAddr,
+    hasAddressInCity,
+    pickBestCountyAndAddresses,
+    streetsAreSimilar,
+}
+
+export default { pickBestCountyAndAddresses }
