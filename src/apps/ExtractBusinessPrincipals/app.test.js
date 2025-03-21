@@ -1,4 +1,6 @@
-import * as lib from '../../utils/lib.js'
+import * as utilLib from '../../utils/lib.js'
+vi.mock('../../utils/lib.js', { spy: true })
+
 import {
     getPrincipalListString,
     getReplacementTitle,
@@ -7,22 +9,6 @@ import {
     runMultipleAHKOutput,
     runSingle,
 } from './app'
-
-vi.mock('../../utils/lib.js', async () => {
-    const actual = await import('../../utils/lib.js')
-    return {
-        ...actual,
-        commandLineArgsWrapper: vi.fn(() => {
-            return {}
-        }),
-        appendOutputData: vi.fn(),
-        getInputData: vi.fn(() => ''),
-        lm: vi.fn(),
-        lo: vi.fn(),
-        setupIOTextFiles: vi.fn(),
-        writeOutputData: vi.fn(),
-    }
-})
 
 const testReplacementMap = {
     treasurer: 'T',
@@ -42,6 +28,9 @@ const singleTest = 'ab\tab\ntreasurer\tdc\n\t\n   viCE  presiDent   \tef'
 const singleResult = 'ab Ab, T Dc, VP Ef'
 
 describe('Extract Business Principals', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+    })
     describe('getReplacementTitle()', () => {
         test('Replaces titles', () => {
             expect.assertions(7)
@@ -126,23 +115,21 @@ describe('Extract Business Principals', () => {
 
     describe('run()', () => {
         test('Handles single input', () => {
-            lib.getInputData.mockReturnValueOnce(singleTest)
+            utilLib.getInputData.mockReturnValueOnce(singleTest)
 
             run()
-            expect(lib.writeOutputData).toBeCalledTimes(1)
-            expect(lib.writeOutputData).toBeCalledWith(singleResult)
+            expect(utilLib.writeOutputData).toBeCalledTimes(1)
+            expect(utilLib.writeOutputData).toBeCalledWith(singleResult)
         })
         test('Handles ahk input', () => {
-            lib.getInputData.mockReturnValueOnce(ahkTest)
-            lib.commandLineArgsWrapper.mockReturnValueOnce({ multiple: true })
+            utilLib.getInputData.mockReturnValueOnce(ahkTest)
+            utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+                multiple: true,
+            })
 
             run()
-            expect(lib.writeOutputData).toBeCalledTimes(1)
-            expect(lib.writeOutputData).toBeCalledWith(ahkResult)
+            expect(utilLib.writeOutputData).toBeCalledTimes(1)
+            expect(utilLib.writeOutputData).toBeCalledWith(ahkResult)
         })
-    })
-
-    beforeEach(() => {
-        vi.clearAllMocks()
     })
 })
