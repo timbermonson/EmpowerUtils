@@ -49,7 +49,7 @@ function fuzzyStreetSearch(searchList, searchTerm) {
         findAllMatches: true,
         minMatchCharLength: 3,
         // location: 0,
-        threshold: 0.3,
+        threshold: 0.35,
         // distance: 100,
         // useExtendedSearch: false,
         ignoreLocation: true,
@@ -58,11 +58,14 @@ function fuzzyStreetSearch(searchList, searchTerm) {
     }
 
     const fuse = new Fuse(prepStreetSearchList(searchList), fuseOptions)
-    const fuseResult = fuse
-        .search(prepAddressSearchTerm(searchTerm))
-        .map(({ item }) => item)
+    const fuseResult = fuse.search(
+        prepAddressSearchTerm(searchTerm, {
+            removeSingleLetters: true,
+            removeStreetNum: true,
+        })
+    )
 
-    return fuseResult
+    return fuseResult.map(({ item }) => item)
 }
 
 function hasAddressInCity(addressList, cityName) {
@@ -124,7 +127,7 @@ function getMostCorrelatedAddress(searchresultMapByName, name) {
     const streetCorrelatedAddressList = addressListMaxCityCorrelation.filter(
         ({ city, street }) => {
             const matchingCityAddressStreetList = allOtherAddressList
-                .filter((address) => address.city === city)
+                .filter((address) => citiesAreSimilar(address.city, city))
                 .map(({ street }) => street)
 
             if (!matchingCityAddressStreetList.length) return false
@@ -133,13 +136,6 @@ function getMostCorrelatedAddress(searchresultMapByName, name) {
                 matchingCityAddressStreetList,
                 street
             )
-
-            // if (fuzzyStreetMatchList.length > 0)
-            //     lm(
-            //         `\t\t[${matchingCityAddressStreetList}] & ${street}: ${JSON.stringify(
-            //             fuzzyStreetMatchList
-            //         )}`
-            //     )
 
             return fuzzyStreetMatchList.length > 0
         }

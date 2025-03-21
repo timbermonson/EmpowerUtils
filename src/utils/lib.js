@@ -91,20 +91,22 @@ function prepAddressSearchTerm(
         removeSingleLetters: true,
     }
 ) {
-    let output = str
-        .toLowerCase()
-        .split('#')[0] // remove appt numbers
-        .replaceAll(/[^A-ZA-z0-9\s]/g, '') // remove anything that isn't letters, numbers, or spaces
-        .trim()
-        .replaceAll(/\s+/g, ' ') // combine spaces
-        .trim()
-        .replace(/^(north|south|east|west)\s+/, '') // remove leftover direction from beginning of street address
+    let output = normalizeCardinalDirection(
+        str
+            .toLowerCase()
+            .split('#')[0] // remove appt numbers
+            .replaceAll(/[^A-ZA-z0-9\s]/g, '') // remove anything that isn't letters, numbers, or spaces
+            .trim()
+            .replaceAll(/( )+/g, ' ') // combine spaces
+            .trim()
+            .replace(/^(north|south|east|west)\s+/, '') // remove leftover direction from beginning of street address
+    )
 
     if (removeSingleLetters) {
-        output = output.replaceAll(/(^|(?<=\s))\w(?=\s)/g, '') // remove any single letter bordered by spaces/starts
+        output = output.replaceAll(/(^|(?<=\s))\w((?=\s)|$)/g, '') // remove any single letter bordered by spaces/starts
     }
     if (removeStreetNum) {
-        output = output.replace(/^\s*\d+\W/, '') // remove street number
+        output = output.replace(/^\s*\d+\s+(?=[\w\d])/, '') // remove street number
     }
 
     return output
@@ -256,10 +258,10 @@ async function getWebpage(
 
 function normalizeCardinalDirection(addr) {
     return addr
-        .replace(/west/i, 'w')
-        .replace(/east/i, 'e')
-        .replace(/north/i, 'n')
-        .replace(/south/i, 's')
+        .replaceAll(/west/gi, 'w')
+        .replaceAll(/east/gi, 'e')
+        .replaceAll(/north/gi, 'n')
+        .replaceAll(/south/gi, 's')
 }
 
 function capitalizeName(fullName) {
