@@ -261,6 +261,7 @@ describe('Address Scraper App', () => {
                     ['ab cd'],
                     ['de fg'],
                 ])
+
                 expect(utilLib.appendOutputData.mock.calls).toMatchSnapshot()
             })
         })

@@ -1,5 +1,4 @@
 import { uniq, compact } from 'lodash-es'
-import clipboard from 'clipboardy'
 
 import {
     appendOutputData,
@@ -126,11 +125,7 @@ async function run() {
     setupIOTextFiles()
     const parsedArgs = commandLineArgsWrapper(argDefinitions)
 
-    const {
-        output: argsOutput,
-        clipboard: argsClipboard,
-        multiple: argsMultiple,
-    } = parsedArgs
+    const { output: argsOutput, multiple: argsMultiple } = parsedArgs
 
     const inputContent = getInputData()
     let nameListList = !!argsMultiple
@@ -152,10 +147,6 @@ async function run() {
         lm(logSep)
     }
 
-    if (argsClipboard) {
-        lm('writing outputs to clipboard...')
-        clipboard.writeSync(getInputData())
-    }
     lm('done!')
 }
 

@@ -5,6 +5,7 @@ export default defineConfig({
         globalSetup: '.test/globalSetup.js',
         reporters: ['verbose'],
         coverage: {
+            reportsDirectory: '.test/coverage',
             clean: true,
         },
         globals: true,
