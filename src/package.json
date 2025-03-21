@@ -28,8 +28,8 @@
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/run.js",
         "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/run.js -- -m",
         "end": "nodemon ./apps/EndatoApp/app.js --no-stdin",
-        "test": "vitest",
-        "coverage": "vitest run --coverage"
+        "test": "vitest --config ./.test/vitest.config.js --isolate=false",
+        "coverage": "vitest run --config ./.test/vitest.config.js --coverage"
     },
     "author": "",
     "license": "ISC",
