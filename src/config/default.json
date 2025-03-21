@@ -1,8 +1,20 @@
 {
-    "ioFiles": {
-        "inputPath": "./ioFiles/input.txt",
-        "outputPath": "./ioFiles/output.txt",
-        "logPath": "./ioFiles/logs.txt"
+    "io": {
+        "log": {
+            "logFileOverrideArgDef": {
+                "alias": "l",
+                "defaultOption": false,
+                "name": "logFileOverride"
+            },
+            "toFile": false,
+            "toTerminal": true
+        },
+        "disable": false,
+        "files": {
+            "inputPath": "./ioFiles/input.txt",
+            "outputPath": "./ioFiles/output.txt",
+            "logPath": "./ioFiles/logs.txt"
+        }
     },
     "endato": {
         "name": "",

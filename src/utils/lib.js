@@ -12,38 +12,35 @@ const { JSDOM } = jsdom
 
 const cityCountyMap = importJSON('./utils/cityCountyMap.json')
 
-const inputFilePath = config.get('ioFiles.inputPath')
-const outputFilePath = config.get('ioFiles.outputPath')
-const logFilePath = config.get('ioFiles.logPath')
-
-const logSettings = {
-    logArgDefinition: {
-        alias: 'l',
-        defaultOption: false,
-        name: 'logToFile',
-        type: Boolean,
-    },
-
-    toFile: false,
-    toTerminal: true,
-}
+const inputFilePath = config.get('io.files.inputPath')
+const outputFilePath = config.get('io.files.outputPath')
+const logFilePath = config.get('io.files.logPath')
+const ioDisable = config.get('io.disable')
+const logSettings = config.get('io.log')
 
 const logSep =
     '------------------------------------------------------------------'
 
 function getInputData() {
+    if (ioDisable) return
     return fs.readFileSync(inputFilePath, 'utf8')
 }
 
 function writeOutputData(output) {
+    if (ioDisable) return
+
     return fs.writeFileSync(outputFilePath, output)
 }
 
 function appendOutputData(output) {
+    if (ioDisable) return
+
     fs.appendFileSync(outputFilePath, output)
 }
 
 function addLogFileStart() {
+    if (ioDisable) return
+
     const timestamp = moment().format('HH:mm:ss - YYYY-MM-DD')
 
     fs.appendFileSync(logFilePath, `\n\n♦[NEW APP START]♦\n${timestamp}\n\n`)
@@ -63,10 +60,10 @@ function commandLineArgsWrapper(definitions) {
 
     if (
         definitions.findIndex(
-            ({ name }) => name === logSettings.logArgDefinition.name
+            ({ name }) => name === logSettings.logFileOverrideArgDef.name
         ) < 0
     ) {
-        definitions.push(logSettings.logArgDefinition)
+        definitions.push(logSettings.logFileOverrideArgDef)
     }
 
     const args = commandLineArgs(definitions)
@@ -76,7 +73,7 @@ function commandLineArgsWrapper(definitions) {
 }
 
 function commandLineArgsLogHandle(args) {
-    if (!args?.[logSettings.logArgDefinition.name]) {
+    if (!args?.[logSettings.logFileOverrideArgDef.name]) {
         return
     }
 
@@ -194,7 +191,10 @@ function nameReverse(fullName, separator = ', ') {
 }
 
 function lo(inp) {
+    if (ioDisable) return
+
     const strInp = JSON.stringify(inp, null, 2)
+
     if (logSettings.toTerminal) {
         console.log(strInp)
     }
@@ -204,6 +204,8 @@ function lo(inp) {
 }
 
 function lm(inp) {
+    if (ioDisable) return
+
     if (logSettings.toTerminal) {
         console.log(inp)
     }
