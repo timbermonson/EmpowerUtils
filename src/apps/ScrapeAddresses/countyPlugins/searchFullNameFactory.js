@@ -93,10 +93,10 @@ export default function searchFullNameFactory({
                     break
             }
 
-            return { fullName, status, addressList }
+            return { status, addressList }
         } catch (e) {
             lm(e.message)
-            return { fullName, status: SearchStatus.ERROR, addressList: [] }
+            return { status: SearchStatus.ERROR, addressList: [] }
         }
     }
     return searchFullName

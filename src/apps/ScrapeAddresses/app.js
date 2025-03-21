@@ -1,6 +1,4 @@
 import { uniq, compact } from 'lodash-es'
-import config from 'config'
-import fs from 'fs'
 import clipboard from 'clipboardy'
 
 import {
@@ -17,13 +15,25 @@ import {
 import { pickBestCountyAndAddresses } from './lib.js'
 import countyScraperMap from './countyPlugins/index.js'
 
+const FormatEnum = {
+    EXCEL: 'excel',
+    JSON: 'json',
+    BOTH: 'both',
+}
+
 const argDefinitions = [
-    { name: 'output', alias: 'o', type: String, defaultOption: 'excel' }, // 'json' for JUST the object, 'both' for both.
+    {
+        name: 'output',
+        alias: 'o',
+        type: String,
+        defaultOption: FormatEnum.EXCEL,
+    }, // 'json' for JUST the object, 'both' for both.
     { name: 'clipboard', alias: 'c', type: Boolean, defaultOption: false },
     { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
 ]
 
 function parseInputMultiple(inputContent) {
+    // empty lines aren't trimmed off-- trying to preserve same number of rows in/out
     const inputSplit = inputContent
         .split('\n')
         .map((line) => line.trim())
@@ -53,24 +63,31 @@ function parseInputLine(inputContent) {
     return compact(uniq(fullNameList))
 }
 
-function getOutputText(searchresultMapByName, { format = 'excel' }) {
+function getOutputText(searchresultMapByName, { format = FormatEnum.EXCEL }) {
+    if (!Object.values(FormatEnum).includes(format)) {
+        throw new Error('getOutputText called with bad format!')
+    }
+
     const jsonOutput = JSON.stringify(searchresultMapByName)
 
-    let excelOutput = ''
+    const excelOutputList = []
     for (const fullName in searchresultMapByName) {
-        const searchResult = searchresultMapByName[fullName]
-        excelOutput += `${fullName}\t`
-        excelOutput += `${searchResult.addressList
-            .map(({ street, city }) => `${street}, ${city}`)
-            .join(' | ')}\t`
+        const { addressList } = searchresultMapByName[fullName]
+
+        excelOutputList.push(
+            `${fullName}\t${addressList
+                .map(({ street, city }) => `${street}, ${city}`)
+                .join(' | ')}`
+        )
     }
+    const excelOutput = excelOutputList.join('\t')
 
     let output = ''
     switch (format) {
-        case 'json':
+        case FormatEnum.JSON:
             output = jsonOutput
             break
-        case 'both':
+        case FormatEnum.BOTH:
             output = `${jsonOutput}\t${excelOutput}`
             break
         default:
@@ -89,8 +106,10 @@ async function getSearchresultMapByName(nameList) {
         nameSearchresultMapByCounty[countyName] = {}
 
         for (const fullName of nameList) {
-            nameSearchresultMapByCounty[countyName][fullName] = await searcher(
-                fullName
+            const addressData = await searcher(fullName)
+            nameSearchresultMapByCounty[countyName][fullName] = Object.assign(
+                { fullName },
+                addressData
             )
         }
     }
@@ -142,6 +161,7 @@ async function run() {
 }
 
 export {
+    FormatEnum,
     getOutputText,
     getSearchresultMapByName,
     parseInputLine,
