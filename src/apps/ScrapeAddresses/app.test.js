@@ -2,21 +2,20 @@ import * as utilLib from '../../utils/lib.js'
 vi.mock('../../utils/lib.js', { spy: true })
 
 import * as localLib from './lib.js'
+vi.mock('./lib.js')
+
 import countyScraperMap from './countyPlugins/index.js'
+vi.mock('./countyPlugins/index.js', () => {
+    return { default: { countyA: vi.fn(), countyB: vi.fn() } }
+})
 
 import {
     getOutputText,
     getSearchresultMapByName,
-    parseInputLine,
+    parseInputSingle,
     parseInputMultiple,
     run,
 } from './app'
-
-vi.mock('./lib.js')
-
-vi.mock('./countyPlugins/index.js', () => {
-    return { default: { countyA: vi.fn(), countyB: vi.fn() } }
-})
 
 const testNameSearchResultMap = {
     'george washington': {
@@ -41,20 +40,26 @@ describe('Address Scraper App', () => {
         vi.clearAllMocks()
     })
 
-    describe('parseInputLine()', () => {
+    describe('parseInputSingle()', () => {
         test('Handles empty input', () => {
-            expect(parseInputLine('')).toStrictEqual([])
+            expect(parseInputSingle('')).toStrictEqual([])
         })
 
         test('Trims empty lines', () => {
-            expect(parseInputLine('\n\n\n')).toStrictEqual([])
+            expect(parseInputSingle('\n\n\n')).toStrictEqual([])
         })
 
         test('Cleans up messy input', () => {
             const inp =
                 '   \t\r\n title            firstName  middle           Last    , a   B c\n'
-            const out = parseInputLine(inp)
+            const out = parseInputSingle(inp)
             expect(out).toStrictEqual(['firstname middle last', 'b c'])
+        })
+
+        test('Ignores additional populated lines', () => {
+            const inp = 'a b c, d e f\ng h i, j k l'
+            const out = parseInputSingle(inp)
+            expect(out).toStrictEqual(['b c', 'e f'])
         })
     })
 
@@ -170,7 +175,7 @@ describe('Address Scraper App', () => {
         })
 
         test('Handles 1 names', async () => {
-            const res = await getSearchresultMapByName(['george washington'])
+            await getSearchresultMapByName(['george washington'])
 
             expect(countyScraperMap.countyA.mock.calls).toEqual([
                 ['george washington'],
@@ -202,6 +207,111 @@ describe('Address Scraper App', () => {
             expect(
                 localLib.pickBestCountyAndAddresses.mock.calls
             ).toMatchSnapshot()
+        })
+    })
+
+    describe('run()', () => {
+        const testSingleInput = 'D ab cd'
+        const testMultiInput = `${testSingleInput}, D de fg\nD ifsingle donotread`
+        const testAddressPickerReturn = {
+            a: {
+                fullName: 'useThisNameA',
+                addressList: [{ city: 'Acity', street: 'Astreet' }],
+            },
+            b: {
+                fullName: 'useThisNameB',
+                addressList: [{ city: 'Bcity', street: 'Bstreet' }],
+            },
+        }
+
+        describe('Single Line', () => {
+            test('Handles 0 names', async () => {
+                utilLib.getInputData.mockReturnValueOnce('')
+
+                await run()
+
+                expect(countyScraperMap.countyA.mock.calls).toEqual([])
+                expect(countyScraperMap.countyB.mock.calls).toEqual([])
+                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+            })
+
+            test('Handles 1 name', async () => {
+                utilLib.getInputData.mockReturnValueOnce(testSingleInput)
+
+                await run()
+
+                expect(countyScraperMap.countyA.mock.calls).toEqual([['ab cd']])
+                expect(countyScraperMap.countyB.mock.calls).toEqual([['ab cd']])
+                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+            })
+
+            test('Handles 2 names, uses formatter', async () => {
+                utilLib.getInputData.mockReturnValueOnce(testMultiInput)
+                localLib.pickBestCountyAndAddresses.mockReturnValueOnce(
+                    testAddressPickerReturn
+                )
+
+                await run()
+
+                expect(countyScraperMap.countyA.mock.calls).toEqual([
+                    ['ab cd'],
+                    ['de fg'],
+                ])
+                expect(countyScraperMap.countyB.mock.calls).toEqual([
+                    ['ab cd'],
+                    ['de fg'],
+                ])
+                expect(utilLib.appendOutputData.mock.calls).toMatchSnapshot()
+            })
+        })
+
+        describe('Multi Line', () => {
+            test('Handles 0 names', async () => {
+                utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+                    multiple: true,
+                })
+                utilLib.getInputData.mockReturnValueOnce('')
+
+                await run()
+
+                expect(countyScraperMap.countyA.mock.calls).toEqual([])
+                expect(countyScraperMap.countyB.mock.calls).toEqual([])
+                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+            })
+
+            test('Handles 1 name', async () => {
+                utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+                    multiple: true,
+                })
+                utilLib.getInputData.mockReturnValueOnce(testSingleInput)
+
+                await run()
+
+                expect(countyScraperMap.countyA.mock.calls).toEqual([['ab cd']])
+                expect(countyScraperMap.countyB.mock.calls).toEqual([['ab cd']])
+                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+            })
+
+            test('Handles 2+1 names', async () => {
+                utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+                    multiple: true,
+                })
+                utilLib.getInputData.mockReturnValueOnce(testMultiInput)
+
+                await run()
+
+                expect(countyScraperMap.countyA.mock.calls).toEqual([
+                    ['ab cd'],
+                    ['de fg'],
+                    ['ifsingle donotread'],
+                ])
+                expect(countyScraperMap.countyB.mock.calls).toEqual([
+                    ['ab cd'],
+                    ['de fg'],
+                    ['ifsingle donotread'],
+                ])
+                expect(utilLib.appendOutputData).toBeCalledTimes(2)
+            })
         })
     })
 })

@@ -7,7 +7,6 @@ import {
     commandLineArgsWrapper,
     getInputData,
     lm,
-    lo,
     logSep,
     setupIOTextFiles,
     writeOutputData,
@@ -37,16 +36,16 @@ function parseInputMultiple(inputContent) {
     const inputSplit = inputContent
         .split('\n')
         .map((line) => line.trim())
-        .map((line) => parseInputLine(line))
+        .map((line) => parseInputSingle(line))
     return inputSplit
 }
 
-function parseInputLine(inputContent) {
+function parseInputSingle(inputContent) {
     // Trim & sanitize input
     let input = combineSpaces(
         inputContent
             .trim()
-            .replaceAll('\n', '')
+            .split('\n')[0]
             .replaceAll('\r', '')
             .replaceAll('\t', ' ')
             .toLowerCase()
@@ -136,7 +135,7 @@ async function run() {
     const inputContent = getInputData()
     let nameListList = !!argsMultiple
         ? parseInputMultiple(inputContent)
-        : [parseInputLine(inputContent)]
+        : [parseInputSingle(inputContent)]
 
     writeOutputData('')
 
@@ -164,7 +163,7 @@ export {
     FormatEnum,
     getOutputText,
     getSearchresultMapByName,
-    parseInputLine,
+    parseInputSingle,
     parseInputMultiple,
     run,
 }

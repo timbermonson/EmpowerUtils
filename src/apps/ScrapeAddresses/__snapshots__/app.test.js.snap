@@ -55,3 +55,21 @@ exports[`Address Scraper App > getSearchresultMapByName() > Handles 2 names 1`] 
   ],
 ]
 `;
+
+exports[`Address Scraper App > run() > Single Line > Handles 2 names, tries to format properly 1`] = `
+[
+  [
+    "a	Astreet, Acity	b	Bstreet, Bcity
+",
+  ],
+]
+`;
+
+exports[`Address Scraper App > run() > Single Line > Handles 2 names, uses formatter 1`] = `
+[
+  [
+    "a	Astreet, Acity	b	Bstreet, Bcity
+",
+  ],
+]
+`;
