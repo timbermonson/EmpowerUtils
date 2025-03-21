@@ -1,4 +1,4 @@
-import { uniq, max, compact } from 'lodash-es'
+import { uniq, max, compact, cloneDeep } from 'lodash-es'
 import Fuse from 'fuse.js'
 
 import { lm, lo, prepAddressSearchTerm } from '../../utils/lib.js'
@@ -30,13 +30,6 @@ function citiesAreSimilar(city1, city2) {
     // Within the same county, all addresses come from the same dataset with the same weird names.
     // Thus, simple string matching is good enough.
     return city1?.toLowerCase()?.trim() === city2?.toLowerCase()?.trim()
-}
-
-function streetsAreSimilar(unpreppedStreet1, unpreppedStreet2) {
-    if (unpreppedStreet1 === unpreppedStreet2) {
-        return false
-    }
-    return !!fuzzyStreetCompare(unpreppedStreet1, unpreppedStreet2)
 }
 
 function fuzzyStreetSearch(searchList, searchTerm) {
@@ -152,14 +145,16 @@ function getMostCorrelatedAddress(searchresultMapByName, name) {
 }
 
 function getNameListSortedByNumAddr(searchresultMapByName) {
-    return Object.keys(searchresultMapByName).sort(
+    return Object.keys(searchresultMapByName || {}).sort(
         (a, b) =>
             searchresultMapByName[b]?.addressList?.length -
             searchresultMapByName[a]?.addressList?.length
     )
 }
 
-function filterAllAddressListsToBest(searchresultMapByName) {
+function filterAllAddressListsToBest(inputMap) {
+    const searchresultMapByName = cloneDeep(inputMap)
+
     const nameListSortedNumAddr = getNameListSortedByNumAddr(
         searchresultMapByName
     )
@@ -174,6 +169,8 @@ function filterAllAddressListsToBest(searchresultMapByName) {
 
         searchresultMapByName[name].addressList = compact([bestAddress])
     }
+
+    return searchresultMapByName
 }
 
 function getCountyResultScore(searchresultMapByName) {
@@ -233,7 +230,7 @@ function countyHasSimilarAddressPair(searchresultMapByName) {
             if (!address1 || !address2) continue
             if (!citiesAreSimilar(address1.city, address2.city)) continue
 
-            if (streetsAreSimilar(address1.street, address2.street)) {
+            if (!!fuzzyStreetCompare(address1.street, address2.street)) {
                 return true
             }
         }
@@ -305,12 +302,15 @@ Comparison rules:
 - Ties are broken via coinflip.
 */
 function pickBestCountyAndAddresses(nameSearchresultMapByCounty) {
+    if (!Object.keys(nameSearchresultMapByCounty || {}).length) return {}
     // Step 1: modify nameSearchresultMapByCounty:
     //  For each person in each county, add a "bestAddress" attribute,
     //      ...containing the best address according to the County Cleanup procedure.
 
     for (const countyName in nameSearchresultMapByCounty) {
-        filterAllAddressListsToBest(nameSearchresultMapByCounty[countyName])
+        nameSearchresultMapByCounty[countyName] = filterAllAddressListsToBest(
+            nameSearchresultMapByCounty[countyName]
+        )
     }
 
     // Step 2: Compare counties by score.
@@ -375,7 +375,6 @@ export {
     getNameListSortedByNumAddr,
     hasAddressInCity,
     pickBestCountyAndAddresses,
-    streetsAreSimilar,
 }
 
 export default { pickBestCountyAndAddresses }
