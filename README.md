@@ -21,7 +21,7 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 - Clear out old packages with `rm -Force node_modules` on Windows, or `rm -rf node_modules` on mac.
 - run `npm i` to install all packages.
 
-### Now With Some Tests!
+### Now With Tests!
 
 Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage report.
 
