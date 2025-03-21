@@ -189,7 +189,7 @@ describe('Address Scraper library', () => {
             expect(filterAllAddressListsToBest({})).toEqual({})
         })
 
-        test('Properly filters & modifies param', () => {
+        test('Properly filters all address results', () => {
             expect(filterAllAddressListsToBest(testMap)).toEqual(
                 testMapFiltered
             )
