@@ -4,7 +4,7 @@ A collection of utils written by Timber Monson for automating office tasks at an
 
 Basic usage guides are below, and a developer guide is at `./src/README.md` (TODO)
 
-### Install
+## Install
 
 **nvm & node**
 
@@ -20,6 +20,14 @@ Basic usage guides are below, and a developer guide is at `./src/README.md` (TOD
 - Set your cwd with `cd ./src` (do this before doing anything else, really)
 - Clear out old packages with `rm -Force node_modules` on Windows, or `rm -rf node_modules` on mac.
 - run `npm i` to install all packages.
+
+### Now With Some Tests!
+
+Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage report.
+
+![image](https://github.com/user-attachments/assets/f3bad18c-71c9-4107-87f0-3843a42ac2b8)
+
+![image](https://github.com/user-attachments/assets/1161a25d-3bad-4039-9b20-2700314724e2)
 
 # Business Principal Extractor
 
