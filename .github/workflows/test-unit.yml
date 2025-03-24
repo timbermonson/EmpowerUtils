@@ -8,14 +8,14 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - run: cd ./src
-
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
+          node-version-file: "src/.nvmrc"
           architecture: "x86"
           cache: "npm"
+
+      - run: cd ./src
       - run: npm ci
       - run: npm run testCI
 
