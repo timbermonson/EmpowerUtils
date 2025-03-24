@@ -12,7 +12,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: "src/.nvmrc"
-          architecture: "x86"
           cache: "npm"
 
       - run: cd ./src
