@@ -1,5 +1,5 @@
-name: Run Unit Tests
-run-name: ${{ github.actor }} is running tests on branch ${{ github.ref }} 🚀
+name: Tests
+run-name: Running tests on branch ${{ github.ref_name }} 🚀
 on: [push]
 
 env:

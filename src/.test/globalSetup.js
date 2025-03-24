@@ -1,7 +1,7 @@
 import process from 'process'
 
 async function setup() {
-    console.log(process.env.NODE_ENV)
+    process.env.NODE_ENV = 'test'
 }
 
 export { setup }
