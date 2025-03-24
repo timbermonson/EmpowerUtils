@@ -13,6 +13,7 @@ jobs:
         with:
           node-version-file: "src/.nvmrc"
           cache: "npm"
+          cache-dependency-path: "src/package-lock.json"
 
       - run: cd ./src
       - run: npm ci
