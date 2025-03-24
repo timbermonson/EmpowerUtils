@@ -14,10 +14,11 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
+          node-version-file: "src/.nvmrc"
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "src/package-lock.json"
 
+      - run: cd ./src
       - run: npm ci
       - run: npm run testCI
 
