@@ -1,11 +1,13 @@
 name: Run Unit Tests
-run-name: ${{ github.actor }} is running unit tests on branch ${{ github.ref }} 🚀
+run-name: ${{ github.actor }} is running tests on branch ${{ github.ref }} 🚀
 on: [push]
+
+env:
+  NODE_ENV: "test"
+
 jobs:
   Test-Unit:
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: "test"
     defaults:
       run:
         working-directory: ./src

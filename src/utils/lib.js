@@ -166,6 +166,8 @@ function getFuzzyCityMatch(cityName) {
 }
 
 function setupIOTextFiles() {
+    if (ioDisable) return
+
     ;[inputFilePath, outputFilePath].forEach((filePath) => {
         if (!fs.existsSync(filePath)) {
             fs.writeFileSync(filePath, '')
