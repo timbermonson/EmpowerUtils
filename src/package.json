@@ -28,7 +28,8 @@
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/run.js",
         "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/run.js -- -m",
         "end": "nodemon ./apps/EndatoApp/app.js --no-stdin",
-        "test": "vitest --config ./.test/vitest.config.js --isolate=false",
+        "test": "vitest --config ./.test/vitest.config.js",
+        "testCI": "vitest run --config ./.test/vitest.config.js",
         "coverage": "vitest run --config ./.test/vitest.config.js --coverage"
     },
     "author": "",
