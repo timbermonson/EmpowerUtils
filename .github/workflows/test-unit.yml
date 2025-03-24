@@ -4,6 +4,9 @@ on: [push]
 jobs:
   Test-Unit:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -11,11 +14,10 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version-file: "src/.nvmrc"
+          node-version-file: ".nvmrc"
           cache: "npm"
-          cache-dependency-path: "src/package-lock.json"
+          cache-dependency-path: "package-lock.json"
 
-      - run: cd ./src
       - run: npm ci
       - run: npm run testCI
 
