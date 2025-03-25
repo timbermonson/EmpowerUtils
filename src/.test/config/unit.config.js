@@ -1,14 +1,16 @@
 import { defineConfig } from 'vitest/config'
+import { configDefaults } from 'vitest/config'
 
 export default defineConfig({
     test: {
-        globalSetup: '.test/globalSetup.js',
-        reporters: ['verbose'],
         coverage: {
             reportsDirectory: '.test/coverage',
             clean: true,
         },
+        exclude: [...configDefaults.exclude, '.test/*'],
         globals: true,
+        globalSetup: '.test/config/globalSetup.js',
         include: ['**/*.test.js'],
+        reporters: ['verbose'],
     },
 })

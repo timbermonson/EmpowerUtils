@@ -1,6 +1,8 @@
 name: Tests
-run-name: Running tests on branch ${{ github.ref_name }} 🚀
+run-name: "Running tests on: ${{ github.ref_name }} 🚀"
 on: [push]
+
+runs-on: ubuntu-latest
 
 env:
   NODE_ENV: "test"
@@ -10,8 +12,7 @@ defaults:
     working-directory: ./src
 
 jobs:
-  Test-Unit:
-    runs-on: ubuntu-latest
+  Node-Setup:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -26,4 +27,14 @@ jobs:
       - name: Install packages
         run: npm ci
 
-      - run: npm run testCI
+  Test-Unit:
+    needs: Node-Setup
+    steps:
+      - name: Run unit tests
+        run: npm run test-unitCI
+
+  Test-Integration:
+    needs: Node-Setup
+    steps:
+      - name: Run integration tests
+        run: npm run integration
