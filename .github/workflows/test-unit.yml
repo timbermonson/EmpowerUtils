@@ -1,0 +1,30 @@
+name: Tests
+run-name: "Running tests on: ${{ github.ref_name }} 🚀"
+on: [push]
+
+env:
+  NODE_ENV: "test"
+
+defaults:
+  run:
+    working-directory: ./src
+
+jobs:
+  Test-Unit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "src/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "src/package-lock.json"
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test-unitCI
