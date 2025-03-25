@@ -1,7 +1,7 @@
 name: Tests
 run-name: "Running integration tests on: ${{ github.ref_name }} 🚀"
 on:
-  pull-request:
+  pull_request:
     types: [review_requested]
 
 env:
