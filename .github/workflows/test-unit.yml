@@ -1,5 +1,5 @@
 name: Tests
-run-name: "Running tests on: ${{ github.ref_name }} 🚀"
+run-name: "Running unit tests on: ${{ github.ref_name }} 🚀"
 on: [push]
 
 env:

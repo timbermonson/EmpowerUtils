@@ -1,6 +1,8 @@
 name: Tests
-run-name: "Running tests on: ${{ github.ref_name }} 🚀"
-on: [pull-request]
+run-name: "Running integration tests on: ${{ github.ref_name }} 🚀"
+on:
+  pull-request:
+    types: [review_requested]
 
 env:
   NODE_ENV: "test"
