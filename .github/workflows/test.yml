@@ -10,7 +10,7 @@ defaults:
     working-directory: ./src
 
 jobs:
-  Node-Setup:
+  Test-Unit:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -26,16 +26,24 @@ jobs:
       - name: Install packages
         run: npm ci
 
-  Test-Unit:
-    runs-on: ubuntu-latest
-    needs: Node-Setup
-    steps:
       - name: Run unit tests
         run: npm run test-unitCI
 
   Test-Integration:
     runs-on: ubuntu-latest
-    needs: Node-Setup
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "src/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "src/package-lock.json"
+
+      - name: Install packages
+        run: npm ci
+
       - name: Run integration tests
         run: npm run integration
