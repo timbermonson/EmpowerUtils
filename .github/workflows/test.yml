@@ -27,12 +27,14 @@ jobs:
         run: npm ci
 
   Test-Unit:
+    runs-on: ubuntu-latest
     needs: Node-Setup
     steps:
       - name: Run unit tests
         run: npm run test-unitCI
 
   Test-Integration:
+    runs-on: ubuntu-latest
     needs: Node-Setup
     steps:
       - name: Run integration tests
