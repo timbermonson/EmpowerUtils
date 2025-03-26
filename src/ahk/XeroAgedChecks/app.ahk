@@ -1,5 +1,7 @@
 #Requires AutoHotkey v2.0
 
+#include "../lib.ahk"
+
 inputPath := "./input.txt"
 FileInput := ""
 OrgList := ""
@@ -9,6 +11,10 @@ getInput()
 
 ^1:: {
     searchNextOrgName()
+}
+
+^2:: {
+    testFn()
 }
 
 ^!q:: {
@@ -21,6 +27,10 @@ getInput()
 
 ^!+z:: ExitApp
 ^!+x:: Reload
+
+testFn() {
+    Browser.executeConsole("console.log(`"Hello World!`")")
+}
 
 searchNextOrgName() {
     searchClickImage("orgselect.png", 20, 10)
