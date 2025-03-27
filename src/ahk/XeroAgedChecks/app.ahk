@@ -29,7 +29,10 @@ getInput()
 ^!+x:: Reload
 
 testFn() {
-    Browser.executeConsole("console.log(`"Hello World!`")")
+    if !(!Xero.prep()) {
+        return
+    }
+    Xero.switchToOrg("")
 }
 
 searchNextOrgName() {
