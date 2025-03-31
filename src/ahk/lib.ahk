@@ -85,8 +85,11 @@ class Browser {
         return 1
     }
 
-    static cmd(cmd, fromClipboard := true) {
+    static cmd(cmd, fromClipboard := true, useClipboardForErrors := true) {
 
+        if (useClipboardForErrors) {
+            cmd := "try{{}" . cmd . "{}}catch(e){{}ctc(`"err`"){}}"
+        }
         if (fromClipboard) {
             A_Clipboard := cmd
             Send "^v"
@@ -103,23 +106,23 @@ class Browser {
 
     static cmdToClipboard(cmd, useClipboard := true) {
         cmd := "ctc(" . cmd . ")"
-        this.cmd(cmd, useClipboard)
+        this.cmd(cmd, useClipboard, useClipboard)
     }
 
     static setupFunctions() {
-        this.cmd("allow pasting", false)
-        this.cmd("allow pasting", false)
+        this.cmd("allow pasting", false, false)
+        this.cmd("allow pasting", false, false)
 
         A_Clipboard := ""
         while (A_Clipboard != "$clipboardConfirm") {
-            this.cmd(this.clipboardInjector)
+            this.cmd(this.clipboardInjector, , false)
             this.cmdToClipboard("`"$clipboardConfirm`"", false)
         }
 
         A_Clipboard := ""
         while (A_Clipboard != "function") {
-            this.cmd(this.jQueryInjector)
-            this.cmdToClipboard("typeof jQuery")
+            this.cmd(this.jQueryInjector, , false)
+            this.cmdToClipboard("typeof jQuery", false)
         }
 
         return 1
@@ -230,7 +233,3 @@ class Xero {
         MsgBox("Done!")
     }
 }
-; jQuery('[title="Search organizations"]').get(0).value = 'Hello, World!';
-; jQuery('[title="Search organizations"]').get(0).dispatchEvent(new Event('input', { bubbles: true }));
-; jQuery('[title="Search organizations"]').get(0).dispatchEvent(new KeyboardEvent("keydown", {key: "e",keyCode: 13}));
-;
