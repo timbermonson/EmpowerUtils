@@ -76,7 +76,12 @@ class Browser {
         Send("{LButton down}")
         MouseMove(60, winH - 165)
         Sleep 50
+
         Send("{LButton up}")
+        Sleep 50
+
+        MouseMove(60, winH - 60)
+        Send "{LButton 2}"
         return 1
     }
 
@@ -88,10 +93,10 @@ class Browser {
             Sleep 150
         } else {
             Send cmd
-            sleep 1000
+            sleep 500
         }
-        Send "{Enter}"
-        Sleep 150
+        Send "{Enter 3}"
+        Sleep 75
     }
 
     static cmdToClipboard(cmd) {
@@ -103,14 +108,18 @@ class Browser {
         if (!this.openMinimalConsole()) {
             return 0
         }
-        this.cmd("allow pasting", true)
+        this.cmd("allow pasting", false)
         this.cmd(this.jQueryInjector)
         this.cmd(this.clipboardInjector)
         return 1
     }
 
     static toQuery(q, cmd := "") {
-        return "jQuery(`"" . esc(q) . "`").get(0)" . cmd
+        return this.toQueryPlain(q) . ".get(0)" . cmd
+    }
+
+    static toQueryPlain(q, cmd := "") {
+        return "jQuery(`"" . esc(q) . "`")" . cmd
     }
 
     static copyQ(q) {
@@ -119,6 +128,31 @@ class Browser {
 
     static clickQ(q) {
         this.cmd(this.toQuery(q, ".click()"))
+    }
+
+    static typeQ(q, input) {
+        this.cmd(this.toQuery(q, ".value = `"") . input . "`"")
+
+        this.cmd(this.toQuery(q, ".dispatchEvent(new KeyboardEvent(`"keyup`"))"))
+    }
+
+    static waitForQ(q, timeout := 4000, interval := 100, callback := 0) {
+        start := A_TickCount
+
+        while (A_TickCount - start <= timeout) {
+            Browser.cmdToClipboard(Browser.toQueryPlain(q,
+                ".length"))
+
+            if (A_Clipboard = "1") {
+                if (callback) {
+                    callback.Call(this, q)
+                }
+                return 1
+            }
+            sleep interval
+        }
+
+        return 0
     }
 }
 
@@ -130,8 +164,19 @@ class Xero {
         return 1
     }
 
-    static switchToOrg(orgName := "") {
+    static switchToOrg(orgName) {
         Browser.clickQ(".xnav-appbutton--body")
         Browser.clickQ("[data-name=`"xnav-changeorgbutton`"]")
+        Browser.typeQ("[title=`"Search organizations`"]", orgName)
+        sleep(500)
+        Browser.waitForQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a", , , Browser.clickQ)
+        sleep(500)
+        Browser.waitForQ(
+            "div.mf-bank-widget-panel`").has(`"a:contains(`"Operating:`")).(`".mf-bank-widget-touchtarget")
+        MsgBox("Done!")
     }
 }
+; jQuery('[title="Search organizations"]').get(0).value = 'Hello, World!';
+; jQuery('[title="Search organizations"]').get(0).dispatchEvent(new Event('input', { bubbles: true }));
+; jQuery('[title="Search organizations"]').get(0).dispatchEvent(new KeyboardEvent("keydown", {key: "e",keyCode: 13}));
+;
