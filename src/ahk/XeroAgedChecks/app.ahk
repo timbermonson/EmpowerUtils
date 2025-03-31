@@ -18,6 +18,9 @@ getInput()
 }
 
 ^!q:: {
+    if (OrgList.length < 1) {
+        return
+    }
     OrgList.RemoveAt(1)
     FileDelete(inputPath)
     FileAppend(StrJoin(OrgList, "`n"), inputPath)
@@ -32,7 +35,7 @@ testFn() {
     if !(!Xero.prep()) {
         return
     }
-    Xero.switchToOrg("")
+    Xero.switchToOrg("verado")
 }
 
 searchNextOrgName() {
@@ -115,6 +118,9 @@ getInput() {
     global
     FileInput := FileRead(inputPath, "`n UTF-8")
     OrgList := StrSplit(FileInput, "`n")
+    if (orgList.length < 2) {
+        return
+    }
     FirstOrg := Trim(OrgList[1])
 }
 
