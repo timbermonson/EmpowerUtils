@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2.0
 
-scanCursor(xStart, yStart, dir, dist, cursorOverride := 0) {
+ScanCursor(xStart, yStart, dir, dist, cursorOverride := 0) {
     CoordMode("Mouse", "Window")
     stepDistance := 5
     curs := ""
@@ -20,7 +20,7 @@ scanCursor(xStart, yStart, dir, dist, cursorOverride := 0) {
             xStep := stepDistance
             curs := "SizeWE"
         default:
-            Throw ValueError("aaaa")
+            throw ValueError("ScanCursor: Invalid Direction!")
     }
     if (cursorOverride != 0) {
         curs := cursorOverride
@@ -43,8 +43,61 @@ scanCursor(xStart, yStart, dir, dist, cursorOverride := 0) {
     return
 }
 
+StrJoin(arr, sep) {
+    if (arr.Length = 0) {
+        return ""
+    }
+
+    result := arr[1]
+
+    for ind, str in arr {
+        if (ind = 1) {
+            continue
+        }
+
+        result .= sep
+        result .= str
+    }
+
+    return result
+}
+
 esc(str) {
     return StrReplace(str, "`"", "\`"")
+}
+
+class FileLineReader {
+    filePath := ""
+    lineList := []
+    firstLine := ""
+
+    __New(filePath) {
+        this.filePath := filePath
+        this.readInput()
+    }
+
+    readInput() {
+        fileContents := FileRead(this.filePath, "UTF-8")
+
+        this.lineList := StrSplit(fileContents, "`n")
+        if (this.lineList.length < 2) {
+            MsgBox("AAA")
+            return
+        }
+        this.firstLine := Trim(this.lineList[1])
+    }
+
+    removeFirstLine() {
+        if (this.lineList.length < 1) {
+            return
+        }
+
+        FileDelete(this.filePath)
+        this.lineList.RemoveAt(1)
+        FileAppend(StrJoin(this.lineList, "`n"), this.filePath)
+        Sleep 100
+        this.readInput()
+    }
 }
 
 class Browser {
@@ -61,16 +114,18 @@ class Browser {
         Sleep wait
     }
 
-    static setupConsole() {
-        this.toggleConsole(300)
+    static setupConsole(initialToggle := true) {
+        if (initialToggle) {
+            this.toggleConsole(300)
+        }
 
         winW := 0
         winH := 0
         WinGetPos(, , &winW, &winH, "A")
 
-        if (!scanCursor(60, winH - 30, "U", 800)) {
+        if (!ScanCursor(60, winH - 30, "U", 800)) {
             this.toggleConsole(300)
-            if (!scanCursor(60, winH - 30, "U", 800)) {
+            if (!ScanCursor(60, winH - 30, "U", 800)) {
                 throw TargetError()
             }
         }
@@ -169,6 +224,10 @@ class Browser {
         }
     }
 
+    static waitClickQ(q) {
+        this.waitForQ(q, , , this.clickQ)
+    }
+
     static clickQ(q) {
         this.cmd(this.toQuery(q, ".click()"))
         if (A_Clipboard = this.clipboardError) {
@@ -182,7 +241,7 @@ class Browser {
         this.cmd(this.toQuery(q, ".dispatchEvent(new KeyboardEvent(`"keyup`"))"))
     }
 
-    static waitForQ(q, timeout := 4000, interval := 100, callback := -1, callbackParam := -1) {
+    static waitForQ(q, timeout := 8000, interval := 100, callback := -1, callbackParam := -1) {
         start := A_TickCount
 
         while (A_TickCount - start <= timeout) {
@@ -206,22 +265,31 @@ class Browser {
 }
 
 class Xero {
+    static dashOpAccBtn :=
+        "div.mf-bank-widget-panel^h[h2:contains(`"Operating:`"):contains(`"2894`")].mf-bank-widget-touchtarget"
+
     static setup() {
         Browser.setup()
     }
 
     static switchToOrg(orgName) {
+        Browser.setupConsole(false)
+
         Browser.clickQ(".xnav-appbutton--body")
-        Browser.clickQ("[data-name=`"xnav-changeorgbutton`"]")
+        Browser.waitClickQ("[data-name=`"xnav-changeorgbutton`"]")
 
         Browser.typeQ("[title=`"Search organizations`"]", orgName)
         sleep(500)
 
-        Browser.waitForQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a", , , Browser.clickQ)
+        Browser.waitClickQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a")
         Browser.waitForPageChange()
 
-        Browser.waitForQ(
-            "div.mf-bank-widget-panel^h[a:contains(`"Operating:`")].mf-bank-widget-touchtarget")
-        MsgBox("Done!")
+        Browser.waitForQ(this.dashOpAccBtn)
+    }
+
+    static openOperatingImports() {
+        Browser.clickQ(this.dashOpAccBtn)
+        Browser.waitClickQ("a.mf-bank-widget-text-minorlink:contains(`"Import a Statement`")")
+        Browser.waitForPageChange()
     }
 }
