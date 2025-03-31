@@ -1,4 +1,5 @@
 ioFiles/*
+*input.txt
 
 config/*
 !config/default.json
