@@ -9,7 +9,7 @@ class Browser {
         "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
 
     static jQueryInjector :=
-        "var script = document.createElement('script'); script.src = `"https://code.jquery.com/jquery-3.7.1.min.js`"; document.getElementsByTagName('head')[0].appendChild(script);"
+        "var script = document.createElement('script'); script.src = `"https://code.jquery.com/jquery-3.7.1.min.js`"; document.getElementsByTagName('head')[0].appendChild(script)"
 
     static toggleConsole(wait := 600) {
         Send "{Ctrl down}{Shift down}j{Shift up}{Ctrl up}"
@@ -39,14 +39,14 @@ class Browser {
         Send("{LButton up}")
         Sleep 50
 
-        MouseMove(60, winH - 60)
+        MouseMove(15, winH - 60)
         Send "{LButton 2}"
     }
 
     static cmd(cmd, fromClipboard := true, useClipboardForErrors := true) {
-
         if (fromClipboard) {
             if (useClipboardForErrors) {
+                A_Clipboard := ""
                 cmd := "try{" . cmd . "}catch(e){ctc(`"" . this.clipboardError . "`")}"
             }
             A_Clipboard := cmd
@@ -80,6 +80,8 @@ class Browser {
         A_Clipboard := ""
         while (A_Clipboard != "function") {
             this.cmd(this.jQueryInjector)
+            this.cmd("jQuery.noConflict()")
+            this.cmd("jQuery.noConflict()")
             this.cmdToClipboard("typeof jQuery")
         }
     }
@@ -115,6 +117,9 @@ class Browser {
 
     static toQueryPlain(q, cmd := "") {
         replacedQ := RegExReplace(esc(q), "i)\^h\[([^]]+)\]", "`").has(`"$1`").find(`"")
+        replacedQ := RegExReplace(replacedQ, "i)\^n\[([^]]+)\]", "`").not(`"$1`").find(`"")
+        replacedQ := RegExReplace(replacedQ, "i)\^f\[([^]]+)\]", "`").find(`"$1")
+        replacedQ := RegExReplace(replacedQ, "\`"\)\.find\(\`"$", "")
 
         return fullQuery := "jQuery(`"" . replacedQ . "`")" . cmd
     }

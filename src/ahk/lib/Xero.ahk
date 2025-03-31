@@ -16,8 +16,8 @@ class Xero {
     static switchToOrg(orgName) {
         Browser.setupConsole(false)
 
-        if (!Browser.existsQ(".xnav-appmenu--body-is-open")) {
-            Browser.clickQ(".xnav-appbutton--body")
+        if (!Browser.existsQ("button.xnav-appbutton-is-active")) {
+            Browser.clickQ("span.xnav-appbutton--text")
         }
 
         if (Browser.existsQ(".xnav-orgsearch--input")) {
@@ -41,5 +41,51 @@ class Xero {
         Browser.clickQ(this.dashOpAccBtn)
         Browser.waitClickQ("a.mf-bank-widget-text-minorlink:contains(`"Import a Statement`")")
         Browser.waitForPageChange()
+    }
+
+    static openAgedChecks() {
+        Browser.clickQ(this.dashOpAccBtn)
+        Browser.waitClickQ("a.mf-bank-widget-text-minorlink:contains(`"Account Transactions`")")
+        Browser.waitForPageChange()
+        Browser.cmd("window.Bank.toggleSearchForm()")
+        if (A_Clipboard = Browser.clipboardError) {
+            return
+        }
+        Browser.waitClickQ("#sb_reconciledStatus_toggle")
+        Browser.waitClickQ("#sb_reconciledStatus_suggestions>div>div:contains(`"Unreconciled`")")
+
+        Browser.waitClickQ("#endDate^f[img]")
+        Sleep 200
+
+        Browser.cmd(Browser.toQuery("div.x-date-menu^n[.x-hide-offsets]td.x-date-left > a",
+            ".dispatchEvent(new Event(`"mousedown`"))") . ";" . Browser.toQuery(
+                "div.x-date-menu^n[.x-hide-offsets]td.x-date-left > a",
+                ".dispatchEvent(new Event(`"mouseout`"))"))
+        Sleep 150
+        Browser.cmd(Browser.toQuery("div.x-date-menu^n[.x-hide-offsets]td.x-date-left > a",
+            ".dispatchEvent(new Event(`"mousedown`"))") . ";" . Browser.toQuery(
+                "div.x-date-menu^n[.x-hide-offsets]td.x-date-left > a",
+                ".dispatchEvent(new Event(`"mouseout`"))"))
+        Sleep 150
+        Browser.cmd(Browser.toQuery("div.x-date-menu^n[.x-hide-offsets]td.x-date-left > a",
+            ".dispatchEvent(new Event(`"mousedown`"))") . ";" . Browser.toQuery(
+                "div.x-date-menu^n[.x-hide-offsets]td.x-date-left > a",
+                ".dispatchEvent(new Event(`"mouseout`"))"))
+        Sleep 150
+        Browser.waitClickQ("td.x-date-selected > a")
+        Browser.waitClickQ("#sbSubmit_BT")
+        Browser.waitForPageChange()
+
+        dateHeader := "#bankTransactions>thead>tr>td:nth-child(2)"
+
+        if (Browser.waitForQ([dateHeader . "^n[.selected]", dateHeader . ".selected"]) = 1) {
+            Browser.clickQ(dateHeader " > a")
+            Browser.waitForPageChange()
+        }
+        if (Browser.waitForQ([dateHeader . " > span.icons.ascend", dateHeader . ">span.icons.descend"]) = 1) {
+            Browser.clickQ(dateHeader . " > a")
+            Browser.waitForPageChange()
+        }
+        return
     }
 }
