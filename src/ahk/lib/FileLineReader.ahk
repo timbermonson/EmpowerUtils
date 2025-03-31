@@ -1,5 +1,7 @@
 #Requires AutoHotkey v2.0
 
+#Include etc.ahk
+
 class FileLineReader {
     filePath := ""
     lineList := []
