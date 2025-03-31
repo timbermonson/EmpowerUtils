@@ -224,8 +224,21 @@ class Browser {
         }
     }
 
-    static waitClickQ(q) {
-        this.waitForQ(q, , , this.clickQ)
+    static waitClickQ(qList) {
+        if (!IsObject(qList)) {
+            qList := [qList]
+        }
+
+        return this.waitForQ(qList, , , this.clickQ)
+    }
+
+    static existsQ(q) {
+        Browser.cmdToClipboard(Browser.toQueryPlain(q,
+            ".length"))
+
+        if (A_Clipboard = "1") {
+            return 1
+        }
     }
 
     static clickQ(q) {
@@ -239,23 +252,30 @@ class Browser {
         this.cmd(this.toQuery(q, ".value = `"") . input . "`"")
 
         this.cmd(this.toQuery(q, ".dispatchEvent(new KeyboardEvent(`"keyup`"))"))
+        this.cmd(this.toQuery(q, ".dispatchEvent(new KeyboardEvent(`"keyup`"))"))
     }
 
-    static waitForQ(q, timeout := 8000, interval := 100, callback := -1, callbackParam := -1) {
+    static waitForQ(qList, timeout := 8000, interval := 100, callback := -1, callbackParam := -1) {
         start := A_TickCount
 
-        while (A_TickCount - start <= timeout) {
-            Browser.cmdToClipboard(Browser.toQueryPlain(q,
-                ".length"))
+        if (!IsObject(qList)) {
+            qList := [qList]
+        }
 
-            if (A_Clipboard = "1") {
-                if (callback != -1) {
-                    if (callbackParam = -1) {
-                        callbackParam := q
+        while (A_TickCount - start <= timeout) {
+            for index, q in qList {
+                Browser.cmdToClipboard(Browser.toQueryPlain(q,
+                    ".length"))
+
+                if (A_Clipboard = "1") {
+                    if (callback != -1) {
+                        if (callbackParam = -1) {
+                            callbackParam := q
+                        }
+                        callback.Call(this, callbackParam)
                     }
-                    callback.Call(this, callbackParam)
+                    return index
                 }
-                return
             }
             sleep interval
         }
@@ -267,6 +287,8 @@ class Browser {
 class Xero {
     static dashOpAccBtn :=
         "div.mf-bank-widget-panel^h[h2:contains(`"Operating:`"):contains(`"2894`")].mf-bank-widget-touchtarget"
+    static orgSearchNone := ".xnav-orgsearch--message:contains(`"No results found.`")"
+    static orgSearchFirst := "ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a"
 
     static setup() {
         Browser.setup()
@@ -275,13 +297,22 @@ class Xero {
     static switchToOrg(orgName) {
         Browser.setupConsole(false)
 
-        Browser.clickQ(".xnav-appbutton--body")
+        if (!Browser.existsQ(".xnav-appmenu--body-is-open")) {
+            Browser.clickQ(".xnav-appbutton--body")
+        }
+
+        if (Browser.existsQ(".xnav-orgsearch--input")) {
+            Browser.clickQ(".xnav-icon-orgsearchclear")
+        }
+
         Browser.waitClickQ("[data-name=`"xnav-changeorgbutton`"]")
-
         Browser.typeQ("[title=`"Search organizations`"]", orgName)
-        sleep(500)
+        Browser.waitForQ(".xnav-loader-wrapper")
+        if (Browser.waitForQ([this.orgSearchNone, this.orgSearchFirst]) = 1) {
+            throw Error("No results for " . orgName)
+        }
 
-        Browser.waitClickQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a")
+        Browser.waitClickQ(this.orgSearchFirst)
         Browser.waitForPageChange()
 
         Browser.waitForQ(this.dashOpAccBtn)
