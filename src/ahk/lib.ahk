@@ -48,6 +48,8 @@ esc(str) {
 }
 
 class Browser {
+    static clipboardError := "$clipboardError"
+
     static clipboardInjector :=
         "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
 
@@ -69,7 +71,7 @@ class Browser {
         if (!scanCursor(60, winH - 30, "U", 800)) {
             this.toggleConsole(300)
             if (!scanCursor(60, winH - 30, "U", 800)) {
-                return
+                throw TargetError()
             }
         }
 
@@ -82,26 +84,25 @@ class Browser {
 
         MouseMove(60, winH - 60)
         Send "{LButton 2}"
-        return 1
     }
 
     static cmd(cmd, fromClipboard := true, useClipboardForErrors := true) {
 
-        if (useClipboardForErrors) {
-            cmd := "try{{}" . cmd . "{}}catch(e){{}ctc(`"err`"){}}"
-        }
         if (fromClipboard) {
+            if (useClipboardForErrors) {
+                cmd := "try{" . cmd . "}catch(e){ctc(`"" . this.clipboardError . "`")}"
+            }
             A_Clipboard := cmd
             Send "^v"
-            Sleep 150
-            Send "{Enter 3}"
-            Sleep 150
         } else {
-            Send cmd
-            sleep 300
-            Send "{Escape 2}"
-            Send "{Enter 5}"
+            SetKeyDelay(0)
+
+            SendEvent cmd
+            SendEvent "{Escape 2}"
         }
+        Sleep 75
+        Send "{Enter 3}"
+        Sleep 75
     }
 
     static cmdToClipboard(cmd, useClipboard := true) {
@@ -110,31 +111,25 @@ class Browser {
     }
 
     static setupFunctions() {
-        this.cmd("allow pasting", false, false)
-        this.cmd("allow pasting", false, false)
-
         A_Clipboard := ""
         while (A_Clipboard != "$clipboardConfirm") {
             this.cmd(this.clipboardInjector, , false)
             this.cmdToClipboard("`"$clipboardConfirm`"", false)
         }
 
+        this.cmd("allow pasting", false, false)
+        this.cmd("allow pasting", false, false)
+
         A_Clipboard := ""
         while (A_Clipboard != "function") {
-            this.cmd(this.jQueryInjector, , false)
-            this.cmdToClipboard("typeof jQuery", false)
+            this.cmd(this.jQueryInjector)
+            this.cmdToClipboard("typeof jQuery")
         }
-
-        return 1
     }
 
     static setup() {
-        if (!this.setupConsole()) {
-            return
-        }
-
+        this.setupConsole()
         this.setupFunctions()
-        return 1
     }
 
     static waitForPageChange(timeout := 5000) {
@@ -150,11 +145,11 @@ class Browser {
 
             if (A_Clipboard != "`"$clipboardConfirm`"") {
                 this.setupFunctions()
-                return 1
+                return
             }
         }
 
-        return
+        throw TargetError()
     }
 
     static toQuery(q, cmd := "") {
@@ -169,10 +164,16 @@ class Browser {
 
     static copyQ(q) {
         this.cmdToClipboard(this.toQuery(q, ".textContent"))
+        if (A_Clipboard = this.clipboardError) {
+            throw TargetError()
+        }
     }
 
     static clickQ(q) {
         this.cmd(this.toQuery(q, ".click()"))
+        if (A_Clipboard = this.clipboardError) {
+            throw TargetError()
+        }
     }
 
     static typeQ(q, input) {
@@ -195,21 +196,18 @@ class Browser {
                     }
                     callback.Call(this, callbackParam)
                 }
-                return 1
+                return
             }
             sleep interval
         }
 
-        return
+        throw TargetError()
     }
 }
 
 class Xero {
-    static prep() {
-        if !(!Browser.setup()) {
-            return
-        }
-        return 1
+    static setup() {
+        Browser.setup()
     }
 
     static switchToOrg(orgName) {
@@ -218,18 +216,12 @@ class Xero {
 
         Browser.typeQ("[title=`"Search organizations`"]", orgName)
         sleep(500)
-        if (!Browser.waitForQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a", , , Browser.clickQ)) {
-            return
-        }
 
-        if (!Browser.waitForPageChange()) {
-            return
-        }
+        Browser.waitForQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a", , , Browser.clickQ)
+        Browser.waitForPageChange()
 
-        if (!Browser.waitForQ(
-            "div.mf-bank-widget-panel^h[a:contains(`"Operating:`")].mf-bank-widget-touchtarget")) {
-            return
-        }
+        Browser.waitForQ(
+            "div.mf-bank-widget-panel^h[a:contains(`"Operating:`")].mf-bank-widget-touchtarget")
         MsgBox("Done!")
     }
 }

@@ -32,10 +32,8 @@ getInput()
 ^!+x:: Reload
 
 testFn() {
-    if !(!Xero.prep()) {
-        return
-    }
-    Xero.switchToOrg("verado")
+    Xero.setup()
+    Xero.switchToOrg("Haven")
 }
 
 searchNextOrgName() {
