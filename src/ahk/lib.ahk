@@ -40,7 +40,7 @@ scanCursor(xStart, yStart, dir, dist, cursorOverride := 0) {
         y += yStep
     }
 
-    return 0
+    return
 }
 
 esc(str) {
@@ -59,7 +59,7 @@ class Browser {
         Sleep wait
     }
 
-    static openMinimalConsole() {
+    static setupConsole() {
         this.toggleConsole(300)
 
         winW := 0
@@ -69,7 +69,7 @@ class Browser {
         if (!scanCursor(60, winH - 30, "U", 800)) {
             this.toggleConsole(300)
             if (!scanCursor(60, winH - 30, "U", 800)) {
-                return 0
+                return
             }
         }
 
@@ -91,27 +91,67 @@ class Browser {
             A_Clipboard := cmd
             Send "^v"
             Sleep 150
+            Send "{Enter 3}"
+            Sleep 150
         } else {
             Send cmd
-            sleep 500
+            sleep 300
+            Send "{Escape 2}"
+            Send "{Enter 5}"
         }
-        Send "{Enter 3}"
-        Sleep 75
     }
 
-    static cmdToClipboard(cmd) {
+    static cmdToClipboard(cmd, useClipboard := true) {
         cmd := "ctc(" . cmd . ")"
-        this.cmd(cmd)
+        this.cmd(cmd, useClipboard)
     }
 
-    static prepForCommands() {
-        if (!this.openMinimalConsole()) {
-            return 0
-        }
+    static setupFunctions() {
         this.cmd("allow pasting", false)
-        this.cmd(this.jQueryInjector)
-        this.cmd(this.clipboardInjector)
+        this.cmd("allow pasting", false)
+
+        A_Clipboard := ""
+        while (A_Clipboard != "$clipboardConfirm") {
+            this.cmd(this.clipboardInjector)
+            this.cmdToClipboard("`"$clipboardConfirm`"", false)
+        }
+
+        A_Clipboard := ""
+        while (A_Clipboard != "function") {
+            this.cmd(this.jQueryInjector)
+            this.cmdToClipboard("typeof jQuery")
+        }
+
         return 1
+    }
+
+    static setup() {
+        if (!this.setupConsole()) {
+            return
+        }
+
+        this.setupFunctions()
+        return 1
+    }
+
+    static waitForPageChange(timeout := 5000) {
+        this.cmdToClipboard("`"$clipboardConfirm`"", false)
+        this.cmdToClipboard("`"$clipboardConfirm`"", false)
+        start := A_TickCount
+
+        while (A_TickCount - start <= timeout) {
+            A_Clipboard := ""
+
+            this.cmdToClipboard("`"$clipboardConfirm`"", false)
+            this.cmdToClipboard("`"$clipboardConfirm`"", false)
+
+            if (A_Clipboard != "`"$clipboardConfirm`"") {
+                this.setupFunctions()
+                return 1
+            }
+        }
+
+        return
     }
 
     static toQuery(q, cmd := "") {
@@ -119,7 +159,9 @@ class Browser {
     }
 
     static toQueryPlain(q, cmd := "") {
-        return "jQuery(`"" . esc(q) . "`")" . cmd
+        replacedQ := RegExReplace(esc(q), "i)\^h\[([^]]+)\]", "`").has(`"$1`").find(`"")
+
+        return fullQuery := "jQuery(`"" . replacedQ . "`")" . cmd
     }
 
     static copyQ(q) {
@@ -136,7 +178,7 @@ class Browser {
         this.cmd(this.toQuery(q, ".dispatchEvent(new KeyboardEvent(`"keyup`"))"))
     }
 
-    static waitForQ(q, timeout := 4000, interval := 100, callback := 0) {
+    static waitForQ(q, timeout := 4000, interval := 100, callback := -1, callbackParam := -1) {
         start := A_TickCount
 
         while (A_TickCount - start <= timeout) {
@@ -144,22 +186,25 @@ class Browser {
                 ".length"))
 
             if (A_Clipboard = "1") {
-                if (callback) {
-                    callback.Call(this, q)
+                if (callback != -1) {
+                    if (callbackParam = -1) {
+                        callbackParam := q
+                    }
+                    callback.Call(this, callbackParam)
                 }
                 return 1
             }
             sleep interval
         }
 
-        return 0
+        return
     }
 }
 
 class Xero {
     static prep() {
-        if !(!Browser.prepForCommands()) {
-            return 0
+        if !(!Browser.setup()) {
+            return
         }
         return 1
     }
@@ -167,12 +212,21 @@ class Xero {
     static switchToOrg(orgName) {
         Browser.clickQ(".xnav-appbutton--body")
         Browser.clickQ("[data-name=`"xnav-changeorgbutton`"]")
+
         Browser.typeQ("[title=`"Search organizations`"]", orgName)
         sleep(500)
-        Browser.waitForQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a", , , Browser.clickQ)
-        sleep(500)
-        Browser.waitForQ(
-            "div.mf-bank-widget-panel`").has(`"a:contains(`"Operating:`")).(`".mf-bank-widget-touchtarget")
+        if (!Browser.waitForQ("ol[role=`"navigation`"].xnav-verticalmenu > li:nth-child(1) > a", , , Browser.clickQ)) {
+            return
+        }
+
+        if (!Browser.waitForPageChange()) {
+            return
+        }
+
+        if (!Browser.waitForQ(
+            "div.mf-bank-widget-panel^h[a:contains(`"Operating:`")].mf-bank-widget-touchtarget")) {
+            return
+        }
         MsgBox("Done!")
     }
 }
