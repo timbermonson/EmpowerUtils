@@ -93,6 +93,26 @@ async function doConsoleSetup(wrappedWsClient) {
     await wrappedWsClient.cons(jQueryInjector, true)
     await wrappedWsClient.cons(clipboardInjector)
     await wrappedWsClient.cons('jQuery.noConflict()')
+    await wrappedWsClient.cons('$ = jQuery')
 }
 
-export { setupWebsocket }
+const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+
+async function waitFor(wrappedWsClient, input, timeout = 4000, interval = 500) {
+    const commandList = typeof input === 'string' ? [input] : input
+
+    const startTime = Date.now()
+    while (Date.now() - startTime < timeout) {
+        for (const command of commandList) {
+            const result = await wrappedWsClient.cons(command)
+            console.log(result)
+            if (result) return 1
+        }
+
+        await wait(interval)
+    }
+
+    throw new Error('waitFor reached timeout!')
+}
+
+export { setupWebsocket, waitFor }
