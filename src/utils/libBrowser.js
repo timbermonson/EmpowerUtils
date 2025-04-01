@@ -1,6 +1,12 @@
 import axios from 'axios'
 import WebSocket from 'faye-websocket'
 
+const clipboardInjector =
+    "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
+
+const jQueryInjector =
+    "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res;})"
+
 async function getWsURL(port, tabSelectorFn) {
     let response
     try {
@@ -19,45 +25,54 @@ async function getWsURL(port, tabSelectorFn) {
     return wsUrl
 }
 
-function wsSendAwaitRespFactory(ws) {
+function wsSendAwaitRespFactory(rawWsClient) {
     const startingId = 10
     let curId = startingId
 
-    async function wsSendAwaitResp(consoleCommand) {
+    async function wsSendAwaitResp(consoleCommand, executeAsync = false) {
+        curId += 1
         const msgId = curId
+
         const msg = {
             id: msgId,
             params: {
-                expression: consoleCommand,
+                expression: executeAsync
+                    ? `webSocketFunc = async () => {${consoleCommand}}; webSocketFunc()`
+                    : consoleCommand,
                 objectGroup: 'console',
                 includeCommandLineAPI: true,
                 silent: false,
                 userGesture: true,
+                awaitPromise: true,
             },
             method: 'Runtime.evaluate',
         }
 
-        return await new Promise(async (res, reject) => {
-            await ws.on('message', (event) => {
+        return new Promise(async (res) => {
+            await rawWsClient.once('message', async (event) => {
                 const respData = JSON.parse(event.data)
 
-                if (respData.id === msgId) res(respData.result.result.value)
+                if (respData.id === msgId) {
+                    return res(respData.result.result.value)
+                }
+                throw new Error('Message listener out of sync!')
             })
 
-            ws.send(JSON.stringify(msg))
-
-            curId += 1
+            await rawWsClient.send(JSON.stringify(msg))
         })
     }
 
     return wsSendAwaitResp
 }
 
+function wrapWebsocket(ws) {
+    ws.cons = wsSendAwaitRespFactory(ws)
+
+    return ws
+}
+
 async function setupWebsocket(port, tabSelectorFn) {
     const wsUrl = await getWsURL(port, tabSelectorFn)
-
-    console.log(wsUrl)
-
     let ws = new WebSocket.Client(wsUrl)
 
     ws.on('open', function (event) {
@@ -69,7 +84,15 @@ async function setupWebsocket(port, tabSelectorFn) {
         ws = null
     })
 
-    return ws
+    const wrappedWebsocket = wrapWebsocket(ws)
+    await doConsoleSetup(wrappedWebsocket)
+    return wrappedWebsocket
 }
 
-export { setupWebsocket, wsSendAwaitRespFactory }
+async function doConsoleSetup(wrappedWsClient) {
+    await wrappedWsClient.cons(jQueryInjector, true)
+    await wrappedWsClient.cons(clipboardInjector)
+    await wrappedWsClient.cons('jQuery.noConflict()')
+}
+
+export { setupWebsocket }
