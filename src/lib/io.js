@@ -13,7 +13,7 @@ const ioDisable = config.get('io.disable')
 
 const logSettings = cloneDeep(config.get('io.log'))
 
-async function conf(msg) {
+async function confirm(msg) {
     if (ioDisable) return
     return await inquirerConfirm({
         message: msg,
@@ -126,7 +126,7 @@ function lo(inp) {
 }
 
 export {
-    conf,
+    confirm,
     importJSON,
     setupIOTextFiles,
     lm,

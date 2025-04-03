@@ -10,9 +10,9 @@ const clipboardInjector =
 const jQueryInjector =
     "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res;})"
 
-function rewrapTextFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
+function rewrapSingleFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
     if (inFnEmptyExample.length < 3)
-        throw new Error('rewrapTextFunction: inFnEmptyExample too short!')
+        throw new Error('rewrapSingleFunction: inFnEmptyExample too short!')
 
     const inFnExampleCList = inFnEmptyExample.split('')
     const inFnRightBracket = escapeRegExp(inFnExampleCList.pop())
@@ -27,18 +27,19 @@ function rewrapTextFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
     return cmd.replaceAll(searchPattern, `${outFnLeft}$1${outFnRight}`)
 }
 
-function convertJQueryCommand(cmd) {
+function rewrapShortenedCommand(cmd) {
     const reWrapList = [
-        ['.j()', "jQuery('", "')"],
+        ['j()', "jQuery('", "')"],
         ['.h()', ".has('", "')"],
         ['.p()', '.parent(', ')'],
         ['.f()', ".find('", "')"],
         ['.c()', ".css('", "')"],
         ['.g()', '.get(', ')'],
     ]
+
     return reWrapList.reduce(
         (acc, params) =>
-            rewrapTextFunction(acc, params[0], params[1], params[2]),
+            rewrapSingleFunction(acc, params[0], params[1], params[2]),
         cmd
     )
 }
@@ -104,7 +105,7 @@ function wsSendAwaitRespFactory(rawWsClient) {
 
 function wrapWebsocket(ws) {
     ws.cons = wsSendAwaitRespFactory(ws)
-    ws.q = (cmd) => ws.cons(convertJQueryCommand(cmd))
+    ws.j = (cmd) => ws.cons(rewrapShortenedCommand(cmd))
 
     return ws
 }
@@ -148,7 +149,7 @@ async function waitFor(
     const startTime = Date.now()
     while (Date.now() - startTime < timeout) {
         for (const command of commandList) {
-            const result = await wrappedWsClient.cons(command)
+            const result = await wrappedWsClient.j(command)
             lm(result)
             if (result) return 1
         }

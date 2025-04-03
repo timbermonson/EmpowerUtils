@@ -7,7 +7,7 @@ import {
 
 import lib from '../../lib/index.js'
 const {
-    conf,
+    confirm,
     lm,
     logSep,
     appendOutputData,
@@ -57,12 +57,12 @@ async function switchToOrg(ws, orgName) {
     const w = async (cmd) => {
         await waitFor(ws, cmd)
     }
-    const { cons: c } = ws
+    const { j } = ws
 
-    await c("$('.xnav-appbutton--body').click()")
-    await w('$(".xnav-appmenu--body-is-open").length')
-    await w(['$(\'[data-name="xnav-changeorgbutton"]\').length'])
-    await c('$(\'[data-name="xnav-changeorgbutton"]\').click()')
+    await j('j(.xnav-appbutton--body).click()')
+    await w('j(.xnav-appmenu--body-is-open).length')
+    await w(['j([data-name="xnav-changeorgbutton"]).length'])
+    await j('j([data-name="xnav-changeorgbutton"]).click()')
 }
 
 async function openImports(ws, orgName) {
@@ -75,7 +75,7 @@ async function run() {
     let ws = await setupWebsocket(debugPort, ({ url }) =>
         url.includes('go.xero.com/app/')
     )
-    const { cons, q } = ws
+    const { cons, j } = ws
 
     let curLineNum = 0
     while (true) {
@@ -88,7 +88,7 @@ async function run() {
         }
 
         appendOutputData(curLine)
-        if (await conf(`Open imports: [${curLine}]?`)) {
+        if (await confirm(`Open imports: [${curLine}]?`)) {
             try {
                 await openImports(ws, curLine)
             } catch (e) {
@@ -96,7 +96,7 @@ async function run() {
             }
         }
 
-        if (await conf('Next?')) {
+        if (await confirm('Next?')) {
             curLineNum += 1
             continue
         }
@@ -105,7 +105,7 @@ async function run() {
     }
 
     await cons('console.log("hello world (from javascript!)")')
-    lm(await ws.q('.j(h2.xui-introbanner--header).g(0).textContent'))
+    lm(await ws.j('j(h2.xui-introbanner--header).g(0).textContent'))
 
     await finish(ws)
 }
