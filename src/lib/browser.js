@@ -29,12 +29,13 @@ function rewrapSingleFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
 
 function rewrapShortenedCommand(cmd) {
     const reWrapList = [
-        ['j()', "jQuery('", "')"],
-        ['.h()', ".has('", "')"],
-        ['.p()', '.parent(', ')'],
-        ['.f()', ".find('", "')"],
-        ['.c()', ".css('", "')"],
-        ['.g()', '.get(', ')'],
+        ['j{}', "jQuery('", "')"],
+        ['.h{}', ".has('", "')"],
+        ['.n{}', ".not('", "')"],
+        ['.p{}', '.parent(', ')'],
+        ['.f{}', ".find('", "')"],
+        ['.c{}', ".css('", "')"],
+        ['.g{}', '.get(', ')'],
     ]
 
     return reWrapList.reduce(
@@ -63,11 +64,12 @@ async function getWsURL(port, tabSelectorFn) {
     return wsUrl
 }
 
-function wsSendAwaitRespFactory(rawWsClient) {
+function sendAwaitRespFactory(rawWsClient) {
     const startingId = 10
     let curId = startingId
 
     async function wsSendAwaitResp(consoleCommand, executeAsync = false) {
+        lm(consoleCommand)
         curId += 1
         const msgId = curId
 
@@ -103,9 +105,22 @@ function wsSendAwaitRespFactory(rawWsClient) {
     return wsSendAwaitResp
 }
 
+async function waitPageLoad(ws) {
+    wait(2000)
+    do {
+        wait(300)
+    } while ((await ws.j('typeof jQuery')) === 'function')
+
+    await doConsoleSetup(ws)
+}
+
 function wrapWebsocket(ws) {
-    ws.cons = wsSendAwaitRespFactory(ws)
-    ws.j = (cmd) => ws.cons(rewrapShortenedCommand(cmd))
+    ws.cons = sendAwaitRespFactory(ws)
+    ws.rewrap = rewrapShortenedCommand
+    ws.j = (cmd) => ws.cons(ws.rewrap(cmd))
+    ws.findAndDo = findAndDoFactory(ws)
+    ws.w = (search, timeout) => waitFor(ws, search, timeout)
+    ws.waitLoad = () => waitPageLoad(ws)
 
     return ws
 }
@@ -137,21 +152,15 @@ async function doConsoleSetup(wrappedWsClient) {
 
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
-async function waitFor(
-    wrappedWsClient,
-    searchList,
-    timeout = 4000,
-    interval = 500
-) {
-    const commandList =
-        typeof searchList === 'string' ? [searchList] : searchList
+async function waitFor(ws, search, timeout = 10000, interval = 500) {
+    const commandList = typeof search === 'string' ? [search] : search
 
     const startTime = Date.now()
+
     while (Date.now() - startTime < timeout) {
-        for (const command of commandList) {
-            const result = await wrappedWsClient.j(command)
-            lm(result)
-            if (result) return 1
+        for (const [index, command] of commandList.entries()) {
+            const result = await ws.j(`${command}.length`)
+            if (result) return index
         }
 
         await wait(interval)
@@ -160,4 +169,42 @@ async function waitFor(
     throw new Error('waitFor reached timeout!')
 }
 
-export { setupWebsocket, waitFor }
+function findAndDoFactory(ws) {
+    return async function findAndDo(...params) {
+        if (!params?.length || params.length % 2 !== 0) {
+            throw new Error('findAndDo: must be an even # of params!')
+        }
+
+        const queryList = []
+        const functionList = []
+
+        for (const [index, param] of params.entries()) {
+            if (index % 2 == 0) {
+                if (typeof param !== 'string') {
+                    throw new Error(
+                        'findAndDo: Every even param (0-ind) must be a string!'
+                    )
+                }
+                queryList.push(param)
+            }
+
+            if (index % 2 == 1) {
+                if (typeof param !== 'function') {
+                    throw new Error(
+                        'findAndDo: Every odd param (0-ind) must be a function!'
+                    )
+                }
+                functionList.push(param)
+            }
+        }
+        if (queryList.length !== functionList.length) {
+            throw new Error('This error should never occur.')
+        }
+
+        const foundIndex = await waitFor(ws, queryList)
+        await functionList[foundIndex](queryList[foundIndex])
+        return foundIndex
+    }
+}
+
+export { setupWebsocket }

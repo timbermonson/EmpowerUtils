@@ -17,7 +17,7 @@ const {
     writeOutputData,
 } = lib.io
 const { combineSpaces } = lib.str
-const { setupWebsocket, waitFor, convertCommand } = lib.browser
+const { setupWebsocket } = lib.browser
 
 import { compact } from 'lodash-es'
 
@@ -50,19 +50,45 @@ function getInputLine(lineNum) {
     return inputLines[lineNum]
 }
 
+const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+
 async function switchToOrg(ws, orgName) {
     // const dashOpAccBtn =
     //     "$('div.mf-bank-widget-panel').has('h2:contains(\"Operating:\"):contains(\"2894\")).find('.mf-bank-widget-touchtarget')"
 
-    const w = async (cmd) => {
-        await waitFor(ws, cmd)
-    }
-    const { j } = ws
+    const { j, w, findAndDo: f } = ws
 
-    await j('j(.xnav-appbutton--body).click()')
-    await w('j(.xnav-appmenu--body-is-open).length')
-    await w(['j([data-name="xnav-changeorgbutton"]).length'])
-    await j('j([data-name="xnav-changeorgbutton"]).click()')
+    // Get the menu dropdown open & reset
+    await f(
+        'j{.xnav-appbutton}.n{.xnav-appbutton-is-active}',
+        async (q) => await j(`${q}.click()`),
+        'j{.xnav-orgsearchcontainer:has(button.xnav-icon-orgsearchclear)}',
+        async (q) => await j(`${q}.f{button.xnav-icon-orgsearchclear}.click()`),
+        'j{.xnav-appbutton.xnav-appbutton-is-active}',
+        () => {}
+    )
+
+    await j('j{[data-name="xnav-changeorgbutton"]}.click()')
+    await w('j{.xnav-orgsearch--input}')
+    await j(
+        `j{input.xnav-orgsearch--input}.g{0}.value = ${JSON.stringify(orgName)}`
+    )
+    await j(
+        `j{input.xnav-orgsearch--input}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`
+    )
+    const orgSearchFirst =
+        'ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a'
+    await wait(500)
+    await f(`j{${orgSearchFirst}}`, async (q) => await j(`${q}.g{0}.click()`))
+    await ws.waitLoad()
+    await f(
+        'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}',
+        async (q) => await j(`${q}.click()`)
+    )
+    await f(
+        'j{a:contains("Import a Statement")}',
+        async (q) => await j(`${q}.g{0}.click()`)
+    )
 }
 
 async function openImports(ws, orgName) {
@@ -96,7 +122,7 @@ async function run() {
             }
         }
 
-        if (await confirm('Next?')) {
+        if (await confirm('Continue?')) {
             curLineNum += 1
             continue
         }
@@ -105,7 +131,6 @@ async function run() {
     }
 
     await cons('console.log("hello world (from javascript!)")')
-    lm(await ws.j('j(h2.xui-introbanner--header).g(0).textContent'))
 
     await finish(ws)
 }
