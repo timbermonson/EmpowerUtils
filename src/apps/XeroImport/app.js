@@ -69,6 +69,7 @@ async function switchToOrg(ws, orgName) {
     )
 
     await j('j{[data-name="xnav-changeorgbutton"]}.click()')
+
     await w('j{.xnav-orgsearch--input}')
     await j(
         `j{input.xnav-orgsearch--input}.g{0}.value = ${JSON.stringify(orgName)}`
@@ -113,7 +114,7 @@ async function run() {
             break
         }
 
-        appendOutputData(curLine)
+        appendOutputData(curLine + '\n')
         if (await confirm(`Open imports: [${curLine}]?`)) {
             try {
                 await openImports(ws, curLine)
