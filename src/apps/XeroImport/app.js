@@ -45,8 +45,11 @@ function getInputLine(lineNum) {
 async function run() {
     init()
 
-    let ws = await setupWebsocket(debugPort, ({ url }) =>
-        url.includes('go.xero.com/app/')
+    let ws = await setupWebsocket(
+        debugPort,
+        ({ url }) =>
+            url.includes('go.xero.com/app/') ||
+            url.includes('go.xero.com/Bank/')
     )
 
     const xero = new Xero(ws)

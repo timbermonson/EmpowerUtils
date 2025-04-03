@@ -146,8 +146,9 @@ async function setupWebsocket(port, tabSelectorFn) {
 async function doConsoleSetup(wrappedWsClient) {
     await wrappedWsClient.cons(jQueryInjector, true)
     await wrappedWsClient.cons(clipboardInjector)
-    await wrappedWsClient.cons('jQuery.noConflict()')
     await wrappedWsClient.cons('$ = jQuery')
+    await wrappedWsClient.cons('jQuery.noConflict()')
+    await wrappedWsClient.cons('jQuery.noConflict()')
 }
 
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
