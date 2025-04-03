@@ -13,7 +13,7 @@ import {
     getMostCorrelatedAddress,
     getNameListSortedByNumAddr,
     pickBestCountyAndAddresses,
-} from './lib/index.js'
+} from './lib.js'
 
 describe('Address Scraper library', () => {
     const looseAddressMatch1 = {
