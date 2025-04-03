@@ -5,4 +5,4 @@ import * as scraper from './scraper.js'
 import * as Xero from './Xero.js'
 import * as str from './string.js'
 
-export default { io, address, scraper, str, browser, Xero }
+export default { io, address, scraper, str, browser, ...Xero }

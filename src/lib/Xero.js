@@ -1,6 +1,6 @@
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
-class Xero {
+export class Xero {
     #ws
     constructor(wrappedWebsocket) {
         this.ws = wrappedWebsocket
@@ -58,5 +58,3 @@ class Xero {
         )
     }
 }
-
-export { Xero }

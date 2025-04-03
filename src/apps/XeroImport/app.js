@@ -12,7 +12,7 @@ const {
 } = lib.io
 
 const { setupWebsocket } = lib.browser
-const { Xero } = lib.Xero
+const Xero = lib.Xero
 
 import { compact } from 'lodash-es'
 
