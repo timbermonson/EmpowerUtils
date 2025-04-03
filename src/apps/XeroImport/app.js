@@ -7,6 +7,7 @@ import {
 
 import lib from '../../lib/index.js'
 const {
+    conf,
     lm,
     logSep,
     appendOutputData,
@@ -16,13 +17,7 @@ const {
     writeOutputData,
 } = lib.io
 const { combineSpaces } = lib.str
-const { setupWebsocket, waitFor, rewrapTextFunction } = lib.browser
-
-async function conf(msg) {
-    return await inquirerConfirm({
-        message: msg,
-    })
-}
+const { setupWebsocket, waitFor, convertCommand } = lib.browser
 
 import { compact } from 'lodash-es'
 
@@ -80,7 +75,7 @@ async function run() {
     let ws = await setupWebsocket(debugPort, ({ url }) =>
         url.includes('go.xero.com/app/')
     )
-    const { cons } = ws
+    const { cons, q } = ws
 
     let curLineNum = 0
     while (true) {
@@ -110,7 +105,7 @@ async function run() {
     }
 
     await cons('console.log("hello world (from javascript!)")')
-    lm(await cons('jQuery("h2.xui-introbanner--header").get(0).textContent'))
+    lm(await ws.q('.j(h2.xui-introbanner--header).g(0).textContent'))
 
     await finish(ws)
 }

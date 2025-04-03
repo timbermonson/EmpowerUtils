@@ -10,35 +10,37 @@ const clipboardInjector =
 const jQueryInjector =
     "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res;})"
 
-function rewrapTextFunction(cmd, inFnEmptyExample, outFnEmptyExample) {
+function rewrapTextFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
     if (inFnEmptyExample.length < 3)
         throw new Error('rewrapTextFunction: inFnEmptyExample too short!')
-    if (outFnEmptyExample.length < 3)
-        throw new Error('rewrapTextFunction: outFnEmptyExample too short!')
 
     const inFnExampleCList = inFnEmptyExample.split('')
     const inFnRightBracket = escapeRegExp(inFnExampleCList.pop())
     const inFnLeftBracket = escapeRegExp(inFnExampleCList.pop())
     const inFnName = escapeRegExp(inFnExampleCList.join(''))
 
-    const outFnExampleCList = outFnEmptyExample.split('')
-    const outFnRightBracket = outFnExampleCList.pop()
-    const outFnLeftBracket = outFnExampleCList.pop()
-    const outFnName = outFnExampleCList.join('')
-
     const searchPattern = new RegExp(
         `${inFnName}${inFnLeftBracket}([^${inFnRightBracket}]+)${inFnRightBracket}`,
         'gi'
     )
 
-    return cmd.replaceAll(
-        searchPattern,
-        `${outFnName}${outFnLeftBracket}$1${outFnRightBracket}`
-    )
+    return cmd.replaceAll(searchPattern, `${outFnLeft}$1${outFnRight}`)
 }
 
-function convertCommand(cmd) {
-    return ''
+function convertJQueryCommand(cmd) {
+    const reWrapList = [
+        ['.j()', "jQuery('", "')"],
+        ['.h()', ".has('", "')"],
+        ['.p()', '.parent(', ')'],
+        ['.f()', ".find('", "')"],
+        ['.c()', ".css('", "')"],
+        ['.g()', '.get(', ')'],
+    ]
+    return reWrapList.reduce(
+        (acc, params) =>
+            rewrapTextFunction(acc, params[0], params[1], params[2]),
+        cmd
+    )
 }
 
 async function getWsURL(port, tabSelectorFn) {
@@ -102,6 +104,7 @@ function wsSendAwaitRespFactory(rawWsClient) {
 
 function wrapWebsocket(ws) {
     ws.cons = wsSendAwaitRespFactory(ws)
+    ws.q = (cmd) => ws.cons(convertJQueryCommand(cmd))
 
     return ws
 }
@@ -156,4 +159,4 @@ async function waitFor(
     throw new Error('waitFor reached timeout!')
 }
 
-export { setupWebsocket, waitFor, rewrapTextFunction }
+export { setupWebsocket, waitFor }
