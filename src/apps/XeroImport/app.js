@@ -1,11 +1,5 @@
-import {
-    checkbox as inquirerCheckbox,
-    editor as inquirerEditor,
-    select as inquirerSelect,
-    confirm as inquirerConfirm,
-} from '@inquirer/prompts'
-
 import lib from '../../lib/index.js'
+
 const {
     confirm,
     lm,
@@ -16,7 +10,7 @@ const {
     setupIOTextFiles,
     writeOutputData,
 } = lib.io
-const { combineSpaces } = lib.str
+
 const { setupWebsocket } = lib.browser
 
 import { compact } from 'lodash-es'
@@ -102,7 +96,6 @@ async function run() {
     let ws = await setupWebsocket(debugPort, ({ url }) =>
         url.includes('go.xero.com/app/')
     )
-    const { cons, j } = ws
 
     let curLineNum = 0
     while (true) {
@@ -130,8 +123,6 @@ async function run() {
 
         break
     }
-
-    await cons('console.log("hello world (from javascript!)")')
 
     await finish(ws)
 }
