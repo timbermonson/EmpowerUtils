@@ -2,6 +2,8 @@ import axios from 'axios'
 import WebSocket from 'faye-websocket'
 import { escapeRegExp } from 'lodash-es'
 
+import { lm } from './io.js'
+
 const clipboardInjector =
     "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
 
@@ -109,11 +111,11 @@ async function setupWebsocket(port, tabSelectorFn) {
     let ws = new WebSocket.Client(wsUrl)
 
     ws.on('open', function (event) {
-        console.log('♦ websocket: open')
+        lm('♦ websocket: open')
     })
 
     ws.on('close', function (event) {
-        console.log('♦ websocket: close:', event.code, event.reason)
+        lm('♦ websocket: close:', event.code, event.reason)
         ws = null
     })
 
@@ -144,7 +146,7 @@ async function waitFor(
     while (Date.now() - startTime < timeout) {
         for (const command of commandList) {
             const result = await wrappedWsClient.cons(command)
-            console.log(result)
+            lm(result)
             if (result) return 1
         }
 

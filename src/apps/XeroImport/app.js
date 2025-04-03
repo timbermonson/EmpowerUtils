@@ -75,7 +75,7 @@ async function openImports(ws, orgName) {
 }
 
 async function run() {
-    const inputFirstLine = init()
+    init()
 
     let ws = await setupWebsocket(debugPort, ({ url }) =>
         url.includes('go.xero.com/app/')
@@ -110,9 +110,7 @@ async function run() {
     }
 
     await cons('console.log("hello world (from javascript!)")')
-    console.log(
-        await cons('jQuery("h2.xui-introbanner--header").get(0).textContent')
-    )
+    lm(await cons('jQuery("h2.xui-introbanner--header").get(0).textContent'))
 
     await finish(ws)
 }
