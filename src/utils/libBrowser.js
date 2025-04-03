@@ -10,8 +10,9 @@ const jQueryInjector =
 async function getWsURL(port, tabSelectorFn) {
     let response
     try {
-        response = await axios.get(`http://localhost:${port}/json`)
+        response = await axios.get(`http://127.0.0.1:${port}/json`)
     } catch (e) {
+        console.error(e)
         throw new Error('Could not get debugger browser JSON!')
     }
     if (!response?.data?.length)
@@ -98,8 +99,14 @@ async function doConsoleSetup(wrappedWsClient) {
 
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
-async function waitFor(wrappedWsClient, input, timeout = 4000, interval = 500) {
-    const commandList = typeof input === 'string' ? [input] : input
+async function waitFor(
+    wrappedWsClient,
+    searchList,
+    timeout = 4000,
+    interval = 500
+) {
+    const commandList =
+        typeof searchList === 'string' ? [searchList] : searchList
 
     const startTime = Date.now()
     while (Date.now() - startTime < timeout) {
