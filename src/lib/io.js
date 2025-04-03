@@ -3,6 +3,7 @@ import commandLineArgs from 'command-line-args'
 import config from 'config'
 import fs from 'fs'
 import moment from 'moment'
+import { confirm as inquirerConfirm } from '@inquirer/prompts'
 
 const inputFilePath = config.get('io.files.inputPath')
 const outputFilePath = config.get('io.files.outputPath')
@@ -11,6 +12,13 @@ const logFilePath = config.get('io.files.logPath')
 const ioDisable = config.get('io.disable')
 
 const logSettings = cloneDeep(config.get('io.log'))
+
+async function conf(msg) {
+    if (ioDisable) return
+    return await inquirerConfirm({
+        message: msg,
+    })
+}
 
 const logSep =
     '------------------------------------------------------------------'
@@ -87,8 +95,9 @@ function setupIOTextFiles() {
     })
 }
 
-function lm(inp) {
+function lm(...args) {
     if (ioDisable) return
+    const inp = args.join(' ')
 
     if (logSettings.toTerminal) {
         console.log(inp)
@@ -117,6 +126,7 @@ function lo(inp) {
 }
 
 export {
+    conf,
     importJSON,
     setupIOTextFiles,
     lm,
