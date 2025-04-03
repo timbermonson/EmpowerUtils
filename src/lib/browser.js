@@ -1,11 +1,43 @@
 import axios from 'axios'
 import WebSocket from 'faye-websocket'
+import { escapeRegExp } from 'lodash-es'
 
 const clipboardInjector =
     "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
 
 const jQueryInjector =
     "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res;})"
+
+function rewrapTextFunction(cmd, inFnEmptyExample, outFnEmptyExample) {
+    if (inFnEmptyExample.length < 3)
+        throw new Error('rewrapTextFunction: inFnEmptyExample too short!')
+    if (outFnEmptyExample.length < 3)
+        throw new Error('rewrapTextFunction: outFnEmptyExample too short!')
+
+    const inFnExampleCList = inFnEmptyExample.split('')
+    const inFnRightBracket = escapeRegExp(inFnExampleCList.pop())
+    const inFnLeftBracket = escapeRegExp(inFnExampleCList.pop())
+    const inFnName = escapeRegExp(inFnExampleCList.join(''))
+
+    const outFnExampleCList = outFnEmptyExample.split('')
+    const outFnRightBracket = outFnExampleCList.pop()
+    const outFnLeftBracket = outFnExampleCList.pop()
+    const outFnName = outFnExampleCList.join('')
+
+    const searchPattern = new RegExp(
+        `${inFnName}${inFnLeftBracket}([^${inFnRightBracket}]+)${inFnRightBracket}`,
+        'gi'
+    )
+
+    return cmd.replaceAll(
+        searchPattern,
+        `${outFnName}${outFnLeftBracket}$1${outFnRightBracket}`
+    )
+}
+
+function convertCommand(cmd) {
+    return ''
+}
 
 async function getWsURL(port, tabSelectorFn) {
     let response
@@ -122,4 +154,4 @@ async function waitFor(
     throw new Error('waitFor reached timeout!')
 }
 
-export { setupWebsocket, waitFor }
+export { setupWebsocket, waitFor, rewrapTextFunction }

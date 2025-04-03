@@ -1,6 +1,4 @@
 import { cloneDeep } from 'lodash-es'
-import * as utilLib from '../../utils/lib.js'
-vi.mock('../../utils/lib.js', { spy: true })
 
 import countyScraperMap from './countyPlugins/index.js'
 vi.mock('./countyPlugins/index.js', () => {
@@ -9,17 +7,13 @@ vi.mock('./countyPlugins/index.js', () => {
 
 import {
     citiesAreSimilar,
-    countyHasSimilarAddressPair,
     filterAllAddressListsToBest,
-    getAllAddresses,
-    getAllCountyScoreList,
     getCountyCityCorrelationScore,
     getCountyResultScore,
     getMostCorrelatedAddress,
     getNameListSortedByNumAddr,
-    hasAddressInCity,
     pickBestCountyAndAddresses,
-} from './lib'
+} from './lib/index.js'
 
 describe('Address Scraper library', () => {
     const looseAddressMatch1 = {

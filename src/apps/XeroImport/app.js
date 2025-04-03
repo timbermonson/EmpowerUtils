@@ -5,24 +5,25 @@ import {
     confirm as inquirerConfirm,
 } from '@inquirer/prompts'
 
+import lib from '../../lib/index.js'
+const {
+    lm,
+    logSep,
+    appendOutputData,
+    commandLineArgsWrapper,
+    getInputData,
+    setupIOTextFiles,
+    writeOutputData,
+} = lib.io
+const { combineSpaces } = lib.str
+const { setupWebsocket, waitFor, rewrapTextFunction } = lib.browser
+
 async function conf(msg) {
     return await inquirerConfirm({
         message: msg,
     })
 }
 
-import {
-    appendOutputData,
-    combineSpaces,
-    commandLineArgsWrapper,
-    getInputData,
-    lm,
-    logSep,
-    setupIOTextFiles,
-    writeOutputData,
-} from '../../utils/lib.js'
-
-import { setupWebsocket, waitFor } from '../../utils/libBrowser.js'
 import { compact } from 'lodash-es'
 
 const debugPort = 9222

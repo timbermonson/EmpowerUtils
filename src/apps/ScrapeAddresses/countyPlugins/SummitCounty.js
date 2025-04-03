@@ -1,14 +1,11 @@
 import { compact } from 'lodash-es'
 import qs from 'qs'
 
-import {
-    getJQWindow,
-    getWebpage,
-    nameReverse,
-    SearchStatus,
-    lm,
-    lo,
-} from '../../../utils/lib.js'
+import lib from '../../../lib/index.js'
+const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
+const { nameReverse } = lib.str
+const { lm, lo } = lib.io
+
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 // Search Page: https://property.summitcounty.org/eaglesoftware/taxweb/search.jsp

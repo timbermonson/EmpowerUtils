@@ -1,13 +1,14 @@
 import { compact, uniqBy } from 'lodash-es'
-import {
-    capitalizeName,
-    combineSpaces,
+
+import lib from '../../lib/index.js'
+const { capitalizeName, combineSpaces } = lib.str
+const {
     commandLineArgsWrapper,
     getInputData,
     lm,
     setupIOTextFiles,
     writeOutputData,
-} from '../../utils/lib.js'
+} = lib.io
 
 const argDefinitions = [
     { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },

@@ -1,14 +1,11 @@
 import { compact } from 'lodash-es'
 import qs from 'qs'
 
-import {
-    encodeUrl,
-    getJQWindow,
-    getWebpage,
-    nameReverse,
-    SearchStatus,
-    lm,
-} from '../../../utils/lib.js'
+import lib from '../../../lib/index.js'
+const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
+const { nameReverse } = lib.str
+const { lm, lo } = lib.io
+
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 // Search page: https://apps.saltlakecounty.gov/assessor/new/query.cfm

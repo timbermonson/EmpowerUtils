@@ -1,17 +1,20 @@
 import { uniq, compact } from 'lodash-es'
 
-import {
+import lib from '../../lib/index.js'
+import { pickBestCountyAndAddresses } from './lib.js'
+import countyScraperMap from './countyPlugins/index.js'
+
+const {
     appendOutputData,
-    combineSpaces,
     commandLineArgsWrapper,
     getInputData,
     lm,
     logSep,
     setupIOTextFiles,
     writeOutputData,
-} from '../../utils/lib.js'
-import { pickBestCountyAndAddresses } from './lib.js'
-import countyScraperMap from './countyPlugins/index.js'
+} = lib.io
+
+const { combineSpaces } = lib.str
 
 const FormatEnum = {
     EXCEL: 'excel',

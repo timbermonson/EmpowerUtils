@@ -8,13 +8,8 @@ import {
     confirm as inquirerConfirm,
 } from '@inquirer/prompts'
 
-import {
-    lo,
-    lm,
-    logSep,
-    setupIOTextFiles,
-    commandLineArgsWrapper,
-} from '../../utils/lib.js'
+import lib from '../../lib/index.js'
+const { lo, lm, logSep, setupIOTextFiles, commandLineArgsWrapper } = lib.io
 
 import {
     assertPersonMapSchema,

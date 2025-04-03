@@ -2,14 +2,11 @@ import { compact } from 'lodash-es'
 import qs from 'qs'
 import https from 'https'
 
-import {
-    getJQWindow,
-    getWebpage,
-    nameReverse,
-    SearchStatus,
-    lm,
-    lo,
-} from '../../../utils/lib.js'
+import lib from '../../../lib/index.js'
+const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
+const { nameReverse } = lib.str
+const { lm, lo } = lib.io
+
 import searchFullNameFactory from './searchFullNameFactory.js'
 
 // Unfortunately have to disable SSL verification here.

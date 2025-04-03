@@ -1,7 +1,9 @@
 import { uniq, max, compact, cloneDeep } from 'lodash-es'
 import Fuse from 'fuse.js'
 
-import { lm, lo, prepAddressSearchTerm } from '../../utils/lib.js'
+import lib from '../../lib/index.js'
+const { lm, lo } = lib.io
+const { prepAddressSearchTerm } = lib.str
 
 function pickRandom(list) {
     return list[Math.floor(Math.random() * list.length)]

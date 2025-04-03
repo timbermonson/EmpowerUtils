@@ -1,4 +1,7 @@
-import { SearchStatus, lm } from '../../../utils/lib.js'
+import lib from '../../../lib/index.js'
+const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
+const { nameReverse } = lib.str
+const { lm, lo } = lib.io
 
 export default function searchFullNameFactory({
     getFullNameWebpageFactory,

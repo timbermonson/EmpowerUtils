@@ -1,5 +1,5 @@
-import * as utilLib from '../../utils/lib.js'
-vi.mock('../../utils/lib.js', { spy: true })
+import lib from '../../lib/index.js'
+vi.mock('../../lib/index.js', { spy: true })
 
 import * as localLib from './lib.js'
 vi.mock('./lib.js')
@@ -226,27 +226,27 @@ describe('Address Scraper App', () => {
 
         describe('Single Line', () => {
             test('Handles 0 names', async () => {
-                utilLib.getInputData.mockReturnValueOnce('')
+                lib.io.getInputData.mockReturnValueOnce('')
 
                 await run()
 
                 expect(countyScraperMap.countyA.mock.calls).toEqual([])
                 expect(countyScraperMap.countyB.mock.calls).toEqual([])
-                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+                expect(lib.io.appendOutputData).toBeCalledTimes(1)
             })
 
             test('Handles 1 name', async () => {
-                utilLib.getInputData.mockReturnValueOnce(testSingleInput)
+                lib.io.getInputData.mockReturnValueOnce(testSingleInput)
 
                 await run()
 
                 expect(countyScraperMap.countyA.mock.calls).toEqual([['ab cd']])
                 expect(countyScraperMap.countyB.mock.calls).toEqual([['ab cd']])
-                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+                expect(lib.io.appendOutputData).toBeCalledTimes(1)
             })
 
             test('Handles 2 names, uses formatter', async () => {
-                utilLib.getInputData.mockReturnValueOnce(testMultiInput)
+                lib.io.getInputData.mockReturnValueOnce(testMultiInput)
                 localLib.pickBestCountyAndAddresses.mockReturnValueOnce(
                     testAddressPickerReturn
                 )
@@ -262,42 +262,42 @@ describe('Address Scraper App', () => {
                     ['de fg'],
                 ])
 
-                expect(utilLib.appendOutputData.mock.calls).toMatchSnapshot()
+                expect(lib.io.appendOutputData.mock.calls).toMatchSnapshot()
             })
         })
 
         describe('Multi Line', () => {
             test('Handles 0 names', async () => {
-                utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+                lib.io.commandLineArgsWrapper.mockReturnValueOnce({
                     multiple: true,
                 })
-                utilLib.getInputData.mockReturnValueOnce('')
+                lib.io.getInputData.mockReturnValueOnce('')
 
                 await run()
 
                 expect(countyScraperMap.countyA.mock.calls).toEqual([])
                 expect(countyScraperMap.countyB.mock.calls).toEqual([])
-                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+                expect(lib.io.appendOutputData).toBeCalledTimes(1)
             })
 
             test('Handles 1 name', async () => {
-                utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+                lib.io.commandLineArgsWrapper.mockReturnValueOnce({
                     multiple: true,
                 })
-                utilLib.getInputData.mockReturnValueOnce(testSingleInput)
+                lib.io.getInputData.mockReturnValueOnce(testSingleInput)
 
                 await run()
 
                 expect(countyScraperMap.countyA.mock.calls).toEqual([['ab cd']])
                 expect(countyScraperMap.countyB.mock.calls).toEqual([['ab cd']])
-                expect(utilLib.appendOutputData).toBeCalledTimes(1)
+                expect(lib.io.appendOutputData).toBeCalledTimes(1)
             })
 
             test('Handles 2+1 names', async () => {
-                utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+                lib.io.commandLineArgsWrapper.mockReturnValueOnce({
                     multiple: true,
                 })
-                utilLib.getInputData.mockReturnValueOnce(testMultiInput)
+                lib.io.getInputData.mockReturnValueOnce(testMultiInput)
 
                 await run()
 
@@ -311,7 +311,7 @@ describe('Address Scraper App', () => {
                     ['de fg'],
                     ['ifsingle donotread'],
                 ])
-                expect(utilLib.appendOutputData).toBeCalledTimes(2)
+                expect(lib.io.appendOutputData).toBeCalledTimes(2)
             })
         })
     })

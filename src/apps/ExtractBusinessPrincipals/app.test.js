@@ -1,5 +1,5 @@
-import * as utilLib from '../../utils/lib.js'
-vi.mock('../../utils/lib.js', { spy: true })
+import lib from '../../lib/index.js'
+vi.mock('../../lib/index.js', { spy: true })
 
 import {
     getPrincipalListString,
@@ -115,21 +115,21 @@ describe('Extract Business Principals', () => {
 
     describe('run()', () => {
         test('Handles single input', () => {
-            utilLib.getInputData.mockReturnValueOnce(singleTest)
+            lib.io.getInputData.mockReturnValueOnce(singleTest)
 
             run()
-            expect(utilLib.writeOutputData).toBeCalledTimes(1)
-            expect(utilLib.writeOutputData).toBeCalledWith(singleResult)
+            expect(lib.io.writeOutputData).toBeCalledTimes(1)
+            expect(lib.io.writeOutputData).toBeCalledWith(singleResult)
         })
         test('Handles ahk input', () => {
-            utilLib.getInputData.mockReturnValueOnce(ahkTest)
-            utilLib.commandLineArgsWrapper.mockReturnValueOnce({
+            lib.io.getInputData.mockReturnValueOnce(ahkTest)
+            lib.io.commandLineArgsWrapper.mockReturnValueOnce({
                 multiple: true,
             })
 
             run()
-            expect(utilLib.writeOutputData).toBeCalledTimes(1)
-            expect(utilLib.writeOutputData).toBeCalledWith(ahkResult)
+            expect(lib.io.writeOutputData).toBeCalledTimes(1)
+            expect(lib.io.writeOutputData).toBeCalledWith(ahkResult)
         })
     })
 })

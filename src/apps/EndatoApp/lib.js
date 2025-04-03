@@ -4,13 +4,12 @@ import axios from 'axios'
 import config from 'config'
 import Fuse from 'fuse.js'
 
-import {
-    getFuzzyCityMatch,
-    lm,
-    lo,
-    normalizeCardinalDirection,
-    prepAddressSearchTerm,
-} from '../../utils/lib.js'
+import lib from '../../lib/index.js'
+
+const { lm, lo } = lib.io
+const { normalizeCardinalDirection, prepAddressSearchTerm } = lib.str
+
+const { getFuzzyCityMatch } = lib.address
 
 const apiKeyName = config.get('endato.profileKeyName')
 const apiKeyPassword = config.get('endato.profileKeyPassword')
