@@ -62,6 +62,7 @@ async function switchToOrg(ws, orgName) {
         () => {}
     )
 
+    // Type name, select, wait for pageload
     await j('j{[data-name="xnav-changeorgbutton"]}.click()')
 
     await w('j{.xnav-orgsearch--input}')
@@ -76,6 +77,8 @@ async function switchToOrg(ws, orgName) {
     await wait(500)
     await f(`j{${orgSearchFirst}}`, async (q) => await j(`${q}.g{0}.click()`))
     await ws.waitLoad()
+
+    // Nav to imports
     await f(
         'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}',
         async (q) => await j(`${q}.click()`)
