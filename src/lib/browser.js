@@ -99,7 +99,9 @@ function sendAwaitRespFactory(rawWsClient) {
                     }
                     return res(respData.result.result.value)
                 }
-                throw new Error('Message listener out of sync!')
+                throw new Error(
+                    "Message listener out of sync! Ensure you're awaiting any browser actions or messages."
+                )
             })
 
             await rawWsClient.send(JSON.stringify(msg))
