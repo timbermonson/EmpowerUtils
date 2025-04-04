@@ -1,13 +1,13 @@
 import { compact } from 'lodash-es'
-import qs from 'qs'
 import https from 'https'
+import qs from 'qs'
 
 import lib from '../../../lib/index.js'
-const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
-const { nameReverse } = lib.str
-const { lm, lo } = lib.io
 
 import searchFullNameFactory from './searchFullNameFactory.js'
+
+const { getJQWindow, getWebpage, SearchStatus } = lib.scraper
+const { nameReverse } = lib.str
 
 // Unfortunately have to disable SSL verification here.
 // The tooele property search lacks an intermediate cert, and adding it would be a PITA

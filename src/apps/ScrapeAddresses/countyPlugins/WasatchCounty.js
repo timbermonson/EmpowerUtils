@@ -1,11 +1,9 @@
-import { compact } from 'lodash-es'
-
 import lib from '../../../lib/index.js'
-const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
-const { nameReverse } = lib.str
-const { lm, lo } = lib.io
 
 import searchFullNameFactory from './searchFullNameFactory.js'
+
+const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
+const { nameReverse } = lib.str
 
 // Search page: https://emprep.wasatch.utah.gov/Property-Tax-Information-Lookup/Current-Year-Property-Tax-Lookup
 

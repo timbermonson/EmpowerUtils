@@ -1,6 +1,6 @@
+import { escapeRegExp } from 'lodash-es'
 import axios from 'axios'
 import WebSocket from 'faye-websocket'
-import { escapeRegExp } from 'lodash-es'
 
 import { lm } from './io.js'
 import { wait } from './etc.js'

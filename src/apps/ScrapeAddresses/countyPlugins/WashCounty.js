@@ -2,11 +2,11 @@ import { compact } from 'lodash-es'
 import qs from 'qs'
 
 import lib from '../../../lib/index.js'
-const { getJQWindow, getWebpage, SearchStatus, encodeUrl } = lib.scraper
-const { nameReverse } = lib.str
-const { lm, lo } = lib.io
 
 import searchFullNameFactory from './searchFullNameFactory.js'
+
+const { getJQWindow, getWebpage, SearchStatus } = lib.scraper
+const { nameReverse } = lib.str
 
 // Search Page: https://eweb.washco.utah.gov:8443/recorder/taxweb/search.jsp
 

@@ -1,7 +1,8 @@
+import { sortBy } from 'lodash-es'
 import Fuse from 'fuse.js'
+
 import { importJSON, lm } from './io.js'
 import { prepAddressSearchTerm } from './string.js'
-import { sortBy } from 'lodash-es'
 
 const cityCountyMap = importJSON('./lib/cityCountyMap.json')
 

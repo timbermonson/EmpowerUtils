@@ -1,15 +1,16 @@
-import config from 'config'
-import fs from 'fs'
-import clipboard from 'clipboardy'
 import {
     checkbox as inquirerCheckbox,
     editor as inquirerEditor,
     select as inquirerSelect,
     confirm as inquirerConfirm,
 } from '@inquirer/prompts'
+import clipboard from 'clipboardy'
+import config from 'config'
+import fs from 'fs'
 
 import lib from '../../lib/index.js'
-const { lo, lm, logSep, setupIOTextFiles, commandLineArgsWrapper } = lib.io
+
+const { lm, logSep, setupIOTextFiles, commandLineArgsWrapper } = lib.io
 
 import {
     assertPersonMapSchema,

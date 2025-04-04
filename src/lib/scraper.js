@@ -1,5 +1,5 @@
-import jQuery from 'jquery'
 import axios from 'axios'
+import jQuery from 'jquery'
 import jsdom from 'jsdom'
 
 const { JSDOM } = jsdom

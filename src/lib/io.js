@@ -1,9 +1,9 @@
 import { cloneDeep } from 'lodash-es'
+import { confirm as inquirerConfirm } from '@inquirer/prompts'
 import commandLineArgs from 'command-line-args'
 import config from 'config'
 import fs from 'fs'
 import moment from 'moment'
-import { confirm as inquirerConfirm } from '@inquirer/prompts'
 
 const inputFilePath = config.get('io.files.inputPath')
 const outputFilePath = config.get('io.files.outputPath')
