@@ -1,4 +1,8 @@
 import { wait } from './etc.js'
+import { lm } from './io.js'
+
+const operatingButton =
+    'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}'
 
 export default class Xero {
     #autoBrowser
@@ -7,10 +11,11 @@ export default class Xero {
     }
 
     async switchToOrg(orgName) {
+        lm(`Switching to ${orgName}...`)
         const { autoBrowser: ab } = this
 
         const orgChangeBtn = 'j{[data-name="xnav-changeorgbutton"]}'
-        // Get the menu dropdown open & reset
+
         if (!(await ab.has(orgChangeBtn))) {
             await ab.click([
                 'j{.xnav-appbutton}.n{.xnav-appbutton-is-active}',
@@ -20,8 +25,6 @@ export default class Xero {
 
         // Type name, select, wait for pageload
         await ab.click(orgChangeBtn)
-
-        await ab.w('j{.xnav-orgsearch--input}')
         await ab.type('j{input.xnav-orgsearch--input}', orgName)
 
         await wait(500)
@@ -31,14 +34,18 @@ export default class Xero {
         )
 
         await ab.waitPageLoad()
+        await ab.w(operatingButton)
+        lm('Done!')
     }
 
     async navToImports() {
+        lm('Navigating to imports...')
         const { autoBrowser: ab } = this
-
-        await ab.click(
-            'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}'
-        )
+        await ab.click(operatingButton)
         await ab.click('j{a:contains("Import a Statement")}')
+        await ab.w(
+            'j{.xui-pageheading--titlewrapper:contains("Import bank transactions")}'
+        )
+        lm('Done!')
     }
 }

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import WebSocket from 'faye-websocket'
 
-import { lm, lo } from './io.js'
+import { lm, logSep } from './io.js'
 import { wait } from './etc.js'
 import { rewrapJQueryCommand } from './string.js'
 
@@ -19,7 +19,7 @@ async function getWebsocketURL(port, tabSelectorFn) {
     const selectedTab = response.data.find(tabSelectorFn)
     if (!selectedTab || !selectedTab.webSocketDebuggerUrl)
         throw new Error('Could not find/parse debugger websocket url!')
-    lm(`Selected tab: ${selectedTab.url}`)
+    lm(`[Selected tab]: ${selectedTab.url}`)
     const { webSocketDebuggerUrl: wsUrl } = selectedTab
 
     return wsUrl
@@ -54,7 +54,7 @@ export default class AutoBrowser {
 
         await this.w(search)
         await this.j(`${search}.g{0}.value = ${JSON.stringify(text)}`)
-        await this.j(`${search}.dispatchEvent(new KeyboardEvent("keyup"))`)
+        await this.j(`${search}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`)
     }
 
     async click(search) {
@@ -145,7 +145,6 @@ export default class AutoBrowser {
     }
 
     async j(...params) {
-        // lm(params)n
         return await this.jQuery(...params)
     }
 
@@ -159,7 +158,6 @@ export default class AutoBrowser {
 
     async doConsoleSetup() {
         const { jQueryInjector, clipboardInjector } = AutoBrowser
-        lm('Injecting console methods...')
         await this.cons(jQueryInjector, true)
         await this.cons(clipboardInjector)
         await this.cons('$ = jQuery')
@@ -218,6 +216,8 @@ export default class AutoBrowser {
     }
 
     async setup(port, tabSelectorFn) {
+        lm(logSep)
+        lm('[Initializing browser automations]')
         lm('Reading open tabs...')
         const wsUrl = await getWebsocketURL(port, tabSelectorFn)
 
@@ -227,25 +227,37 @@ export default class AutoBrowser {
             newWs = new WebSocket.Client(wsUrl)
         } catch (e) {
             throw new Error(
-                `Browser websocket client failed to connect to [${wsUrl}]: \n${e.message}`
+                `Browser websocket client failed to create [${wsUrl}]: \n${e.message}`
             )
         }
-        lm('Websocket connected!')
-        lm('Registering handlers...')
 
-        newWs.on('open', function (event) {
-            lm('♦ websocket: open')
-        })
+        const openTimeout = 5000
+        try {
+            await new Promise(async (res, reject) => {
+                setTimeout(reject, openTimeout)
 
-        newWs.on('close', function (event) {
-            lm('♦ websocket: close:', event.code, event.reason)
-            this.ws = null
-        })
+                newWs.on('close', function (event) {
+                    lm('♦ websocket: close:', event.code, event.reason)
+                    this.ws = null
+                })
+
+                newWs.once('open', function (event) {
+                    res()
+                })
+            })
+        } catch (e) {
+            throw new Error(
+                `Websocket did not open within ${openTimeout / 1000.0} seconds!`
+            )
+        }
+
+        lm('Open and connected!')
 
         this.ws = newWs
         await this.doConsoleSetup()
         this.setup = true
-        lm('Browser automations ready!')
+        lm('[Browser automations ready!]')
+        lm(logSep)
     }
 
     async close() {
