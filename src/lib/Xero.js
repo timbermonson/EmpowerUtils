@@ -9,37 +9,25 @@ export default class Xero {
     async switchToOrg(orgName) {
         const { autoBrowser: ab } = this
 
+        const orgChangeBtn = 'j{[data-name="xnav-changeorgbutton"]}'
         // Get the menu dropdown open & reset
-        await ab.f(
-            'j{.xnav-appbutton}.n{.xnav-appbutton-is-active}',
-            async (q) => await ab.j(`${q}.click()`),
-            'j{.xnav-orgsearchcontainer:has(button.xnav-icon-orgsearchclear)}',
-            async (q) =>
-                await ab.j(`${q}.f{button.xnav-icon-orgsearchclear}.click()`),
-            'j{.xnav-appbutton.xnav-appbutton-is-active}',
-            () => {}
-        )
+        if (!(await ab.has(orgChangeBtn))) {
+            await ab.click([
+                'j{.xnav-appbutton}.n{.xnav-appbutton-is-active}',
+                'j{.xnav-orgsearchcontainer > button.xnav-icon-orgsearchclear}',
+            ])
+        }
 
         // Type name, select, wait for pageload
-        await ab.j('j{[data-name="xnav-changeorgbutton"]}.click()')
+        await ab.click(orgChangeBtn)
 
         await ab.w('j{.xnav-orgsearch--input}')
-        await ab.j(
-            `j{input.xnav-orgsearch--input}.g{0}.value = ${JSON.stringify(
-                orgName
-            )}`
-        )
-        await ab.j(
-            `j{input.xnav-orgsearch--input}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`
-        )
-        const orgSearchFirst =
-            'ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a'
+        await ab.type('j{input.xnav-orgsearch--input}', orgName)
 
         await wait(500)
 
-        await ab.f(
-            `j{${orgSearchFirst}}`,
-            async (q) => await ab.j(`${q}.g{0}.click()`)
+        await ab.click(
+            `j{ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a}`
         )
 
         await ab.waitPageLoad()
@@ -48,13 +36,9 @@ export default class Xero {
     async navToImports() {
         const { autoBrowser: ab } = this
 
-        await ab.f(
-            'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}',
-            async (q) => await ab.j(`${q}.click()`)
+        await ab.click(
+            'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}'
         )
-        await ab.f(
-            'j{a:contains("Import a Statement")}',
-            async (q) => await ab.j(`${q}.g{0}.click()`)
-        )
+        await ab.click('j{a:contains("Import a Statement")}')
     }
 }

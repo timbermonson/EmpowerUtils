@@ -1,7 +1,7 @@
 import axios from 'axios'
 import WebSocket from 'faye-websocket'
 
-import { lm } from './io.js'
+import { lm, lo } from './io.js'
 import { wait } from './etc.js'
 import { rewrapJQueryCommand } from './string.js'
 
@@ -25,6 +25,17 @@ async function getWebsocketURL(port, tabSelectorFn) {
     return wsUrl
 }
 
+/**
+ * Assures that input is an array-- if it isn't, puts it in one.
+ */
+function arrayize(inp) {
+    if (typeof inp === 'object' && inp.length) {
+        return inp
+    }
+
+    return [inp]
+}
+
 export default class AutoBrowser {
     static clipboardInjector =
         "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
@@ -36,6 +47,27 @@ export default class AutoBrowser {
     isSetup = false
 
     msgCurId = 1000
+
+    async type(search, text) {
+        if (typeof search !== 'string')
+            throw new Error('type(): search much be a string!')
+
+        await this.w(search)
+        await this.j(`${search}.g{0}.value = ${JSON.stringify(text)}`)
+        await this.j(`${search}.dispatchEvent(new KeyboardEvent("keyup"))`)
+    }
+
+    async click(search) {
+        const searchList = arrayize(search)
+
+        const fParamList = []
+        searchList.forEach((searchTerm) => {
+            fParamList.push(searchTerm)
+            fParamList.push(async (q) => await this.j(`${q}.g{0}.click()`))
+        })
+
+        return this.f(...fParamList)
+    }
 
     async f(...params) {
         return await this.findAndDo(...params)
@@ -81,23 +113,26 @@ export default class AutoBrowser {
     }
 
     async waitFor(search, timeout = 10000, interval = 300) {
-        const commandList = typeof search === 'string' ? [search] : search
+        const searchList = arrayize(search)
         const startTime = Date.now()
 
         while (Date.now() - startTime < timeout) {
-            for (const [index, command] of commandList.entries()) {
-                const result = await this.j(`${command}.length`)
-                if (result) return index
+            for (const [index, search] of searchList.entries()) {
+                if (await this.has(search)) return index
             }
 
             await wait(interval)
         }
 
         throw new Error(
-            `waitFor reached timeout!\nCommandList:\n${JSON.stringify(
-                commandList
+            `waitFor reached timeout!\nsearchList:\n${JSON.stringify(
+                searchList
             )}`
         )
+    }
+
+    async has(search) {
+        return !!(await this.j(`${search}.length`))
     }
 
     async waitPageLoad() {
@@ -126,14 +161,13 @@ export default class AutoBrowser {
         const { jQueryInjector, clipboardInjector } = AutoBrowser
         lm('Injecting console methods...')
         await this.cons(jQueryInjector, true)
-        lm('Injecting console methods 2...')
         await this.cons(clipboardInjector)
         await this.cons('$ = jQuery')
         await this.cons('jQuery.noConflict()')
         await this.cons('jQuery.noConflict()')
     }
 
-    async cons(consoleCommand, executeAsync = false) {
+    async cons(consoleCommand, executeAsync = false, echo = true) {
         this.msgCurId += 1
 
         if (!consoleCommand?.trim()?.length) {
@@ -144,7 +178,7 @@ export default class AutoBrowser {
             id: this.msgCurId,
             params: {
                 expression: executeAsync
-                    ? `webSocketFunc = async () => {${consoleCommand}}; webSocketFunc()`
+                    ? `asyncFunc = async () => {${consoleCommand}}; asyncFunc()`
                     : consoleCommand,
                 objectGroup: 'console',
                 includeCommandLineAPI: true,
@@ -155,7 +189,7 @@ export default class AutoBrowser {
             method: 'Runtime.evaluate',
         }
 
-        return new Promise(async (res) => {
+        const result = await new Promise(async (res) => {
             await this.ws.once('message', async (event) => {
                 const respData = JSON.parse(event.data)
 
@@ -172,6 +206,15 @@ export default class AutoBrowser {
 
             await this.ws.send(JSON.stringify(msg))
         })
+
+        if (echo) {
+            const echoMsg = `[AUTOMATION]: ${msg.params.expression}`
+                .replaceAll('\\', '\\\\')
+                .replaceAll('"', '\\"')
+            await this.cons(`console.log("${echoMsg}");`, false, false)
+        }
+
+        return result
     }
 
     async setup(port, tabSelectorFn) {
