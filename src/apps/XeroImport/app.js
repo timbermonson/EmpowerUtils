@@ -11,15 +11,15 @@ const {
     writeOutputData,
 } = lib.io
 
-const { setupWebsocket } = lib.browser
 const Xero = lib.Xero
+const AutoBrowser = lib.AutoBrowser
 
 import { compact } from 'lodash-es'
 
 const debugPort = 9222
 
-async function finish(ws) {
-    await ws.close()
+async function finish(autoBrowser) {
+    await autoBrowser.close()
 }
 
 function init() {
@@ -44,15 +44,16 @@ function getInputLine(lineNum) {
 
 async function run() {
     init()
+    const autoBrowser = new AutoBrowser()
 
-    let ws = await setupWebsocket(
+    await autoBrowser.setup(
         debugPort,
         ({ url }) =>
             url.includes('go.xero.com/app/') ||
             url.includes('go.xero.com/Bank/')
     )
 
-    const xero = new Xero(ws)
+    const xero = new Xero(autoBrowser)
 
     let curLineNum = 0
     while (true) {
@@ -82,7 +83,7 @@ async function run() {
         break
     }
 
-    await finish(ws)
+    await finish(autoBrowser)
 }
 
 run()

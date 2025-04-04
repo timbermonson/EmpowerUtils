@@ -1,4 +1,4 @@
-import { compact } from 'lodash-es'
+import { compact, escapeRegExp } from 'lodash-es'
 
 function combineSpaces(str) {
     return str.replaceAll(/( )+/g, ' ')
@@ -63,10 +63,47 @@ function capitalizeName(fullName) {
     return capitalizedName.trim()
 }
 
+function rewrapSingleFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
+    if (inFnEmptyExample.length < 3)
+        throw new Error('rewrapSingleFunction: inFnEmptyExample too short!')
+
+    const inFnExampleCList = inFnEmptyExample.split('')
+    const inFnRightBracket = escapeRegExp(inFnExampleCList.pop())
+    const inFnLeftBracket = escapeRegExp(inFnExampleCList.pop())
+    const inFnName = escapeRegExp(inFnExampleCList.join(''))
+
+    const searchPattern = new RegExp(
+        `${inFnName}${inFnLeftBracket}([^${inFnRightBracket}]+)${inFnRightBracket}`,
+        'gi'
+    )
+
+    return cmd.replaceAll(searchPattern, `${outFnLeft}$1${outFnRight}`)
+}
+
+function rewrapJQueryCommand(cmd) {
+    const reWrapList = [
+        ['j{}', "jQuery('", "')"],
+        ['.h{}', ".has('", "')"],
+        ['.n{}', ".not('", "')"],
+        ['.p{}', '.parent(', ')'],
+        ['.f{}', ".find('", "')"],
+        ['.c{}', ".css('", "')"],
+        ['.g{}', '.get(', ')'],
+    ]
+
+    return reWrapList.reduce(
+        (acc, params) =>
+            rewrapSingleFunction(acc, params[0], params[1], params[2]),
+        cmd
+    )
+}
+
 export {
     capitalizeName,
     combineSpaces,
-    prepAddressSearchTerm,
     nameReverse,
     normalizeCardinalDirection,
+    prepAddressSearchTerm,
+    rewrapJQueryCommand,
+    rewrapSingleFunction,
 }

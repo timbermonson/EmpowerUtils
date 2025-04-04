@@ -1,60 +1,60 @@
 import { wait } from './etc.js'
 
 export default class Xero {
-    #ws
-    constructor(wrappedWebsocket) {
-        this.ws = wrappedWebsocket
+    #autoBrowser
+    constructor(autoBrowser) {
+        this.autoBrowser = autoBrowser
     }
 
     async switchToOrg(orgName) {
-        const { ws } = this
-        const { j, w, findAndDo: f } = ws
+        const { autoBrowser: ab } = this
 
         // Get the menu dropdown open & reset
-        await f(
+        await ab.f(
             'j{.xnav-appbutton}.n{.xnav-appbutton-is-active}',
-            async (q) => await j(`${q}.click()`),
+            async (q) => await ab.j(`${q}.click()`),
             'j{.xnav-orgsearchcontainer:has(button.xnav-icon-orgsearchclear)}',
             async (q) =>
-                await j(`${q}.f{button.xnav-icon-orgsearchclear}.click()`),
+                await ab.j(`${q}.f{button.xnav-icon-orgsearchclear}.click()`),
             'j{.xnav-appbutton.xnav-appbutton-is-active}',
             () => {}
         )
 
         // Type name, select, wait for pageload
-        await j('j{[data-name="xnav-changeorgbutton"]}.click()')
+        await ab.j('j{[data-name="xnav-changeorgbutton"]}.click()')
 
-        await w('j{.xnav-orgsearch--input}')
-        await j(
+        await ab.w('j{.xnav-orgsearch--input}')
+        await ab.j(
             `j{input.xnav-orgsearch--input}.g{0}.value = ${JSON.stringify(
                 orgName
             )}`
         )
-        await j(
+        await ab.j(
             `j{input.xnav-orgsearch--input}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`
         )
         const orgSearchFirst =
             'ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a'
+
         await wait(500)
-        await f(
+
+        await ab.f(
             `j{${orgSearchFirst}}`,
-            async (q) => await j(`${q}.g{0}.click()`)
+            async (q) => await ab.j(`${q}.g{0}.click()`)
         )
 
-        await ws.waitLoad()
+        await ab.waitPageLoad()
     }
 
     async navToImports() {
-        const { ws } = this
-        const { j, w, findAndDo: f } = ws
+        const { autoBrowser: ab } = this
 
-        await f(
+        await ab.f(
             'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}',
-            async (q) => await j(`${q}.click()`)
+            async (q) => await ab.j(`${q}.click()`)
         )
-        await f(
+        await ab.f(
             'j{a:contains("Import a Statement")}',
-            async (q) => await j(`${q}.g{0}.click()`)
+            async (q) => await ab.j(`${q}.g{0}.click()`)
         )
     }
 }
