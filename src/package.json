@@ -28,6 +28,7 @@
         "ebp": "nodemon ./apps/ExtractBusinessPrincipals/run.js",
         "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/run.js -- -m",
         "end": "nodemon ./apps/EndatoApp/app.js --no-stdin",
+        "xeroChecks": "node ./apps/XeroAgedChecks/app.js",
         "xeroImport": "node ./apps/XeroImport/app.js",
         "integration": "vitest run --config ./.test/config/integration.config.js",
         "test-unit": "vitest --config ./.test/config/unit.config.js",

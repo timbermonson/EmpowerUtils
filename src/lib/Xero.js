@@ -1,6 +1,8 @@
 import { wait } from './etc.js'
 import { lm } from './io.js'
 
+import moment from 'moment'
+
 const operatingButton =
     'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}'
 
@@ -46,6 +48,27 @@ export default class Xero {
         await ab.w(
             'j{.xui-pageheading--titlewrapper:contains("Import bank transactions")}'
         )
+        lm('Done!')
+    }
+
+    async openAgedChecks() {
+        lm('Opening aged checks...')
+
+        const { autoBrowser: ab } = this
+        await ab.click(operatingButton)
+        await ab.click(
+            'j{.mf-bank-widget-text-minorlink:contains("Account Transactions")}'
+        )
+        await ab.waitPageLoad()
+        await ab.w('j{#removeAndRedoButton}')
+        await ab.cons('window.Bank.toggleSearchForm();')
+        await ab.w('j{.search.action.open}')
+        await ab.type('j{#sb_reconciledStatus_value}', 'Unreconciled')
+        await ab.click(
+            'j{#sb_reconciledStatus_suggestions>div>div:contains("Unreconciled")}'
+        )
+        await ab.type('j{#sb_dteEndDate}', `${moment.for}`)
+
         lm('Done!')
     }
 }

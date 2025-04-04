@@ -54,6 +54,9 @@ export default class AutoBrowser {
 
         await this.w(search)
         await this.j(`${search}.g{0}.value = ${JSON.stringify(text)}`)
+        await this.j(
+            `${search}.g{0}.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45}))`
+        )
         await this.j(`${search}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`)
     }
 
@@ -121,6 +124,7 @@ export default class AutoBrowser {
                 if (await this.has(search)) return index
             }
 
+            await this.cons('jQuery.noConflict();')
             await wait(interval)
         }
 
@@ -160,9 +164,9 @@ export default class AutoBrowser {
         const { jQueryInjector, clipboardInjector } = AutoBrowser
         await this.cons(jQueryInjector, true)
         await this.cons(clipboardInjector)
-        await this.cons('$ = jQuery')
-        await this.cons('jQuery.noConflict()')
-        await this.cons('jQuery.noConflict()')
+        await this.cons('$ = jQuery;')
+        await this.cons('jQuery.noConflict();')
+        await this.cons('jQuery.noConflict();')
     }
 
     async cons(consoleCommand, executeAsync = false, echo = true) {
