@@ -1,6 +1,6 @@
-const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+import { wait } from './etc.js'
 
-export class Xero {
+export default class Xero {
     #ws
     constructor(wrappedWebsocket) {
         this.ws = wrappedWebsocket

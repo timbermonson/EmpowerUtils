@@ -3,6 +3,7 @@ import WebSocket from 'faye-websocket'
 import { escapeRegExp } from 'lodash-es'
 
 import { lm } from './io.js'
+import { wait } from './etc.js'
 
 const clipboardInjector =
     "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
@@ -93,6 +94,9 @@ function sendAwaitRespFactory(rawWsClient) {
                 const respData = JSON.parse(event.data)
 
                 if (respData.id === msgId) {
+                    if (!respData?.result?.result) {
+                        console.error(respData)
+                    }
                     return res(respData.result.result.value)
                 }
                 throw new Error('Message listener out of sync!')
@@ -150,8 +154,6 @@ async function doConsoleSetup(wrappedWsClient) {
     await wrappedWsClient.cons('jQuery.noConflict()')
     await wrappedWsClient.cons('jQuery.noConflict()')
 }
-
-const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
 async function waitFor(ws, search, timeout = 10000, interval = 500) {
     const commandList = typeof search === 'string' ? [search] : search
