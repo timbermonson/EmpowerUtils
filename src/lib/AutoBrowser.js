@@ -48,24 +48,24 @@ export default class AutoBrowser {
 
     msgCurId = 1000
 
-    async type(search, text) {
-        if (typeof search !== 'string')
-            throw new Error('type(): search much be a string!')
+    async type(query, text) {
+        if (typeof query !== 'string')
+            throw new Error('type(): query much be a string!')
 
-        await this.w(search)
-        await this.j(`${search}.g{0}.value = ${JSON.stringify(text)}`)
+        await this.w(query)
+        await this.j(`${query}.g{0}.value = ${JSON.stringify(text)}`)
         await this.j(
-            `${search}.g{0}.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45}))`
+            `${query}.g{0}.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45}))`
         )
-        await this.j(`${search}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`)
+        await this.j(`${query}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`)
     }
 
-    async click(search) {
-        const searchList = arrayize(search)
+    async click(queryOrQueryList) {
+        const queryList = arrayize(queryOrQueryList)
 
         const fParamList = []
-        searchList.forEach((searchTerm) => {
-            fParamList.push(searchTerm)
+        queryList.forEach((query) => {
+            fParamList.push(query)
             fParamList.push(async (q) => await this.j(`${q}.g{0}.click()`))
         })
 
@@ -76,10 +76,10 @@ export default class AutoBrowser {
         return await this.findAndDo(...params)
     }
 
-    async findAndDo(...searchAndCallbackList) {
+    async findAndDo(...queryAndCallbackList) {
         if (
-            !searchAndCallbackList?.length ||
-            searchAndCallbackList.length % 2 !== 0
+            !queryAndCallbackList?.length ||
+            queryAndCallbackList.length % 2 !== 0
         ) {
             throw new Error('findAndDo: must be an even # of params!')
         }
@@ -87,7 +87,7 @@ export default class AutoBrowser {
         const queryList = []
         const functionList = []
 
-        for (const [index, param] of searchAndCallbackList.entries()) {
+        for (const [index, param] of queryAndCallbackList.entries()) {
             if (index % 2 == 0) {
                 if (typeof param !== 'string') {
                     throw new Error(
@@ -115,13 +115,13 @@ export default class AutoBrowser {
         return foundIndex
     }
 
-    async waitFor(search, timeout = 10000, interval = 300) {
-        const searchList = arrayize(search)
+    async waitFor(queryOrQueryList, timeout = 10000, interval = 300) {
+        const queryList = arrayize(queryOrQueryList)
         const startTime = Date.now()
 
         while (Date.now() - startTime < timeout) {
-            for (const [index, search] of searchList.entries()) {
-                if (await this.has(search)) return index
+            for (const [index, query] of queryList.entries()) {
+                if (await this.has(query)) return index
             }
 
             await this.cons('jQuery.noConflict();')
@@ -129,14 +129,12 @@ export default class AutoBrowser {
         }
 
         throw new Error(
-            `waitFor reached timeout!\nsearchList:\n${JSON.stringify(
-                searchList
-            )}`
+            `waitFor reached timeout!\nqueryList:\n${JSON.stringify(queryList)}`
         )
     }
 
-    async has(search) {
-        return !!(await this.j(`${search}.length`))
+    async has(query) {
+        return !!(await this.j(`${query}.length`))
     }
 
     async waitPageLoad() {
