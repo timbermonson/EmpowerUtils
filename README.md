@@ -1,4 +1,33 @@
-# EmpowerUtils
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Install](#install)
+- [Now With Tests!](#now-with-tests)
+- [Utils](#utils)
+  - [Xero Community Auto-Navigator](#xero-community-auto-navigator)
+    - [Example Screenshots](#example-screenshots)
+  - [Business Principal Extractor](#business-principal-extractor)
+- [Address Scraper](#address-scraper)
+  - [Input Format](#input-format)
+  - [Execution](#execution)
+  - [Extra Options](#extra-options)
+  - [Endato Searcher](#endato-searcher)
+    - [Input Format](#input-format-1)
+    - [Example Screenshots](#example-screenshots-1)
+    - [Execution](#execution-1)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- prettier-ignore-start -->
+ _____                                                  _   _  _    _  _      
+|  ___|                                                | | | || |  (_)| |     
+| |__   _ __ ___   _ __    ___  __      __  ___  _ __  | | | || |_  _ | | ___ 
+|  __| | '_ ` _ \ | '_ \  / _ \ \ \ /\ / / / _ \| '__| | | | || __|| || |/ __|
+| |___ | | | | | || |_) || (_) | \ V  V / |  __/| |    | |_| || |_ | || |\__ \
+\____/ |_| |_| |_|| .__/  \___/   \_/\_/   \___||_|     \___/  \__||_||_||___/
+                  | |                                                         
+                  |_|        
+<!-- prettier-ignore-end -->
 
 A collection of utils written by Timber Monson for various tasks at an HOA management company.
 
@@ -23,7 +52,7 @@ Basic usage guides are below.
 - Clear out old packages with `rm -Force node_modules` on Windows, or `rm -rf node_modules` on mac.
 - run `npm i` to install all packages.
 
-### Now With Tests!
+## Now With Tests!
 
 Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage report.
 
@@ -31,7 +60,9 @@ Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage
 
 ![image](https://github.com/user-attachments/assets/1161a25d-3bad-4039-9b20-2700314724e2)
 
-# Xero Community Auto-Navigator
+# Utils
+
+## Xero Community Auto-Navigator
 
 **This app**:
 Works down a list of Xero organizations, auto-navigating to a selected page.
@@ -46,7 +77,7 @@ This helps automate the "navigation" part of repetitive tasks-- For example, whe
 
 (Your browser must be launched with `--remote-debugging-port=9222`)
 
-# Business Principal Extractor
+## Business Principal Extractor
 
 This app is designed to help with copying business principals from Utah's business-search into the below-app's required format.
 
@@ -66,7 +97,7 @@ This app is designed to help with copying business principals from Utah's busine
 - Run app with `npm run ebp`
 - Output will appear in `src/ioFiles/output.txt`
 
-# Address Scraper
+## Address Scraper
 
 **This app**:
 
@@ -104,7 +135,7 @@ Valid Examples:
 - `npm run addr json` Outputs a newline-less json blob of the results (with a bit more information)
 - `num run addr both` Outputs both.
 
-# Endato Searcher
+## Endato Searcher
 
 **This app**:
 
