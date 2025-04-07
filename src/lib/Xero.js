@@ -1,8 +1,6 @@
 import { wait } from './etc.js'
 import { lm } from './io.js'
 
-import moment from 'moment'
-
 const operatingButton =
     'j{.mf-bank-widget-panel:contains("Operating"):contains("2894")>div>div>button}'
 
@@ -67,7 +65,6 @@ export default class Xero {
         await ab.click(
             'j{#sb_reconciledStatus_suggestions>div>div:contains("Unreconciled")}'
         )
-        await ab.type('j{#sb_dteEndDate}', `${moment.for}`)
 
         lm('Done!')
     }

@@ -3,7 +3,7 @@ import { confirm as inquirerConfirm } from '@inquirer/prompts'
 import commandLineArgs from 'command-line-args'
 import config from 'config'
 import fs from 'fs'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 const inputFilePath = config.get('io.files.inputPath')
 const outputFilePath = config.get('io.files.outputPath')
@@ -43,7 +43,7 @@ function appendOutputData(output) {
 function addLogFileStart() {
     if (ioDisable) return
 
-    const timestamp = moment().format('HH:mm:ss - YYYY-MM-DD')
+    const timestamp = dayjs().format('HH:mm:ss - YYYY-MM-DD ([Z]Z)')
 
     fs.appendFileSync(logFilePath, `\n\n♦[NEW APP START]♦\n${timestamp}\n\n`)
 }
