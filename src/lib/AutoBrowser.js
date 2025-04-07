@@ -31,9 +31,9 @@ async function getWebsocketURL(port, tabSelectorFn) {
 function arrayize(inp) {
     if (typeof inp === 'object' && inp.length) {
         return inp
+    } else {
+        return [inp]
     }
-
-    return [inp]
 }
 
 export default class AutoBrowser {
@@ -115,7 +115,7 @@ export default class AutoBrowser {
         return foundIndex
     }
 
-    async waitFor(queryOrQueryList, timeout = 10000, interval = 300) {
+    async waitFor(queryOrQueryList, timeout = 7000, interval = 300) {
         const queryList = arrayize(queryOrQueryList)
         const startTime = Date.now()
 
