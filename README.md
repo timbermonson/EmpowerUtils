@@ -15,16 +15,15 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Install](#install)
-- [Now With Tests!](#now-with-tests)
 - [Utils](#utils)
-  - [Xero Community Auto-Navigator](#xero-community-auto-navigator)
+  - [**Xero Community Auto-Navigator**](#xero-community-auto-navigator)
     - [Example Screenshots](#example-screenshots)
-  - [Business Principal Extractor](#business-principal-extractor)
-  - [Address Scraper](#address-scraper)
+  - [**Business Principal Extractor**](#business-principal-extractor)
+  - [**Address Scraper**](#address-scraper)
     - [Input Format](#input-format)
     - [Execution](#execution)
     - [Extra Options](#extra-options)
-  - [Endato Searcher](#endato-searcher)
+  - [**Endato Searcher**](#endato-searcher)
     - [Input Format](#input-format-1)
     - [Example Screenshots](#example-screenshots-1)
     - [Execution](#execution-1)
@@ -54,7 +53,7 @@ Basic usage guides are below.
 - Clear out old packages with `rm -Force node_modules` on Windows, or `rm -rf node_modules` on mac.
 - run `npm i` to install all packages.
 
-## Now With Tests!
+**Now With Tests!**
 
 Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage report.
 
