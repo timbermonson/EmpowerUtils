@@ -1,3 +1,16 @@
+<!-- prettier-ignore-start -->
+````
+  ______                                                          _    _   _     _   _       
+ |  ____|                                                        | |  | | | |   (_) | |      
+ | |__     _ __ ___    _ __     ___   __      __   ___   _ __    | |  | | | |_   _  | |  ___ 
+ |  __|   | '_ ` _ \  | '_ \   / _ \  \ \ /\ / /  / _ \ | '__|   | |  | | | __| | | | | / __|
+ | |____  | | | | | | | |_) | | (_) |  \ V  V /  |  __/ | |      | |__| | | |_  | | | | \__ \
+ |______| |_| |_| |_| | .__/   \___/    \_/\_/    \___| |_|       \____/   \__| |_| |_| |___/
+                      | |                                                                    
+                      |_|
+````                                                                                              
+<!-- prettier-ignore-end -->
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -17,17 +30,6 @@
     - [Execution](#execution-1)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-<!-- prettier-ignore-start -->
- _____                                                  _   _  _    _  _      
-|  ___|                                                | | | || |  (_)| |     
-| |__   _ __ ___   _ __    ___  __      __  ___  _ __  | | | || |_  _ | | ___ 
-|  __| | '_ ` _ \ | '_ \  / _ \ \ \ /\ / / / _ \| '__| | | | || __|| || |/ __|
-| |___ | | | | | || |_) || (_) | \ V  V / |  __/| |    | |_| || |_ | || |\__ \
-\____/ |_| |_| |_|| .__/  \___/   \_/\_/   \___||_|     \___/  \__||_||_||___/
-                  | |                                                         
-                  |_|        
-<!-- prettier-ignore-end -->
 
 A collection of utils written by Timber Monson for various tasks at an HOA management company.
 
