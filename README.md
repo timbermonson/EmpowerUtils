@@ -30,12 +30,6 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-A collection of utils written by Timber Monson for various tasks at an HOA management company.
-
-These tools were written for automation, but the intent of this repo is to demonstrate proficiency in building quality codebases.
-
-Basic usage guides are below.
-
 ## Install
 
 **nvm & node**
@@ -66,13 +60,13 @@ Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage
 ## Xero Community Auto-Navigator
 
 **This app**:
-Works down a list of Xero organizations, auto-navigating to a selected page.
+Works down a list of Xero organizations, auto-navving to a selected page.
 
-This helps automate the "navigation" part of repetitive tasks-- For example, when viewing aged checks for many communities, switching between them can be as simple as two clicks.
+This is to help with repetitive per-org tasks-- Viewing aged checks, transaction imports, etc.
 
 ### Example Screenshots
 
-![image](https://github.com/user-attachments/assets/3d3bb442-4fde-4980-8155-e4dd6c232895)
+![image](https://github.com/user-attachments/assets/31f59a0c-9f7a-4a27-86c8-2013cfc3b903)
 
 ![image](https://github.com/user-attachments/assets/0b6d5344-7423-4cee-a5f5-7c4470dd1f3c)
 
