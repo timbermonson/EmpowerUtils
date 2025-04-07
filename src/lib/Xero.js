@@ -41,7 +41,7 @@ export default class Xero {
         lm('○ Done!')
     }
 
-    async navToImports() {
+    async openImports() {
         lm('• Navigating to imports...')
         const { autoBrowser: ab } = this
         await ab.click(operatingButton)

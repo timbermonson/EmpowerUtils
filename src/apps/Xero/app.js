@@ -1,3 +1,4 @@
+import { select } from '@inquirer/prompts'
 import lib from '../../lib/index.js'
 
 const {
@@ -42,6 +43,34 @@ function getInputLine(lineNum) {
     return inputLines[lineNum]
 }
 
+async function pickActionCallback(xeroObject) {
+    return await select({
+        message: 'What would you like to do per-community?',
+        choices: [
+            {
+                name: 'Open Imports',
+                value: {
+                    actionName: 'Open Imports',
+                    actionCallback: async (orgName) => {
+                        await xeroObject.switchToOrg(orgName)
+                        await xeroObject.openImports()
+                    },
+                },
+            },
+            {
+                name: 'Open Aged Checks',
+                value: {
+                    actionName: 'Open Aged Checks',
+                    actionCallback: async (orgName) => {
+                        await xeroObject.switchToOrg(orgName)
+                        await xeroObject.openAgedChecks()
+                    },
+                },
+            },
+        ],
+    })
+}
+
 async function run() {
     init()
     const autoBrowser = new AutoBrowser()
@@ -54,6 +83,7 @@ async function run() {
     )
 
     const xero = new Xero(autoBrowser)
+    const { actionName, actionCallback } = await pickActionCallback(xero)
 
     let curLineNum = 0
     while (true) {
@@ -66,13 +96,12 @@ async function run() {
         }
 
         appendOutputData(curLine + '\n')
-        if (await confirm(`Open imports: [${curLine}]?`)) {
+        if (await confirm(`${actionName}: [${curLine}]?`)) {
             let success = false
 
             while (!success) {
                 try {
-                    await xero.switchToOrg(curLine)
-                    await xero.navToImports()
+                    await actionCallback(curLine)
 
                     success = true
                 } catch (e) {
