@@ -31,6 +31,21 @@ Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage
 
 ![image](https://github.com/user-attachments/assets/1161a25d-3bad-4039-9b20-2700314724e2)
 
+# Xero Community Auto-Navigator
+
+**This app**:
+Works down a list of Xero organizations, auto-navigating to a selected page.
+
+This helps automate the "navigation" part of repetitive tasks-- For example, when viewing aged checks for many communities, switching between them can be as simple as two clicks.
+
+### Example Screenshots
+
+![image](https://github.com/user-attachments/assets/3d3bb442-4fde-4980-8155-e4dd6c232895)
+
+![image](https://github.com/user-attachments/assets/0b6d5344-7423-4cee-a5f5-7c4470dd1f3c)
+
+(Your browser must be launched with `--remote-debugging-port=9222`)
+
 # Business Principal Extractor
 
 This app is designed to help with copying business principals from Utah's business-search into the below-app's required format.
