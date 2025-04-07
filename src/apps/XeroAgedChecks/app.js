@@ -67,11 +67,18 @@ async function run() {
 
         appendOutputData(curLine + '\n')
         if (await confirm(`Open aged checks: [${curLine}]?`)) {
-            try {
-                await xero.switchToOrg(curLine)
-                await xero.openAgedChecks()
-            } catch (e) {
-                console.error(e)
+            let success = false
+
+            while (!success) {
+                try {
+                    await xero.switchToOrg(curLine)
+                    await xero.openAgedChecks()
+
+                    success = true
+                } catch (e) {
+                    console.error(e)
+                    if (!(await confirm('Retry?'))) success = true
+                }
             }
         }
 
