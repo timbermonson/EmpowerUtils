@@ -3,11 +3,8 @@ import lib from '../../lib/index.js'
 
 const {
     confirm,
-    lm,
-    logSep,
     appendOutputData,
     commandLineArgsWrapper,
-    getInputData,
     setupIOTextFiles,
     writeOutputData,
 } = lib.io
