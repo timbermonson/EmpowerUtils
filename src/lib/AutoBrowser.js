@@ -257,8 +257,7 @@ export default class AutoBrowser {
         this.ws = newWs
         await this.doConsoleSetup()
         this.setup = true
-        lm('[Browser automations ready!]')
-        logSep()
+        logSep('[Browser automations ready!]', ' ')
     }
 
     async close() {

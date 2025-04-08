@@ -1,6 +1,6 @@
 import Fuse from 'fuse.js'
 
-import { getInputData, confirm } from './io.js'
+import { getInputData, confirm, logSep } from './io.js'
 import { select, search } from '@inquirer/prompts'
 
 export default class InputLineIterator {
@@ -42,6 +42,7 @@ export default class InputLineIterator {
     }
 
     async offerSkipSearch() {
+        logSep()
         const optionSelect = await select({
             message: 'Where would you like to start in the input file?',
             choices: [
