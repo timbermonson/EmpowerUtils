@@ -132,7 +132,7 @@ export default class AutoBrowser {
         return foundIndex
     }
 
-    async waitFor(queryOrQueryList, timeout = 7000, interval = 300) {
+    async waitFor(queryOrQueryList, timeout = 5000, interval = 300) {
         const queryList = arrayize(queryOrQueryList)
         const startTime = Date.now()
 
@@ -155,7 +155,7 @@ export default class AutoBrowser {
     }
 
     async waitPageLoad() {
-        wait(2000)
+        wait(3000)
         do {
             wait(300)
         } while ((await this.j('typeof $myHeader')) === 'object')

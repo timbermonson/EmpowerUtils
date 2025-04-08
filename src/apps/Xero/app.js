@@ -30,10 +30,8 @@ async function pickActionCallback(xeroObject) {
                 value: {
                     actionName: 'Open Imports',
                     actionCallback: async (orgName) => {
-                        await xeroObject.autoBrowser.showHeader()
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openImports()
-                        await xeroObject.autoBrowser.hideHeader()
                     },
                 },
             },
@@ -44,10 +42,8 @@ async function pickActionCallback(xeroObject) {
                 value: {
                     actionName: 'Open Aged Checks',
                     actionCallback: async (orgName) => {
-                        await xeroObject.autoBrowser.showHeader()
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openAgedChecks()
-                        await xeroObject.autoBrowser.hideHeader()
                     },
                 },
             },
@@ -94,13 +90,16 @@ async function run() {
             let retry = true
 
             while (retry) {
+                await xero.autoBrowser.showHeader()
                 try {
                     await actionCallback(curLine)
                     retry = false
                 } catch (e) {
                     console.error(e)
+                    await xero.autoBrowser.hideHeader()
                     retry = await confirm('Retry?')
                 }
+                await xero.autoBrowser.hideHeader()
             }
         }
 
