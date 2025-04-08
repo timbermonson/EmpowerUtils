@@ -6,14 +6,15 @@ const operatingButton =
     'j{.mf-bank-widget-panel:contains("Operating")>div>div>button}'
 
 export default class Xero {
-    #autoBrowser
+    autoBrowser
     constructor(autoBrowser) {
         this.autoBrowser = autoBrowser
     }
 
     async switchToOrg(orgName) {
-        lm(`• Switching to ${orgName}...`)
         const { autoBrowser: ab } = this
+        lm(`• Switching to ${orgName}...`)
+
         await ab.cons('location.reload()')
         await ab.waitPageLoad()
 
@@ -42,8 +43,9 @@ export default class Xero {
     }
 
     async openImports() {
-        lm('• Navigating to imports...')
         const { autoBrowser: ab } = this
+        lm('• Navigating to imports...')
+
         await ab.click(operatingButton)
         await ab.click('j{a:contains("Import a Statement")}')
         await ab.w(

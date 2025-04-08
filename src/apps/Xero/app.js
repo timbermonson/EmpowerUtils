@@ -2,6 +2,8 @@ import { select } from '@inquirer/prompts'
 import lib from '../../lib/index.js'
 import { lm } from '../../lib/io.js'
 
+import chalk from 'chalk'
+
 const {
     appendOutputData,
     commandLineArgsWrapper,
@@ -28,8 +30,10 @@ async function pickActionCallback(xeroObject) {
                 value: {
                     actionName: 'Open Imports',
                     actionCallback: async (orgName) => {
+                        await xeroObject.autoBrowser.showHeader()
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openImports()
+                        await xeroObject.autoBrowser.hideHeader()
                     },
                 },
             },
@@ -40,8 +44,10 @@ async function pickActionCallback(xeroObject) {
                 value: {
                     actionName: 'Open Aged Checks',
                     actionCallback: async (orgName) => {
+                        await xeroObject.autoBrowser.showHeader()
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openAgedChecks()
+                        await xeroObject.autoBrowser.hideHeader()
                     },
                 },
             },
@@ -84,7 +90,7 @@ async function run() {
 
         appendOutputData(curLine + '\n')
 
-        if (await confirm(`${actionName}: [${curLine}]?`)) {
+        if (await confirm(`${actionName}: ` + chalk.green(`[${curLine}]?`))) {
             let retry = true
 
             while (retry) {

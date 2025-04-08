@@ -43,10 +43,27 @@ export default class AutoBrowser {
     static jQueryInjector =
         "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res();})"
 
+    static headerInjector =
+        'let $myHeader = document.createElement("h4");$myHeader.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>"; jQuery("header").get(0).appendChild($myHeader);'
+
+    static showHeaderCommand =
+        '$myHeader.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";'
+    static hideHeaderCommand = '$myHeader.innerHTML =  "";'
+
     ws
     isSetup = false
 
     msgCurId = 1000
+
+    async showHeader() {
+        await this.w('j{header}')
+        await this.cons(AutoBrowser.showHeaderCommand)
+    }
+
+    async hideHeader() {
+        await this.w('j{header}')
+        await this.cons(AutoBrowser.hideHeaderCommand)
+    }
 
     async type(query, text) {
         if (typeof query !== 'string')
@@ -141,8 +158,9 @@ export default class AutoBrowser {
         wait(2000)
         do {
             wait(300)
-        } while ((await this.j('typeof jQuery')) === 'function')
+        } while ((await this.j('typeof $myHeader')) === 'object')
 
+        await this.doConsoleSetup()
         await this.doConsoleSetup()
     }
 
@@ -159,12 +177,19 @@ export default class AutoBrowser {
     }
 
     async doConsoleSetup() {
-        const { jQueryInjector, clipboardInjector } = AutoBrowser
+        const {
+            jQueryInjector,
+            clipboardInjector,
+            headerInjector,
+            showHeaderCommand,
+        } = AutoBrowser
         await this.cons(jQueryInjector, true)
         await this.cons(clipboardInjector)
         await this.cons('$ = jQuery;')
         await this.cons('jQuery.noConflict();')
         await this.cons('jQuery.noConflict();')
+        await this.w('j{header}')
+        await this.cons(AutoBrowser.headerInjector)
     }
 
     async cons(consoleCommand, executeAsync = false, echo = true) {
@@ -256,6 +281,7 @@ export default class AutoBrowser {
 
         this.ws = newWs
         await this.doConsoleSetup()
+        await this.hideHeader()
         this.setup = true
         logSep('[Browser automations ready!]', ' ', 'none')
     }
