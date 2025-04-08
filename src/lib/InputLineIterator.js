@@ -84,7 +84,7 @@ export default class InputLineIterator {
 
         const fuse = new Fuse(lineSearchoptionList, fuseOptions)
         const inquirerSearchCallback = async (searchTerm) => {
-            if (!(searchTerm || '').trim().length) return []
+            if (!(searchTerm || '').trim().length) return lineSearchoptionList
             return fuse.search(searchTerm).map(({ item }) => item)
         }
 
