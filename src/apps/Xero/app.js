@@ -55,6 +55,7 @@ async function run() {
     setupIOTextFiles()
     commandLineArgsWrapper()
     writeOutputData('')
+    lm('\n')
 
     const autoBrowser = new AutoBrowser()
     const iterator = new InputLineIterator()
