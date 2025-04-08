@@ -24,7 +24,7 @@ async function confirm(msg) {
 const logBarLen = 64
 const logBar = '-'.repeat(logBarLen)
 
-function logSep(title = '', separator = '-', chalkColor = 'blue') {
+function logSep(title = '', separator = '-', chalkColor = 'cyan') {
     const mlen = title.length
     const offOneComp = (logBarLen - mlen) % 2 == 0 ? 0 : 1
     const colourizer = chalkColor === 'none' ? (str) => str : chalk[chalkColor]

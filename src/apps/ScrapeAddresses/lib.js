@@ -366,7 +366,7 @@ function pickBestCountyAndAddresses(nameSearchresultMapByCounty) {
         ({ sum }) => sum === highestScore
     )
     const winningCountyName = pickRandom(highestScorerList).countyName
-    lm(`\nWinner: `, chalk.blue(`[${winningCountyName}]`))
+    lm(`\nWinner: `, chalk.cyan(`[${winningCountyName}]`))
 
     return nameSearchresultMapByCounty[winningCountyName]
 }
