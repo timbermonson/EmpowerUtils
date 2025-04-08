@@ -104,7 +104,7 @@ async function getSearchresultMapByName(nameList) {
     const nameSearchresultMapByCounty = {}
 
     for (const countyName in countyScraperMap) {
-        logSep(countyName)
+        logSep(`[${countyName}]`, '-', 'green')
         const searcher = countyScraperMap[countyName]
         nameSearchresultMapByCounty[countyName] = {}
 
@@ -117,7 +117,7 @@ async function getSearchresultMapByName(nameList) {
         }
     }
 
-    logSep('COUNTY SCORES:')
+    logSep('[COUNTY SCORES]:', '-', 'green')
     const searchresultMapByName = pickBestCountyAndAddresses(
         nameSearchresultMapByCounty
     )

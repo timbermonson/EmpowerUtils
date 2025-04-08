@@ -1,4 +1,5 @@
 import { uniq, max, compact, cloneDeep } from 'lodash-es'
+import chalk from 'chalk'
 import Fuse from 'fuse.js'
 
 import lib from '../../lib/index.js'
@@ -365,7 +366,7 @@ function pickBestCountyAndAddresses(nameSearchresultMapByCounty) {
         ({ sum }) => sum === highestScore
     )
     const winningCountyName = pickRandom(highestScorerList).countyName
-    lm(`\nWinner: [${winningCountyName}]`)
+    lm(`\nWinner: `, chalk.blue(`[${winningCountyName}]`))
 
     return nameSearchresultMapByCounty[winningCountyName]
 }
