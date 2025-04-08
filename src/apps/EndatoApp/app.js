@@ -10,7 +10,7 @@ import fs from 'fs'
 
 import lib from '../../lib/index.js'
 
-const { lm, logSep, setupIOTextFiles, commandLineArgsWrapper } = lib.io
+const { lm, logBar, logSep, setupIOTextFiles, commandLineArgsWrapper } = lib.io
 
 import {
     assertPersonMapSchema,
@@ -143,7 +143,7 @@ async function doFilterRequestListPrompt(personList) {
     }
 
     const filteredList = await inquirerCheckbox({
-        message: `${logSep}\nAddresses to be used for the search are below.\nDeselect entries that appear incorrect.\n${logSep}\n`,
+        message: `${logBar}\nAddresses to be used for the search are below.\nDeselect entries that appear incorrect.\n${logBar}\n`,
         choices: choiceList,
     })
 
@@ -165,10 +165,10 @@ async function promptGetRetryList(personListNoResults) {
     if (!personListNoResults?.length) return []
 
     const nameList = personListNoResults.map(({ fullName }) => fullName)
-    let messageString = `${logSep}\n`
+    let messageString = `${logBar}\n`
     messageString += 'The following names had not Endato results:\n'
     messageString += `${JSON.stringify(nameList, null, 2)}\n`
-    messageString += `${logSep}\n`
+    messageString += `${logBar}\n`
 
     const answer = await inquirerSelect({
         message: messageString,
@@ -279,7 +279,7 @@ async function run() {
 
     lm('Done!')
 
-    lm(logSep)
+    logSep()
     if (
         await inquirerConfirm({
             message: 'Remove this search JSON from the input file?',

@@ -104,7 +104,7 @@ async function getSearchresultMapByName(nameList) {
     const nameSearchresultMapByCounty = {}
 
     for (const countyName in countyScraperMap) {
-        lm(`--------${countyName}--------`)
+        logSep(countyName)
         const searcher = countyScraperMap[countyName]
         nameSearchresultMapByCounty[countyName] = {}
 
@@ -117,11 +117,11 @@ async function getSearchresultMapByName(nameList) {
         }
     }
 
-    lm('---------COUNTY SCORES:-------')
+    logSep('COUNTY SCORES:')
     const searchresultMapByName = pickBestCountyAndAddresses(
         nameSearchresultMapByCounty
     )
-    lm(logSep)
+    logSep()
 
     return searchresultMapByName
 }
@@ -149,7 +149,7 @@ async function run() {
             getOutputText(searchresultMapByName, { format: argsOutput }) + '\n'
 
         appendOutputData(output)
-        lm(logSep)
+        logSep()
     }
 
     lm('done!')

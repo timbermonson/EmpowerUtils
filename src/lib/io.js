@@ -20,8 +20,19 @@ async function confirm(msg) {
     })
 }
 
-const logSep =
-    '------------------------------------------------------------------'
+const logBarLen = 64
+const logBar = '-'.repeat(logBarLen)
+
+function logSep(title = '', separator = '-') {
+    const mlen = title.length
+    const offOneComp = (logBarLen - mlen) % 2 == 0 ? 0 : 1
+
+    lm(
+        `${separator.repeat((logBarLen - mlen) / 2)}${title}${separator.repeat(
+            (logBarLen - mlen) / 2 + offOneComp
+        )}`
+    )
+}
 
 function getInputData() {
     if (ioDisable) return
@@ -127,13 +138,14 @@ function lo(inp) {
 
 export {
     confirm,
-    importJSON,
-    setupIOTextFiles,
-    lm,
-    lo,
-    logSep,
-    getInputData,
-    writeOutputData,
     appendOutputData,
     commandLineArgsWrapper,
+    getInputData,
+    importJSON,
+    lm,
+    lo,
+    logBar,
+    logSep,
+    setupIOTextFiles,
+    writeOutputData,
 }

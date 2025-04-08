@@ -6,7 +6,7 @@ import Fuse from 'fuse.js'
 
 import lib from '../../lib/index.js'
 
-const { lm, lo } = lib.io
+const { lm, lo, logSep } = lib.io
 const { normalizeCardinalDirection, prepAddressSearchTerm } = lib.str
 
 const { getFuzzyCityMatch } = lib.address
@@ -296,9 +296,9 @@ async function getEnrichedContact(person, simulatedResponse = false) {
     const personAddressOld = person.addressList[0]
     const apiSearchBody = convertToApiSearchBody(person)
 
-    lm('-------------[Searching]:------------------')
+    logSep('[Searching]:')
     lo(apiSearchBody)
-    lm('-------------------------------------------')
+    logSep()
     if (simulatedResponse) lm('USING SIMULATED RESPONSE')
 
     let response =

@@ -218,8 +218,7 @@ export default class AutoBrowser {
     }
 
     async setup(port, tabSelectorFn) {
-        lm(logSep)
-        lm('[Browser automations init]')
+        logSep('[Browser automations init]')
         lm('• Reading open tabs...')
         const wsUrl = await getWebsocketURL(port, tabSelectorFn)
 
@@ -259,7 +258,7 @@ export default class AutoBrowser {
         await this.doConsoleSetup()
         this.setup = true
         lm('[Browser automations ready!]')
-        lm(logSep)
+        logSep()
     }
 
     async close() {
