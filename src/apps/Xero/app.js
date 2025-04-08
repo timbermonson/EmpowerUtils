@@ -15,10 +15,6 @@ const InputLineIterator = lib.InputLineIterator
 
 const debugPort = 9222
 
-async function finish(autoBrowser) {
-    await autoBrowser.close()
-}
-
 async function pickActionCallback(xeroObject) {
     return await select({
         message: 'What would you like to do per-community?',
@@ -67,6 +63,7 @@ async function run() {
     )
 
     const xero = new Xero(autoBrowser)
+    await iterator.offerSkipSearch()
     const { actionName, actionCallback } = await pickActionCallback(xero)
 
     while (true) {
@@ -102,7 +99,7 @@ async function run() {
         break
     }
 
-    await finish(autoBrowser)
+    await autoBrowser.close()
 }
 
 run()

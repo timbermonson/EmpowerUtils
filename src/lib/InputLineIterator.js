@@ -1,4 +1,7 @@
-import { getInputData, confirm, lm, lo } from './io.js'
+import Fuse from 'fuse.js'
+
+import { getInputData, confirm } from './io.js'
+import { select, search } from '@inquirer/prompts'
 
 export default class InputLineIterator {
     curLineNum = -1
@@ -36,6 +39,61 @@ export default class InputLineIterator {
         }
 
         return nextLine
+    }
+
+    async offerSkipSearch() {
+        const optionSelect = await select({
+            message: 'Where would you like to start in the input file?',
+            choices: [
+                {
+                    name: 'First Line',
+                    value: 0,
+                },
+                {
+                    name: 'Search & Skip to later line',
+                    value: 1,
+                },
+            ],
+        })
+        if (optionSelect !== 1) return
+
+        const lineSearchoptionList = getInputData()
+            .split('\n')
+            .map((line, index) => {
+                return { value: index, name: line.trim() }
+            })
+            .filter(({ name }) => name.length > 0)
+
+        const fuseOptions = {
+            isCaseSensitive: false,
+            includeScore: true,
+            ignoreDiacritics: true,
+            shouldSort: true,
+            includeMatches: false,
+            findAllMatches: true,
+            minMatchCharLength: 2,
+            // location: 0,
+            threshold: 0.35,
+            // distance: 100,
+            // useExtendedSearch: false,
+            ignoreLocation: false,
+            ignoreFieldNorm: false,
+            // fieldNormWeight: 1,
+            keys: ['name'],
+        }
+
+        const fuse = new Fuse(lineSearchoptionList, fuseOptions)
+        const inquirerSearchCallback = async (searchTerm) => {
+            if (!(searchTerm || '').trim().length) return []
+            return fuse.search(searchTerm).map(({ item }) => item)
+        }
+
+        const selectedIndex = await search({
+            message: 'Type a search for your desired line:',
+            source: inquirerSearchCallback,
+        })
+
+        this.curLineNum = selectedIndex - 1
     }
 
     constructor({ offerEmptyLineSkip } = { offerEmptyLineSkip: true }) {
