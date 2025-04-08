@@ -4,6 +4,7 @@ import commandLineArgs from 'command-line-args'
 import config from 'config'
 import fs from 'fs'
 import dayjs from 'dayjs'
+import chalk from 'chalk'
 
 const inputFilePath = config.get('io.files.inputPath')
 const outputFilePath = config.get('io.files.outputPath')
@@ -23,14 +24,15 @@ async function confirm(msg) {
 const logBarLen = 64
 const logBar = '-'.repeat(logBarLen)
 
-function logSep(title = '', separator = '-') {
+function logSep(title = '', separator = '-', chalkColor = 'blue') {
     const mlen = title.length
     const offOneComp = (logBarLen - mlen) % 2 == 0 ? 0 : 1
+    const colourizer = chalkColor === 'none' ? (str) => str : chalk[chalkColor]
 
     lm(
-        `${separator.repeat((logBarLen - mlen) / 2)}${title}${separator.repeat(
-            (logBarLen - mlen) / 2 + offOneComp
-        )}`
+        separator.repeat((logBarLen - mlen) / 2),
+        colourizer(title),
+        separator.repeat((logBarLen - mlen) / 2 + offOneComp)
     )
 }
 
@@ -108,7 +110,7 @@ function setupIOTextFiles() {
 
 function lm(...args) {
     if (ioDisable) return
-    const inp = args.join(' ')
+    const inp = args.join('')
 
     if (logSettings.toTerminal) {
         console.log(inp)

@@ -19,7 +19,7 @@ async function getWebsocketURL(port, tabSelectorFn) {
     const selectedTab = response.data.find(tabSelectorFn)
     if (!selectedTab || !selectedTab.webSocketDebuggerUrl)
         throw new Error('Could not find/parse debugger websocket url!')
-    lm(`○ Selected tab: ${selectedTab.url}`)
+    lm(`○ Selected! url: ${selectedTab.url}`)
     const { webSocketDebuggerUrl: wsUrl } = selectedTab
 
     return wsUrl
@@ -252,12 +252,12 @@ export default class AutoBrowser {
             )
         }
 
-        lm('○ Open and connected!')
+        lm('○ Connected!')
 
         this.ws = newWs
         await this.doConsoleSetup()
         this.setup = true
-        logSep('[Browser automations ready!]', ' ')
+        logSep('[Browser automations ready!]', ' ', 'none')
     }
 
     async close() {

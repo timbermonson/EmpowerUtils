@@ -1,10 +1,12 @@
 import { select } from '@inquirer/prompts'
 import lib from '../../lib/index.js'
+import { lm } from '../../lib/io.js'
 
 const {
-    confirm,
     appendOutputData,
     commandLineArgsWrapper,
+    confirm,
+    logSep,
     setupIOTextFiles,
     writeOutputData,
 } = lib.io
@@ -63,8 +65,12 @@ async function run() {
     )
 
     const xero = new Xero(autoBrowser)
+
+    lm('')
+    logSep('<Automation Settings>', '-')
     await iterator.offerSkipSearch()
     const { actionName, actionCallback } = await pickActionCallback(xero)
+    logSep()
 
     while (true) {
         let curLine = ''

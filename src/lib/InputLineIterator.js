@@ -42,7 +42,6 @@ export default class InputLineIterator {
     }
 
     async offerSkipSearch() {
-        logSep()
         const optionSelect = await select({
             message: 'Where would you like to start in the input file?',
             choices: [
