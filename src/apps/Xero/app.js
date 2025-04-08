@@ -22,9 +22,11 @@ async function finish(autoBrowser) {
 async function pickActionCallback(xeroObject) {
     return await select({
         message: 'What would you like to do per-community?',
+
         choices: [
             {
                 name: 'Open Imports',
+
                 value: {
                     actionName: 'Open Imports',
                     actionCallback: async (orgName) => {
@@ -33,8 +35,10 @@ async function pickActionCallback(xeroObject) {
                     },
                 },
             },
+
             {
                 name: 'Open Aged Checks',
+
                 value: {
                     actionName: 'Open Aged Checks',
                     actionCallback: async (orgName) => {
@@ -76,6 +80,7 @@ async function run() {
         }
 
         appendOutputData(curLine + '\n')
+
         if (await confirm(`${actionName}: [${curLine}]?`)) {
             let retry = true
 
