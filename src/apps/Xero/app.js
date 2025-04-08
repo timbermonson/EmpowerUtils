@@ -14,33 +14,12 @@ const {
 
 const Xero = lib.Xero
 const AutoBrowser = lib.AutoBrowser
-
-import { compact } from 'lodash-es'
+const InputLineIterator = lib.InputLineIterator
 
 const debugPort = 9222
 
 async function finish(autoBrowser) {
     await autoBrowser.close()
-}
-
-function init() {
-    setupIOTextFiles()
-    commandLineArgsWrapper()
-    writeOutputData('')
-}
-
-function getInputLine(lineNum) {
-    const inputLines = compact(
-        getInputData()
-            ?.split('\n')
-            ?.map((l) => l.trim()) || []
-    )
-
-    if (!inputLines?.length) {
-        throw new Error('No input!')
-    }
-
-    return inputLines[lineNum]
 }
 
 async function pickActionCallback(xeroObject) {
@@ -72,8 +51,12 @@ async function pickActionCallback(xeroObject) {
 }
 
 async function run() {
-    init()
+    setupIOTextFiles()
+    commandLineArgsWrapper()
+    writeOutputData('')
+
     const autoBrowser = new AutoBrowser()
+    const iterator = new InputLineIterator()
 
     await autoBrowser.setup(
         debugPort,
@@ -85,11 +68,11 @@ async function run() {
     const xero = new Xero(autoBrowser)
     const { actionName, actionCallback } = await pickActionCallback(xero)
 
-    let curLineNum = 0
     while (true) {
         let curLine = ''
+
         try {
-            curLine = getInputLine(curLineNum)
+            curLine = await iterator.getNextLine()
         } catch (e) {
             console.error(e.message)
             break
@@ -97,22 +80,20 @@ async function run() {
 
         appendOutputData(curLine + '\n')
         if (await confirm(`${actionName}: [${curLine}]?`)) {
-            let success = false
+            let retry = true
 
-            while (!success) {
+            while (retry) {
                 try {
                     await actionCallback(curLine)
-
-                    success = true
+                    retry = false
                 } catch (e) {
                     console.error(e)
-                    if (!(await confirm('Retry?'))) success = true
+                    retry = await confirm('Retry?')
                 }
             }
         }
 
         if (await confirm('Continue?')) {
-            curLineNum += 1
             continue
         }
 

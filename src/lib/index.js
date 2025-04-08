@@ -6,11 +6,13 @@ import * as str from './string.js'
 
 import Xero from './Xero.js'
 import AutoBrowser from './AutoBrowser.js'
+import InputLineIterator from './InputLineIterator.js'
 
 export default {
     address,
     AutoBrowser,
     etc,
+    InputLineIterator,
     io,
     scraper,
     str,
