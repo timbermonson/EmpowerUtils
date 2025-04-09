@@ -56,6 +56,7 @@ export default class AutoBrowser {
     msgCurId = 1000
 
     async showHeader() {
+        await this.doConsoleSetup()
         await this.w('j{header}')
         await this.cons(AutoBrowser.showHeaderCommand)
     }

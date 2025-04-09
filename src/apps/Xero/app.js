@@ -64,7 +64,8 @@ async function run() {
         debugPort,
         ({ url }) =>
             url.includes('go.xero.com/app/') ||
-            url.includes('go.xero.com/Bank/')
+            url.includes('go.xero.com/Bank/') ||
+            url.includes('go.xero.com/BankRec/')
     )
 
     const xero = new Xero(autoBrowser)
@@ -91,16 +92,16 @@ async function run() {
             let retry = true
 
             while (retry) {
-                await xero.autoBrowser.showHeader()
                 try {
+                    await xero.autoBrowser.showHeader()
                     await actionCallback(curLine)
                     retry = false
+                    await xero.autoBrowser.hideHeader()
                 } catch (e) {
                     console.error(e)
                     await xero.autoBrowser.hideHeader()
                     retry = await confirm('Retry?')
                 }
-                await xero.autoBrowser.hideHeader()
             }
         }
 
