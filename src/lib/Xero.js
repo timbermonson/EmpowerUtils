@@ -69,6 +69,13 @@ export default class Xero {
         await ab.cons('window.Bank.toggleSearchForm();')
         await ab.w('j{.search.action.open}')
 
+        // TODO REMOVE
+        await ab.cons('location.reload()')
+        await ab.waitPageLoad()
+        await ab.cons('window.Bank.toggleSearchForm();')
+        await ab.w('j{.search.action.open}')
+        //
+
         await ab.cons('jQuery.noConflict()')
         await ab.cons('jQuery.noConflict()')
         await ab.type('j{#sb_reconciledStatus_value}', 'Un')
