@@ -51,7 +51,7 @@ export default class AutoBrowser {
     static hideHeaderCommand = '$myHeader.innerHTML =  "";'
 
     ws
-    isSetup = false
+    isConnected = false
 
     msgCurId = 1000
 
@@ -243,7 +243,7 @@ export default class AutoBrowser {
         return result
     }
 
-    async setup(port, tabSelectorFn) {
+    async connect(port, tabSelectorFn) {
         logSep('[Browser automations init]')
         lm('• Reading open tabs...')
         const wsUrl = await getWebsocketURL(port, tabSelectorFn)

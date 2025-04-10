@@ -60,12 +60,9 @@ async function run() {
     const autoBrowser = new AutoBrowser()
     const iterator = new InputLineIterator()
 
-    await autoBrowser.setup(
+    await autoBrowser.connect(
         debugPort,
-        ({ url }) =>
-            url.includes('go.xero.com/app/') ||
-            url.includes('go.xero.com/Bank/') ||
-            url.includes('go.xero.com/BankRec/')
+        ({ url, type }) => url.includes('go.xero.com') && type === 'page'
     )
 
     const xero = new Xero(autoBrowser)
