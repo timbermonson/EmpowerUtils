@@ -64,11 +64,8 @@ Works down a list of Xero organizations, auto-navving to a selected page.
 
 This is to help with repetitive per-org tasks-- Viewing aged checks, transaction imports, etc.
 
-### Example Screenshots
-
-![image](https://github.com/user-attachments/assets/31f59a0c-9f7a-4a27-86c8-2013cfc3b903)
-
-![image](https://github.com/user-attachments/assets/0b6d5344-7423-4cee-a5f5-7c4470dd1f3c)
+### Example 
+![xerodemo2](https://github.com/user-attachments/assets/c15e3337-7a85-41ba-90c0-93fcb2c6cc86)
 
 (Your browser must be launched with `--remote-debugging-port=9222`)
 
