@@ -36,9 +36,9 @@ function logSep(title = '', separator = '-', chalkColor = 'cyan') {
     )
 }
 
-function getInputData() {
+function getInputData(path = inputFilePath) {
     if (ioDisable) return
-    return fs.readFileSync(inputFilePath, 'utf8')
+    return fs.readFileSync(path, 'utf8')
 }
 
 function writeOutputData(output) {
