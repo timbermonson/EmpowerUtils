@@ -80,30 +80,79 @@ function rewrapSingleFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
     return cmd.replaceAll(searchPattern, `${outFnLeft}$1${outFnRight}`)
 }
 
-function rewrapJQueryCommand(cmd) {
-    const reWrapList = [
-        ['j{}', "jQuery('", "')"],
-        ['.h{}', ".has('", "')"],
-        ['.n{}', ".not('", "')"],
-        ['.p{}', '.parent(', ')'],
-        ['.f{}', ".find('", "')"],
-        ['.c{}', ".css('", "')"],
-        ['.g{}', '.get(', ')'],
-    ]
+function jqTemplaterFactory(entryFunctionName) {
+    if (!entryFunctionName) {
+        throw new Error(
+            'jqTemplaterFactory constructor requires a jQuery entry function name!'
+        )
+    }
 
-    return reWrapList.reduce(
-        (acc, params) =>
-            rewrapSingleFunction(acc, params[0], params[1], params[2]),
-        cmd
-    )
+    const stringParamFnList = ['has', 'not', 'find', 'css']
+    const numberParamFnList = ['get']
+    const noParamFnList = ['parent']
+    const propertyList = ['length', 'innerHTML', 'outerHTML', 'textContent']
+
+    function esc(inp) {
+        return inp.replaceAll('"', '\\"')
+    }
+
+    function validate(fnName, param, requiredParamType) {
+        if (typeof param !== requiredParamType) {
+            throw new Error(
+                `jQuery.${fnName} requires param of type ${requiredParamType}! Received type  ${typeof param} with value ${JSON.stringify(
+                    param
+                )}.`
+            )
+        }
+    }
+
+    return function $(baseQuery, suffix = '') {
+        const jQuery = {
+            cmd: `${entryFunctionName}("${esc(baseQuery)}")${suffix}`,
+        }
+
+        stringParamFnList.forEach((fnName) => {
+            jQuery[fnName] = (selector) => {
+                validate(fnName, selector, 'string')
+
+                return $(baseQuery, `.${fnName}("${esc(selector)}")`)
+            }
+        })
+
+        numberParamFnList.forEach((fnName) => {
+            jQuery[fnName] = (selector) => {
+                validate(fnName, selector, 'number')
+
+                return $(baseQuery, `.${fnName}(${selector})`)
+            }
+        })
+
+        noParamFnList.forEach((fnName) => {
+            jQuery[fnName] = () => {
+                return $(baseQuery, `.${fnName}()`)
+            }
+        })
+
+        propertyList.forEach((propName) =>
+            Object.defineProperty(jQuery, propName, {
+                get: () => {
+                    return $(baseQuery, `.${propName}`)
+                },
+            })
+        )
+
+        jQuery.toString = () => jQuery.cmd
+
+        return jQuery
+    }
 }
 
 export {
+    jqTemplaterFactory,
     capitalizeName,
     combineSpaces,
     nameReverse,
     normalizeCardinalDirection,
     prepAddressSearchTerm,
-    rewrapJQueryCommand,
     rewrapSingleFunction,
 }

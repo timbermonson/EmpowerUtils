@@ -90,13 +90,13 @@ async function run() {
 
             while (retry) {
                 try {
-                    await xero.autoBrowser.showHeader()
+                    await autoBrowser.showHeader()
                     await actionCallback(curLine)
                     retry = false
-                    await xero.autoBrowser.hideHeader()
+                    await autoBrowser.hideHeader()
                 } catch (e) {
                     console.error(e)
-                    await xero.autoBrowser.hideHeader()
+                    await autoBrowser.hideHeader()
                     retry = await confirm('Retry?')
                 }
             }

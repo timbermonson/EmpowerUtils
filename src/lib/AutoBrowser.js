@@ -3,7 +3,7 @@ import WebSocket from 'faye-websocket'
 
 import { lm, logSep } from './io.js'
 import { wait } from './etc.js'
-import { rewrapJQueryCommand } from './string.js'
+import { jqTemplaterFactory } from './string.js'
 
 async function getWebsocketURL(port, tabSelectorFn) {
     let response
@@ -29,17 +29,25 @@ async function getWebsocketURL(port, tabSelectorFn) {
  * Assures that input is an array-- if it isn't, puts it in one.
  */
 function arrayize(inp) {
-    if (typeof inp === 'object' && inp.length) {
+    if (typeof inp === 'object' && inp.forEach) {
         return inp
     } else {
         return [inp]
     }
 }
 
-export default class AutoBrowser {
-    static clipboardInjector =
-        "function ctc(text) {{}    const input = document.createElement('input');    input.value = text;    document.body.appendChild(input);    input.select();    document.execCommand('copy');    document.body.removeChild(input);{}}"
+function requireJQueryObj(inp, customMsg) {
+    if (typeof inp !== 'object' || typeof inp?.find !== 'function') {
+        throw new Error(
+            customMsg ||
+                `Parameter must be a jQuery object! Received: ${JSON.stringify(
+                    inp
+                )}`
+        )
+    }
+}
 
+export default class AutoBrowser {
     static jQueryInjector =
         "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res();})"
 
@@ -50,48 +58,51 @@ export default class AutoBrowser {
         '$myHeader.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";'
     static hideHeaderCommand = '$myHeader.innerHTML =  "";'
 
-    ws
-    isConnected = false
-
+    #ws
     msgCurId = 1000
+
+    isConnected = false
+    $ = jqTemplaterFactory('jQuery')
 
     async showHeader() {
         await this.doConsoleSetup()
-        await this.w('j{header}')
+        await this.waitFor(this.$('header'))
         await this.cons(AutoBrowser.showHeaderCommand)
     }
 
     async hideHeader() {
-        await this.w('j{header}')
+        await this.waitFor(this.$('header'))
         await this.cons(AutoBrowser.hideHeaderCommand)
     }
 
-    async type(query, text) {
-        if (typeof query !== 'string')
-            throw new Error('type(): query much be a string!')
+    async type(jQuery, text) {
+        requireJQueryObj(jQuery)
 
-        await this.w(query)
-        await this.j(`${query}.g{0}.value = ${JSON.stringify(text)}`)
-        await this.j(
-            `${query}.g{0}.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45}))`
+        await this.waitFor(jQuery)
+        await this.sendQuery(jQuery.get(0), `.value = ${JSON.stringify(text)}`)
+        await this.sendQuery(
+            jQuery.get(0),
+            `.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45}))`
         )
-        await this.j(`${query}.g{0}.dispatchEvent(new KeyboardEvent("keyup"))`)
+        await this.sendQuery(
+            jQuery.get(0),
+            `.dispatchEvent(new KeyboardEvent("keyup"))`
+        )
     }
 
     async click(queryOrQueryList) {
-        const queryList = arrayize(queryOrQueryList)
+        const jQueryList = arrayize(queryOrQueryList)
+        jQueryList.forEach((j) => requireJQueryObj(j))
 
         const fParamList = []
-        queryList.forEach((query) => {
-            fParamList.push(query)
-            fParamList.push(async (q) => await this.j(`${q}.g{0}.click()`))
+        jQueryList.forEach((jQuery) => {
+            fParamList.push(jQuery)
+            fParamList.push(
+                async (q) => await this.sendQuery(jQuery.get(0), '.click()')
+            )
         })
 
-        return this.f(...fParamList)
-    }
-
-    async f(...params) {
-        return await this.findAndDo(...params)
+        return this.findAndDo(...fParamList)
     }
 
     async findAndDo(...queryAndCallbackList) {
@@ -102,17 +113,17 @@ export default class AutoBrowser {
             throw new Error('findAndDo: must be an even # of params!')
         }
 
-        const queryList = []
+        const jQueryList = []
         const functionList = []
 
         for (const [index, param] of queryAndCallbackList.entries()) {
             if (index % 2 == 0) {
-                if (typeof param !== 'string') {
-                    throw new Error(
-                        'findAndDo: Every even param (0-ind) must be a string!'
-                    )
-                }
-                queryList.push(param)
+                requireJQueryObj(
+                    param,
+                    'findAndDo: Every even param (0-ind) must be a string!'
+                )
+
+                jQueryList.push(param)
             }
 
             if (index % 2 == 1) {
@@ -124,22 +135,25 @@ export default class AutoBrowser {
                 functionList.push(param)
             }
         }
-        if (queryList.length !== functionList.length) {
+
+        if (jQueryList.length !== functionList.length) {
             throw new Error('This error should never occur.')
         }
 
-        const foundIndex = await this.w(queryList)
-        await functionList[foundIndex](queryList[foundIndex])
+        const foundIndex = await this.waitFor(jQueryList)
+        await functionList[foundIndex](jQueryList[foundIndex])
         return foundIndex
     }
 
-    async waitFor(queryOrQueryList, timeout = 5000, interval = 300) {
-        const queryList = arrayize(queryOrQueryList)
+    async waitFor(jQueryOrJQueryList, timeout = 5000, interval = 300) {
+        const jQueryList = arrayize(jQueryOrJQueryList)
+        jQueryList.forEach((j) => requireJQueryObj(j))
+
         const startTime = Date.now()
 
         while (Date.now() - startTime < timeout) {
-            for (const [index, query] of queryList.entries()) {
-                if (await this.has(query)) return index
+            for (const [index, jQuery] of jQueryList.entries()) {
+                if (await this.has(jQuery)) return index
             }
 
             await this.cons('jQuery.noConflict();')
@@ -147,55 +161,44 @@ export default class AutoBrowser {
         }
 
         throw new Error(
-            `waitFor reached timeout!\nqueryList:\n${JSON.stringify(queryList)}`
+            `waitFor reached timeout!\nqueryList:\n${JSON.stringify(
+                jQueryList
+            )}`
         )
     }
 
-    async has(query) {
-        return !!(await this.j(`${query}.length`))
+    async has(jQuery) {
+        requireJQueryObj(jQuery)
+        return !!(await this.sendQuery(jQuery.length))
     }
 
     async waitPageLoad() {
         wait(3000)
         do {
             wait(300)
-        } while ((await this.j('typeof $myHeader')) === 'object')
+        } while ((await this.cons('typeof $myHeader')) === 'object')
 
         await this.doConsoleSetup()
         await this.doConsoleSetup()
     }
 
-    async j(...params) {
-        return await this.jQuery(...params)
-    }
-
-    async jQuery(cmd) {
-        return this.cons(rewrapJQueryCommand(cmd))
-    }
-
-    async w(...params) {
-        return await this.waitFor(...params)
+    async sendQuery(jQuery, suffix = '') {
+        requireJQueryObj(jQuery)
+        return this.cons(`${jQuery.toString()}${suffix}`)
     }
 
     async doConsoleSetup() {
-        const {
-            jQueryInjector,
-            clipboardInjector,
-            headerInjector,
-            showHeaderCommand,
-        } = AutoBrowser
+        const { jQueryInjector, headerInjector } = AutoBrowser
+
         await this.cons(jQueryInjector, true)
-        await this.cons(clipboardInjector)
         await this.cons('$ = jQuery;')
         await this.cons('jQuery.noConflict();')
         await this.cons('jQuery.noConflict();')
-        await this.w('j{header}')
-        await this.cons(AutoBrowser.headerInjector)
+        await this.waitFor(this.$('header'))
+        await this.cons(headerInjector)
     }
 
     async cons(consoleCommand, executeAsync = false, echo = true) {
-        this.msgCurId += 1
-
         if (!consoleCommand?.trim()?.length) {
             throw new Error('Command cannot be empty!')
         }
@@ -221,7 +224,7 @@ export default class AutoBrowser {
 
                 if (respData.id === this.msgCurId) {
                     if (!respData?.result?.result) {
-                        throw new Error(respData)
+                        throw new Error(JSON.stringify(respData, null, 2))
                     }
                     return res(respData.result.result.value)
                 }
