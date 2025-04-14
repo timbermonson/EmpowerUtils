@@ -63,23 +63,18 @@ function capitalizeName(fullName) {
     return capitalizedName.trim()
 }
 
-function rewrapSingleFunction(cmd, inFnEmptyExample, outFnLeft, outFnRight) {
-    if (inFnEmptyExample.length < 3)
-        throw new Error('rewrapSingleFunction: inFnEmptyExample too short!')
-
-    const inFnExampleCList = inFnEmptyExample.split('')
-    const inFnRightBracket = escapeRegExp(inFnExampleCList.pop())
-    const inFnLeftBracket = escapeRegExp(inFnExampleCList.pop())
-    const inFnName = escapeRegExp(inFnExampleCList.join(''))
-
-    const searchPattern = new RegExp(
-        `${inFnName}${inFnLeftBracket}([^${inFnRightBracket}]+)${inFnRightBracket}`,
-        'gi'
-    )
-
-    return cmd.replaceAll(searchPattern, `${outFnLeft}$1${outFnRight}`)
-}
-
+/**
+ * Returns a jQuery-templating "entry function" $.
+ *
+ * $("someQuery") returns an object representing a jQuery.
+ * The jQuery object can be chained with $("").has("").not("").find("").css(), etc.
+ *
+ * The "result" is a string representing a js-evaluatable jQuery command.
+ * The result is accessible on property "cmd"
+ *
+ * @param {string} entryFunctionName
+ * @returns
+ */
 function jqTemplaterFactory(entryFunctionName) {
     if (!entryFunctionName) {
         throw new Error(
@@ -154,5 +149,4 @@ export {
     nameReverse,
     normalizeCardinalDirection,
     prepAddressSearchTerm,
-    rewrapSingleFunction,
 }
