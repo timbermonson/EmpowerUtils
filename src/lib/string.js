@@ -1,4 +1,4 @@
-import { compact, escapeRegExp } from 'lodash-es'
+import { compact, zipObject } from 'lodash-es'
 
 function combineSpaces(str) {
     return str.replaceAll(/( )+/g, ' ')
@@ -70,7 +70,7 @@ function capitalizeName(fullName) {
  * The jQuery object can be chained with $("").has("").not("").find("").css(), etc.
  *
  * The "result" is a string representing a js-evaluatable jQuery command.
- * The result is accessible on property "cmd"
+ * The result is accessible with .toString()
  *
  * @param {string} entryFunctionName
  * @returns
@@ -101,44 +101,43 @@ function jqTemplaterFactory(entryFunctionName) {
         }
     }
 
+    function zipMap(arr, callback) {
+        return zipObject(
+            arr,
+            arr.map((arrVal) => callback(arrVal))
+        )
+    }
+
     return function $(baseQuery, suffix = '') {
-        const jQuery = {
-            cmd: `${entryFunctionName}("${esc(baseQuery)}")${suffix}`,
+        const jQueryObj = {
+            toString: () =>
+                `${entryFunctionName}("${esc(baseQuery)}")${suffix}`,
+
+            ...zipMap(stringParamFnList, (fnName) => (selector) => {
+                validate(fnName, selector, 'string')
+                return $(baseQuery, `${suffix}.${fnName}("${esc(selector)}")`)
+            }),
+
+            ...zipMap(numberParamFnList, (fnName) => (selector) => {
+                validate(fnName, selector, 'number')
+                return $(baseQuery, `${suffix}.${fnName}(${selector})`)
+            }),
+
+            ...zipMap(
+                noParamFnList,
+                (fnName) => () => $(baseQuery, `${suffix}.${fnName}()`)
+            ),
         }
 
-        stringParamFnList.forEach((fnName) => {
-            jQuery[fnName] = (selector) => {
-                validate(fnName, selector, 'string')
-
-                return $(baseQuery, `.${fnName}("${esc(selector)}")`)
-            }
-        })
-
-        numberParamFnList.forEach((fnName) => {
-            jQuery[fnName] = (selector) => {
-                validate(fnName, selector, 'number')
-
-                return $(baseQuery, `.${fnName}(${selector})`)
-            }
-        })
-
-        noParamFnList.forEach((fnName) => {
-            jQuery[fnName] = () => {
-                return $(baseQuery, `.${fnName}()`)
-            }
-        })
-
         propertyList.forEach((propName) =>
-            Object.defineProperty(jQuery, propName, {
+            Object.defineProperty(jQueryObj, propName, {
                 get: () => {
-                    return $(baseQuery, `.${propName}`)
+                    return $(baseQuery, `${suffix}.${propName}`)
                 },
             })
         )
 
-        jQuery.toString = () => jQuery.cmd
-
-        return jQuery
+        return jQueryObj
     }
 }
 

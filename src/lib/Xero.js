@@ -67,6 +67,7 @@ export default class Xero {
             autoBrowser: ab,
             autoBrowser: { $ },
         } = this
+
         lm('• Opening aged checks...')
 
         await ab.click($(operatingButtonSelector))
