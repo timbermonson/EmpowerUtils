@@ -41,6 +41,7 @@ export default class Xero {
         )
         await ab.waitPageLoad()
 
+        await ab.waitFor($('.xui-pageheading--title'))
         await ab.waitFor($(operatingButtonSelector))
         lm('○ Done!')
     }

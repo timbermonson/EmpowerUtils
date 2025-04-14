@@ -159,9 +159,9 @@ export default class AutoBrowser {
         }
 
         throw new Error(
-            `waitFor reached timeout!\nqueryList:\n${JSON.stringify(
-                jQueryList
-            )}`
+            `waitFor reached timeout!\nqueryList:\n${jQueryList
+                .map((q) => q.toString())
+                .join('\n')}`
         )
     }
 
@@ -198,7 +198,7 @@ export default class AutoBrowser {
 
     async cons(consoleCommand, executeAsync = false, echo = true) {
         if (!consoleCommand?.trim()?.length) {
-            throw new Error('Command cannot be empty!')
+            throw new Error('cons() Command cannot be empty!')
         }
 
         const msg = {
