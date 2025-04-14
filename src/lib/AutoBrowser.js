@@ -51,12 +51,10 @@ export default class AutoBrowser {
     static jQueryInjector =
         "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res();})"
 
-    static headerInjector =
-        'let $myHeader = document.createElement("h4");$myHeader.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>"; jQuery("header").get(0).appendChild($myHeader);'
-
-    static showHeaderCommand =
-        '$myHeader.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";'
-    static hideHeaderCommand = '$myHeader.innerHTML =  "";'
+    static headerVar = '$myHeader'
+    static headerInjector = `let ${AutoBrowser.headerVar} = document.createElement("h4");${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>"; jQuery("header").get(0).appendChild(${AutoBrowser.headerVar});`
+    static showHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";`
+    static hideHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "";`
 
     #ws
     msgCurId = 1000
