@@ -76,15 +76,47 @@ export default class AutoBrowser {
     async type(jQuery, text) {
         requireJQueryObj(jQuery)
 
+        // Make sure the element is actually "there"
         await this.waitFor(jQuery)
-        await this.sendQuery(jQuery.get(0), `.value = ${JSON.stringify(text)}`)
+
+        // Set "value" attribute on html element
         await this.sendQuery(
             jQuery.get(0),
-            `.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45}))`
+            `.setAttribute("value", ${JSON.stringify(text)})`
+        )
+
+        // Set actual input value using fancy trickery credit: https://stackoverflow.com/a/60378508
+        // Below line was working before I needed the below trickery for a datepicker.
+        // Try uncommenting if stuff breaks, but INCLUDING it seems to break the fancy stuff when it's needed.
+        // await this.sendQuery(jQuery.get(0), `.value = ${JSON.stringify(text)}`)
+        await this.cons(
+            '$ab_valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set'
+        )
+        await this.cons(`$ab_inputElement = ${jQuery.get(0).toString()}`)
+        await this.cons(
+            `$ab_valueSetter.call($ab_inputElement, ${JSON.stringify(text)})`
         )
         await this.sendQuery(
             jQuery.get(0),
-            `.dispatchEvent(new KeyboardEvent("keyup"))`
+            `.dispatchEvent(new Event("input", {bubbles: true, value: ${JSON.stringify(
+                text
+            )}}))`
+        )
+
+        // Send a press of the "insert" key, in case that's necessary to trigger the input's event
+        await this.sendQuery(
+            jQuery.get(0),
+            `.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45, bubbles: true}))`
+        )
+        await this.sendQuery(
+            jQuery.get(0),
+            `.dispatchEvent(new KeyboardEvent("keyup", {keyCode: 45, bubbles: true}))`
+        )
+
+        // Finally, try using a focusout to trigger listeners
+        await this.sendQuery(
+            jQuery.get(0),
+            `.dispatchEvent(new FocusEvent("focusout", {bubbles:true}))`
         )
     }
 
