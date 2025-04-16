@@ -79,6 +79,11 @@ export default class AutoBrowser {
         // Make sure the element is actually "there"
         await this.waitFor(jQuery)
 
+        await this.sendQuery(
+            jQuery.get(0),
+            `.dispatchEvent(new FocusEvent("focusin", {bubbles:true}))`
+        )
+
         // Set "value" attribute on html element
         await this.sendQuery(
             jQuery.get(0),
@@ -96,6 +101,8 @@ export default class AutoBrowser {
         await this.cons(
             `$ab_valueSetter.call($ab_inputElement, ${JSON.stringify(text)})`
         )
+
+        // Try sending an input event to trigger changes
         await this.sendQuery(
             jQuery.get(0),
             `.dispatchEvent(new Event("input", {bubbles: true, value: ${JSON.stringify(
@@ -103,7 +110,7 @@ export default class AutoBrowser {
             )}}))`
         )
 
-        // Send a press of the "insert" key, in case that's necessary to trigger the input's event
+        // Send a press of the "insert" key, in case a keyup/keydown is necessary to trigger the input's event
         await this.sendQuery(
             jQuery.get(0),
             `.dispatchEvent(new KeyboardEvent("keydown", {keyCode: 45, bubbles: true}))`
@@ -203,9 +210,9 @@ export default class AutoBrowser {
     }
 
     async waitPageLoad() {
-        wait(3000)
+        await wait(1500)
         do {
-            wait(300)
+            await wait(300)
         } while ((await this.cons('typeof $myHeader')) === 'object')
 
         await this.doConsoleSetup()
