@@ -34,11 +34,18 @@ export default class Xero {
         await ab.click(orgChangeBtnQuery)
         await ab.type($('input.xnav-orgsearch--input'), orgName)
 
-        await wait(500)
+        await wait(650)
 
-        await ab.click(
-            $('ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a')
+        const orgSelectFirstResult = $(
+            'ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a'
         )
+
+        await ab.waitFor(orgSelectFirstResult)
+        while (await ab.has(orgSelectFirstResult)) {
+            await ab.click(orgSelectFirstResult)
+            await wait(750)
+        }
+
         await ab.waitPageLoad()
 
         await ab.waitFor($('.xui-pageheading--title'))
@@ -118,5 +125,20 @@ export default class Xero {
         await ab.waitFor($('#bankTransactions'))
 
         lm('○ Done!')
+    }
+
+    async enterRecReportEndDate(endDateString) {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+
+        lm(endDateString)
+
+        await ab.doConsoleSetup()
+        await wait(100)
+        await ab.type($('#report-settings-custom-date-input-to'), endDateString)
+        await wait(200)
+        await ab.click($('[data-automationid="settings-panel-update-button"]'))
     }
 }
