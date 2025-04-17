@@ -1,13 +1,14 @@
 import dayjs from 'dayjs'
 import { wait } from './etc.js'
 import { lm } from './io.js'
+import AutoBrowser from './AutoBrowser.js'
 
 const operatingButtonSelector =
     '.mf-bank-widget-panel:contains("Operating")>div>div>button'
 
 export default class Xero {
-    autoBrowser
-    constructor(autoBrowser) {
+    autoBrowser: AutoBrowser
+    constructor(autoBrowser: AutoBrowser) {
         this.autoBrowser = autoBrowser
     }
 
@@ -24,7 +25,7 @@ export default class Xero {
         const orgChangeBtnQuery = $('[data-name="xnav-changeorgbutton"]')
 
         if (!(await ab.has(orgChangeBtnQuery))) {
-            await ab.click([
+            await ab.clickFirstVisible([
                 $('.xnav-appbutton').not('.xnav-appbutton-is-active'),
                 $('.xnav-orgsearchcontainer > button.xnav-icon-orgsearchclear'),
             ])

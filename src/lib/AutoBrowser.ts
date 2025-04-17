@@ -3,7 +3,7 @@ import WebSocket from 'ws'
 
 import { lm, logSep } from './io.js'
 import { TimeoutError, doWhileUndefined } from './etc.js'
-import { jqTemplaterFactory } from './string.js'
+import { JQueryTemplater, jqTemplaterFactory } from './string.js'
 
 async function getWebsocketURL(
     port: number,
@@ -27,28 +27,6 @@ async function getWebsocketURL(
     const { webSocketDebuggerUrl: wsUrl } = selectedTab
 
     return wsUrl
-}
-
-/**
- * Assures that input is an array-- if it isn't, puts it in one.
- */
-function arrayize(inp: any) {
-    if (typeof inp === 'object' && inp.forEach) {
-        return inp
-    } else {
-        return [inp]
-    }
-}
-
-function requireJQueryObj(inp: any, customMsg?: string) {
-    if (typeof inp !== 'object' || typeof inp?.find !== 'function') {
-        throw new Error(
-            customMsg ||
-                `Parameter must be a jQuery object! Received: ${JSON.stringify(
-                    inp
-                )}`
-        )
-    }
 }
 
 export default class AutoBrowser {
@@ -78,9 +56,7 @@ export default class AutoBrowser {
         await this.cons(AutoBrowser.hideHeaderCommand)
     }
 
-    async type(jQuery, text) {
-        requireJQueryObj(jQuery)
-
+    async type(jQuery: JQueryTemplater, text: string) {
         // Make sure the element is actually "there"
         await this.waitFor(jQuery)
 
@@ -132,65 +108,46 @@ export default class AutoBrowser {
         )
     }
 
-    async click(queryOrQueryList) {
-        const jQueryList = arrayize(queryOrQueryList)
-        jQueryList.forEach((j) => requireJQueryObj(j))
-
-        const fParamList = []
-        jQueryList.forEach((jQuery) => {
-            fParamList.push(jQuery)
-            fParamList.push(
-                async (q) => await this.sendQuery(jQuery.get(0), '.click()')
-            )
-        })
-
-        return this.findAndDo(...fParamList)
+    async click(jQuery: JQueryTemplater) {
+        return this.clickFirstVisible([jQuery])
     }
 
-    async findAndDo(...queryAndCallbackList) {
-        if (
-            !queryAndCallbackList?.length ||
-            queryAndCallbackList.length % 2 !== 0
-        ) {
-            throw new Error('findAndDo: must be an even # of params!')
-        }
+    async clickFirstVisible(jQueryList: Array<JQueryTemplater>) {
+        const callback = async (jQuery: JQueryTemplater) =>
+            this.sendQuery(jQuery.get(0), '.click()')
 
-        const jQueryList = []
-        const functionList = []
+        return this.findAndDo(
+            jQueryList,
+            Array(jQueryList.length).fill(callback)
+        )
+    }
 
-        for (const [index, param] of queryAndCallbackList.entries()) {
-            if (index % 2 == 0) {
-                requireJQueryObj(
-                    param,
-                    'findAndDo: Every even param (0-ind) must be a string!'
-                )
-
-                jQueryList.push(param)
-            }
-
-            if (index % 2 == 1) {
-                if (typeof param !== 'function') {
-                    throw new Error(
-                        'findAndDo: Every odd param (0-ind) must be a function!'
-                    )
-                }
-                functionList.push(param)
-            }
-        }
-
-        if (jQueryList.length !== functionList.length) {
+    async findAndDo(
+        jQueryList: JQueryTemplater[],
+        actionCallbackList: ((JQueryTemplater) => Promise<void>)[]
+    ) {
+        if (jQueryList.length !== actionCallbackList.length) {
             throw new Error('This error should never occur.')
         }
 
-        const foundIndex = await this.waitFor(jQueryList)
-        await functionList[foundIndex](jQueryList[foundIndex])
+        const foundIndex = await this.waitForMult(jQueryList)
+        await actionCallbackList[foundIndex](jQueryList[foundIndex])
         return foundIndex
     }
 
-    async waitFor(jQueryOrJQueryList, timeout = 5000, interval = 300) {
-        const jQueryList = arrayize(jQueryOrJQueryList)
-        jQueryList.forEach((j) => requireJQueryObj(j))
+    async waitFor(
+        jQuery: JQueryTemplater,
+        timeout = 5000,
+        interval = 300
+    ): Promise<number> {
+        return this.waitForMult([jQuery], timeout, interval)
+    }
 
+    async waitForMult(
+        jQueryList: Array<JQueryTemplater>,
+        timeout = 5000,
+        interval = 300
+    ): Promise<number> {
         try {
             return await doWhileUndefined(timeout, interval, async () => {
                 for (const [index, jQuery] of jQueryList.entries()) {
@@ -212,8 +169,7 @@ export default class AutoBrowser {
         }
     }
 
-    async has(jQuery) {
-        requireJQueryObj(jQuery)
+    async has(jQuery: JQueryTemplater) {
         return !!(await this.sendQuery(jQuery.length))
     }
 
@@ -228,8 +184,7 @@ export default class AutoBrowser {
         await this.doConsoleSetup()
     }
 
-    async sendQuery(jQuery, suffix = '') {
-        requireJQueryObj(jQuery)
+    async sendQuery(jQuery: JQueryTemplater, suffix = '') {
         return this.cons(`${jQuery.toString()}${suffix}`)
     }
 
@@ -244,7 +199,11 @@ export default class AutoBrowser {
         await this.cons(headerInjector)
     }
 
-    async cons(consoleCommand, executeAsync = false, echo = true) {
+    async cons(
+        consoleCommand: string,
+        executeAsync = false,
+        echo = true
+    ): Promise<any> {
         if (!consoleCommand?.trim()?.length) {
             throw new Error('cons() Command cannot be empty!')
         }
