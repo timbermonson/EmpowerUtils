@@ -59,8 +59,9 @@ Try `npm run test` for verbose unit tests, and `npm run coverage` for a coverage
 
 ## Xero Community Auto-Navigator
 
-**This app**:
-Works down a list of Xero organizations, auto-navving to a selected page.
+Run with: `npm run xero`
+
+**This app**: Works down a list of Xero organizations, auto-navving to a selected page.
 
 This is to help with repetitive per-org tasks-- Viewing aged checks, transaction imports, etc.
 
