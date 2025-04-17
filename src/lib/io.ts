@@ -110,7 +110,7 @@ function setupIOTextFiles() {
     })
 }
 
-function lm(...logMessageList: string[]) {
+function lm(...logMessageList: any[]) {
     if (ioDisable) return
     const inp = logMessageList.join('')
 
