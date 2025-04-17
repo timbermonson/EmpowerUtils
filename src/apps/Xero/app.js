@@ -1,6 +1,7 @@
-import { select } from '@inquirer/prompts'
+import { select, input } from '@inquirer/prompts'
 import lib from '../../lib/index.js'
 import { lm } from '../../lib/io.js'
+import dayjs from 'dayjs'
 
 import chalk from 'chalk'
 
@@ -28,7 +29,7 @@ async function pickActionCallback(xeroObject) {
                 name: 'Open Imports',
 
                 value: {
-                    actionName: 'Open Imports',
+                    logVerb: 'Open Imports:',
                     actionCallback: async (orgName) => {
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openImports()
@@ -40,10 +41,40 @@ async function pickActionCallback(xeroObject) {
                 name: 'Open Aged Checks',
 
                 value: {
-                    actionName: 'Open Aged Checks',
+                    logVerb: 'Open Aged Checks:',
                     actionCallback: async (orgName) => {
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openAgedChecks()
+                    },
+                },
+            },
+            {
+                name: 'Reconciliation Report: Slide date',
+
+                value: {
+                    logVerb: 'Reconciliation Report - Slide date:',
+                    actionCallback: async (orgName) => {
+                        const startInput = await input({
+                            message: '(ex. May 5, 2020) Input a starting date:',
+                        })
+
+                        let iter = 0
+                        while (true) {
+                            const endDateString = dayjs(startInput)
+                                .add(iter, 'day')
+                                .format('MMM D, YYYY')
+                            if (
+                                !(await confirm(
+                                    `Continue using date ${endDateString}?`
+                                ))
+                            ) {
+                                break
+                            }
+                            await xeroObject.enterRecReportEndDate(
+                                endDateString
+                            )
+                            iter += 1
+                        }
                     },
                 },
             },
@@ -62,7 +93,9 @@ async function run() {
 
     await autoBrowser.connect(
         debugPort,
-        ({ url, type }) => url.includes('go.xero.com') && type === 'page'
+        ({ url, type }) =>
+            type === 'page' &&
+            (url.includes('reporting.xero.com') || url.includes('go.xero.com'))
     )
 
     const xero = new Xero(autoBrowser)
@@ -70,7 +103,7 @@ async function run() {
     lm('')
     logSep('<Automation Settings>', '-')
     await iterator.offerSkipSearch()
-    const { actionName, actionCallback } = await pickActionCallback(xero)
+    const { logVerb, actionCallback } = await pickActionCallback(xero)
     logSep()
 
     while (true) {
@@ -85,7 +118,7 @@ async function run() {
 
         appendOutputData(curLine + '\n')
 
-        if (await confirm(`${actionName}: ` + chalk.green(`[${curLine}]?`))) {
+        if (await confirm(`${logVerb} ` + chalk.green(`[${curLine}]?`))) {
             let retry = true
 
             while (retry) {
