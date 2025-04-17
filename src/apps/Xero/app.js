@@ -1,9 +1,8 @@
 import { select, input } from '@inquirer/prompts'
-import lib from '../../lib/index.js'
-import { lm } from '../../lib/io.js'
 import dayjs from 'dayjs'
-
 import chalk from 'chalk'
+
+import lib from '../../lib/index.js'
 
 const {
     appendOutputData,
@@ -12,6 +11,7 @@ const {
     logSep,
     setupIOTextFiles,
     writeOutputData,
+    lm,
 } = lib.io
 
 const Xero = lib.Xero
