@@ -20,65 +20,65 @@ const InputLineIterator = lib.InputLineIterator
 
 const debugPort = 9222
 
+const actionCallbackChoices = [
+    {
+        name: 'Open Imports',
+
+        value: {
+            logVerb: 'Open Imports:',
+            actionCallback: async (orgName) => {
+                await xeroObject.switchToOrg(orgName)
+                await xeroObject.openImports()
+            },
+        },
+    },
+
+    {
+        name: 'Open Aged Checks',
+
+        value: {
+            logVerb: 'Open Aged Checks:',
+            actionCallback: async (orgName) => {
+                await xeroObject.switchToOrg(orgName)
+                await xeroObject.openAgedChecks()
+            },
+        },
+    },
+
+    {
+        name: 'Reconciliation Report: Slide date',
+
+        value: {
+            logVerb: 'Reconciliation Report - Slide date:',
+            actionCallback: async (orgName) => {
+                const startInput = await input({
+                    message: '(ex. May 5, 2020) Input a starting date:',
+                })
+
+                let iter = 0
+                while (true) {
+                    const endDateString = dayjs(startInput)
+                        .add(iter, 'day')
+                        .format('MMM D, YYYY')
+                    if (
+                        !(await confirm(
+                            `Continue using date ${endDateString}?`
+                        ))
+                    ) {
+                        break
+                    }
+                    await xeroObject.enterRecReportEndDate(endDateString)
+                    iter += 1
+                }
+            },
+        },
+    },
+]
+
 async function pickActionCallback(xeroObject) {
     return await select({
         message: 'What would you like to do per-community?',
-
-        choices: [
-            {
-                name: 'Open Imports',
-
-                value: {
-                    logVerb: 'Open Imports:',
-                    actionCallback: async (orgName) => {
-                        await xeroObject.switchToOrg(orgName)
-                        await xeroObject.openImports()
-                    },
-                },
-            },
-
-            {
-                name: 'Open Aged Checks',
-
-                value: {
-                    logVerb: 'Open Aged Checks:',
-                    actionCallback: async (orgName) => {
-                        await xeroObject.switchToOrg(orgName)
-                        await xeroObject.openAgedChecks()
-                    },
-                },
-            },
-            {
-                name: 'Reconciliation Report: Slide date',
-
-                value: {
-                    logVerb: 'Reconciliation Report - Slide date:',
-                    actionCallback: async (orgName) => {
-                        const startInput = await input({
-                            message: '(ex. May 5, 2020) Input a starting date:',
-                        })
-
-                        let iter = 0
-                        while (true) {
-                            const endDateString = dayjs(startInput)
-                                .add(iter, 'day')
-                                .format('MMM D, YYYY')
-                            if (
-                                !(await confirm(
-                                    `Continue using date ${endDateString}?`
-                                ))
-                            ) {
-                                break
-                            }
-                            await xeroObject.enterRecReportEndDate(
-                                endDateString
-                            )
-                            iter += 1
-                        }
-                    },
-                },
-            },
-        ],
+        choices: actionCallbackChoices,
     })
 }
 
