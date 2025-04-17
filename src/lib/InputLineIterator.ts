@@ -1,14 +1,14 @@
 import Fuse from 'fuse.js'
+import { select, search } from '@inquirer/prompts'
 
 import { getInputData, confirm, logSep } from './io.js'
-import { select, search } from '@inquirer/prompts'
 
 export default class InputLineIterator {
     curLineNum = -1
     curLine = ''
     offerEmptyLineSkip = true
 
-    getInputLine(lineNum) {
+    getInputLine(lineNum: number) {
         const inputList = (getInputData() || '').split('\n')
         if (!inputList?.length) {
             throw new Error('getInputLine: empty input!')
@@ -23,7 +23,7 @@ export default class InputLineIterator {
     }
 
     async getNextLine() {
-        let nextLine
+        let nextLine: string
 
         this.curLineNum += 1
         nextLine = this.getInputLine(this.curLineNum)
@@ -41,7 +41,7 @@ export default class InputLineIterator {
         return nextLine
     }
 
-    async offerSkipSearch() {
+    async offerSkipSearch(): Promise<void> {
         const optionSelect = await select({
             message: 'Where would you like to start in the input file?',
             choices: [
@@ -88,7 +88,7 @@ export default class InputLineIterator {
             return fuse.search(searchTerm).map(({ item }) => item)
         }
 
-        const selectedIndex = await search({
+        const selectedIndex: number = await search({
             message: 'Type a search for your desired line:',
             source: inquirerSearchCallback,
         })
