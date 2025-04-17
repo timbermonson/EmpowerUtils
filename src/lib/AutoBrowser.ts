@@ -1,5 +1,6 @@
 import axios from 'axios'
 import WebSocket from 'ws'
+import chalk from 'chalk'
 
 import { lm, logSep } from './io.js'
 import { TimeoutError, doWhileUndefined } from './etc.js'
@@ -30,11 +31,12 @@ async function getWebsocketURL(
 }
 
 export default class AutoBrowser {
+    static headerVar = '$myHeader'
+
+    static headerInjector = `let ${AutoBrowser.headerVar} = document.createElement("h4");${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>"; jQuery("header").get(0).appendChild(${AutoBrowser.headerVar});`
     static jQueryInjector =
         "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res();})"
 
-    static headerVar = '$myHeader'
-    static headerInjector = `let ${AutoBrowser.headerVar} = document.createElement("h4");${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>"; jQuery("header").get(0).appendChild(${AutoBrowser.headerVar});`
     static showHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";`
     static hideHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "";`
 
@@ -52,6 +54,7 @@ export default class AutoBrowser {
     }
 
     async hideHeader() {
+        await this.doConsoleSetup()
         await this.waitFor(this.$('header'))
         await this.cons(AutoBrowser.hideHeaderCommand)
     }
@@ -175,12 +178,14 @@ export default class AutoBrowser {
 
     async waitPageLoad() {
         await doWhileUndefined(7000, 200, async () => {
-            if ((await this.cons('typeof $myHeader')) !== 'object') {
+            if (
+                (await this.cons(`typeof ${AutoBrowser.headerVar}`)) !==
+                'object'
+            ) {
                 return true
             }
         })
 
-        await this.doConsoleSetup()
         await this.doConsoleSetup()
     }
 
@@ -190,6 +195,9 @@ export default class AutoBrowser {
 
     async doConsoleSetup() {
         const { jQueryInjector, headerInjector } = AutoBrowser
+        if (await this.confirmConsoleSetup()) {
+            return
+        }
 
         await this.cons(jQueryInjector, true)
         await this.cons('$ = jQuery;')
@@ -197,6 +205,16 @@ export default class AutoBrowser {
         await this.cons('jQuery.noConflict();')
         await this.waitFor(this.$('header'))
         await this.cons(headerInjector)
+    }
+
+    async confirmConsoleSetup() {
+        if ((await this.cons('typeof jQuery')) !== 'function') {
+            return false
+        }
+        if ((await this.cons(`typeof ${AutoBrowser.headerVar}`)) !== 'object') {
+            return false
+        }
+        return true
     }
 
     async cons(
@@ -242,7 +260,9 @@ export default class AutoBrowser {
         })
 
         if (echo) {
-            const echoMsg = `[AUTOMATION]: ${msg.params.expression}`
+            const echoMsg = `${chalk.black(chalk.bgGreen('[AUTOMATION]:'))} ${
+                msg.params.expression
+            }`
                 .replaceAll('\\', '\\\\')
                 .replaceAll('"', '\\"')
             await this.cons(`console.log("${echoMsg}");`, false, false)

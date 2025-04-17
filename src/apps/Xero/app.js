@@ -97,9 +97,8 @@ async function run() {
             type === 'page' &&
             (url.includes('reporting.xero.com') || url.includes('go.xero.com'))
     )
-    lm('')
-
     const xero = new Xero(autoBrowser)
+    lm('')
 
     logSep('<Automation Settings>', '-')
     await iterator.offerSkipSearch()
