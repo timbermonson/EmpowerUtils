@@ -63,6 +63,22 @@ function capitalizeName(fullName: string) {
     return capitalizedName.trim()
 }
 
+type JQueryTemplater = {
+    has: (selector: string) => JQueryTemplater
+    not: (selector: string) => JQueryTemplater
+    find: (selector: string) => JQueryTemplater
+    css: (selector: string) => JQueryTemplater
+
+    get: (index: number) => JQueryTemplater
+
+    parent: () => JQueryTemplater
+
+    length: JQueryTemplater
+    innerHTML: JQueryTemplater
+    outerHTML: JQueryTemplater
+    textContent: JQueryTemplater
+}
+
 function jqTemplaterFactory(entryFunctionName: string) {
     if (!entryFunctionName) {
         throw new Error(
@@ -94,15 +110,13 @@ function jqTemplaterFactory(entryFunctionName: string) {
     }
 
     function zipMap<T>(arr: string[], callback: (arrVal: string) => any) {
-        const test: Array<string> = ['a', 'b']
-
         return zipObject(
             arr,
             arr.map((arrVal) => callback(arrVal))
         )
     }
 
-    return function $(baseQuery: string, suffix = '') {
+    return function $(baseQuery: string, suffix = ''): JQueryTemplater {
         const jQueryObj = {
             toString: () =>
                 `${entryFunctionName}("${esc(baseQuery)}")${suffix}`,
@@ -131,11 +145,12 @@ function jqTemplaterFactory(entryFunctionName: string) {
             })
         )
 
-        return jQueryObj
+        return jQueryObj as JQueryTemplater
     }
 }
 
 export {
+    JQueryTemplater,
     jqTemplaterFactory,
     capitalizeName,
     combineSpaces,
