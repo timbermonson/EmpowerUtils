@@ -1,12 +1,16 @@
 import axios from 'axios'
-import WebSocket from 'faye-websocket'
+import WebSocket from 'ws'
 
 import { lm, logSep } from './io.js'
 import { TimeoutError, doWhileUndefined } from './etc.js'
 import { jqTemplaterFactory } from './string.js'
 
-async function getWebsocketURL(port, tabSelectorFn) {
-    let response
+async function getWebsocketURL(
+    port: number,
+    tabSelectorFn: (tabObject: any) => boolean
+) {
+    let response: any
+
     try {
         response = await axios.get(`http://127.0.0.1:${port}/json`)
     } catch (e) {
@@ -28,7 +32,7 @@ async function getWebsocketURL(port, tabSelectorFn) {
 /**
  * Assures that input is an array-- if it isn't, puts it in one.
  */
-function arrayize(inp) {
+function arrayize(inp: any) {
     if (typeof inp === 'object' && inp.forEach) {
         return inp
     } else {
@@ -36,7 +40,7 @@ function arrayize(inp) {
     }
 }
 
-function requireJQueryObj(inp, customMsg) {
+function requireJQueryObj(inp: any, customMsg?: string) {
     if (typeof inp !== 'object' || typeof inp?.find !== 'function') {
         throw new Error(
             customMsg ||
@@ -56,7 +60,8 @@ export default class AutoBrowser {
     static showHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";`
     static hideHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "";`
 
-    #ws
+    ws: null | WebSocket
+    setup = false
     msgCurId = 1000
 
     isConnected = false
@@ -260,8 +265,8 @@ export default class AutoBrowser {
         }
 
         const result = await new Promise(async (res) => {
-            await this.ws.once('message', async (event) => {
-                const respData = JSON.parse(event.data)
+            await this.ws.once('message', async (rawResponseData) => {
+                const respData = JSON.parse(rawResponseData.toString())
 
                 if (respData.id === this.msgCurId) {
                     if (!respData?.result?.result) {
@@ -292,10 +297,10 @@ export default class AutoBrowser {
         lm('• Reading open tabs...')
         const wsUrl = await getWebsocketURL(port, tabSelectorFn)
 
-        let newWs
+        let newWs: undefined | WebSocket
         try {
             lm('• Connecting websocket...')
-            newWs = new WebSocket.Client(wsUrl)
+            newWs = new WebSocket(wsUrl)
         } catch (e) {
             throw new Error(
                 `Browser websocket client failed to create [${wsUrl}]: \n${e.message}`
@@ -307,13 +312,15 @@ export default class AutoBrowser {
             await new Promise(async (res, reject) => {
                 setTimeout(reject, openTimeout)
 
-                newWs.on('close', function (event) {
-                    lm('♦ websocket: close:', event.code, event.reason)
+                const closeCallback = (eventCode: number) => {
+                    lm('♦ websocket: close:', eventCode)
                     this.ws = null
-                })
+                }
+                closeCallback.bind(this)
+                newWs.on('close', closeCallback)
 
-                newWs.once('open', function (event) {
-                    res()
+                newWs.once('open', function () {
+                    res(undefined)
                 })
             })
         } catch (e) {
