@@ -39,6 +39,7 @@
     "description": "",
     "dependencies": {
         "@inquirer/prompts": "^7.4.1",
+        "@types/command-line-args": "^5.2.3",
         "@types/inquirer": "^9.0.7",
         "@types/lodash-es": "^4.17.12",
         "@types/ws": "^8.18.1",

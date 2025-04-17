@@ -6,15 +6,15 @@ import fs from 'fs'
 import dayjs from 'dayjs'
 import chalk from 'chalk'
 
-const inputFilePath = config.get('io.files.inputPath')
-const outputFilePath = config.get('io.files.outputPath')
-const logFilePath = config.get('io.files.logPath')
+const inputFilePath: string = config.get('io.files.inputPath')
+const outputFilePath: string = config.get('io.files.outputPath')
+const logFilePath: string = config.get('io.files.logPath')
 
-const ioDisable = config.get('io.disable')
+const ioDisable: boolean = config.get('io.disable')
 
-const logSettings = cloneDeep(config.get('io.log'))
+const logSettings: any = cloneDeep(config.get('io.log'))
 
-async function confirm(msg) {
+async function confirm(msg: string) {
     if (ioDisable) return
     return await inquirerConfirm({
         message: msg,
@@ -41,13 +41,13 @@ function getInputData(path = inputFilePath) {
     return fs.readFileSync(path, 'utf8')
 }
 
-function writeOutputData(output) {
+function writeOutputData(output: string) {
     if (ioDisable) return
 
     return fs.writeFileSync(outputFilePath, output)
 }
 
-function appendOutputData(output) {
+function appendOutputData(output: string) {
     if (ioDisable) return
 
     fs.appendFileSync(outputFilePath, output)
@@ -68,7 +68,9 @@ function addLogFileStart() {
  *     { name: 'output', alias: 'o', type: String, defaultOption: 'excel' }
  * ]
  */
-function commandLineArgsWrapper(definitions) {
+function commandLineArgsWrapper(
+    definitions: commandLineArgs.OptionDefinition[]
+) {
     if (!definitions?.length) {
         definitions = []
     }
@@ -87,7 +89,7 @@ function commandLineArgsWrapper(definitions) {
     return args
 }
 
-function commandLineArgsLogHandle(args) {
+function commandLineArgsLogHandle(args: any) {
     // checking for undefined because we don't care about the value of the arg (ex. -l true), just that it's present
     if (args?.[logSettings.logFileOverrideArgDef.name] !== undefined) {
         logSettings.toFile = true
@@ -108,9 +110,9 @@ function setupIOTextFiles() {
     })
 }
 
-function lm(...args) {
+function lm(...logMessageList: string[]) {
     if (ioDisable) return
-    const inp = args.join('')
+    const inp = logMessageList.join('')
 
     if (logSettings.toTerminal) {
         console.log(inp)
@@ -120,12 +122,12 @@ function lm(...args) {
     }
 }
 
-function importJSON(filePath) {
+function importJSON(filePath: string) {
     const fileContent = fs.readFileSync(filePath, 'utf-8')
     return JSON.parse(fileContent)
 }
 
-function lo(inp) {
+function lo(inp: any) {
     if (ioDisable) return
 
     const strInp = JSON.stringify(inp, null, 2)
