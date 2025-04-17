@@ -2,7 +2,7 @@ import axios from 'axios'
 import WebSocket from 'faye-websocket'
 
 import { lm, logSep } from './io.js'
-import { wait } from './etc.js'
+import { TimeoutError, doWhileUndefined } from './etc.js'
 import { jqTemplaterFactory } from './string.js'
 
 async function getWebsocketURL(port, tabSelectorFn) {
@@ -186,22 +186,25 @@ export default class AutoBrowser {
         const jQueryList = arrayize(jQueryOrJQueryList)
         jQueryList.forEach((j) => requireJQueryObj(j))
 
-        const startTime = Date.now()
+        try {
+            return await doWhileUndefined(timeout, interval, async () => {
+                for (const [index, jQuery] of jQueryList.entries()) {
+                    if (await this.has(jQuery)) return index
+                }
 
-        while (Date.now() - startTime < timeout) {
-            for (const [index, jQuery] of jQueryList.entries()) {
-                if (await this.has(jQuery)) return index
+                await this.cons('jQuery.noConflict();')
+            })
+        } catch (e) {
+            if (e instanceof TimeoutError) {
+                throw new TimeoutError(
+                    `waitFor reached timeout!\nqueryList:\n${jQueryList
+                        .map((q) => q.toString())
+                        .join('\n')}`
+                )
+            } else {
+                throw e
             }
-
-            await this.cons('jQuery.noConflict();')
-            await wait(interval)
         }
-
-        throw new Error(
-            `waitFor reached timeout!\nqueryList:\n${jQueryList
-                .map((q) => q.toString())
-                .join('\n')}`
-        )
     }
 
     async has(jQuery) {
@@ -210,10 +213,11 @@ export default class AutoBrowser {
     }
 
     async waitPageLoad() {
-        await wait(1500)
-        do {
-            await wait(300)
-        } while ((await this.cons('typeof $myHeader')) === 'object')
+        await doWhileUndefined(7000, 200, async () => {
+            if ((await this.cons('typeof $myHeader')) !== 'object') {
+                return true
+            }
+        })
 
         await this.doConsoleSetup()
         await this.doConsoleSetup()
