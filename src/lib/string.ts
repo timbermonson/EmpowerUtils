@@ -6,7 +6,10 @@ function combineSpaces(str: string) {
 
 function prepAddressSearchTerm(
     str: string,
-    { removeStreetNum = true, removeSingleLetters = true } = {
+    {
+        removeStreetNum = true,
+        removeSingleLetters = true,
+    }: { removeStreetNum?: boolean; removeSingleLetters?: boolean } = {
         removeStreetNum: true,
         removeSingleLetters: true,
     }

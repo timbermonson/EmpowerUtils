@@ -6,7 +6,7 @@ import { prepAddressSearchTerm } from './string.js'
 
 const cityCountyMap = importJSON('./lib/cityCountyMap.json')
 
-function getFuzzyCityMatch(cityName) {
+function getFuzzyCityMatch(cityName: string) {
     const cityNameList = Object.keys(cityCountyMap)
 
     const fuseOptions = {
