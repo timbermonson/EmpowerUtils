@@ -86,7 +86,7 @@ async function run() {
     setupIOTextFiles()
     commandLineArgsWrapper()
     writeOutputData('')
-    lm('\n')
+    lm('')
 
     const autoBrowser = new AutoBrowser()
     const iterator = new InputLineIterator()
@@ -97,25 +97,17 @@ async function run() {
             type === 'page' &&
             (url.includes('reporting.xero.com') || url.includes('go.xero.com'))
     )
+    lm('')
 
     const xero = new Xero(autoBrowser)
 
-    lm('')
     logSep('<Automation Settings>', '-')
     await iterator.offerSkipSearch()
     const { logVerb, actionCallback } = await pickActionCallback(xero)
     logSep()
 
-    while (true) {
-        let curLine = ''
-
-        try {
-            curLine = await iterator.getNextLine()
-        } catch (e) {
-            console.error(e.message)
-            break
-        }
-
+    do {
+        const curLine = await iterator.getNextLine()
         appendOutputData(curLine + '\n')
 
         if (await confirm(`${logVerb} ` + chalk.green(`[${curLine}]?`))) {
@@ -134,13 +126,7 @@ async function run() {
                 }
             }
         }
-
-        if (await confirm('Continue?')) {
-            continue
-        }
-
-        break
-    }
+    } while (await confirm('Continue?'))
 
     await autoBrowser.close()
 }
