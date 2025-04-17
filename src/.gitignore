@@ -1,4 +1,6 @@
 ioFiles/*
+.tsc-built
+
 *input.txt
 
 config/*

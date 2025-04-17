@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+      "outDir": "./.tsc-built",
+      "allowJs": true,
+      "target": "es6",
+      "skipLibCheck": true,
+    },
+    "module": "commonjs",
+    "include": ["./**/*"]
+  }
