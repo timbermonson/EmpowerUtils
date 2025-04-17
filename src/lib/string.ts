@@ -1,11 +1,11 @@
 import { compact, zipObject } from 'lodash-es'
 
-function combineSpaces(str) {
+function combineSpaces(str: string) {
     return str.replaceAll(/( )+/g, ' ')
 }
 
 function prepAddressSearchTerm(
-    str,
+    str: string,
     { removeStreetNum = true, removeSingleLetters = true } = {
         removeStreetNum: true,
         removeSingleLetters: true,
@@ -32,7 +32,7 @@ function prepAddressSearchTerm(
     return output
 }
 
-function nameReverse(fullName, separator = ', ') {
+function nameReverse(fullName: string, separator = ', ') {
     const nameList = compact(fullName.split(' '))
 
     const lastName = nameList[nameList.length - 1]
@@ -43,7 +43,7 @@ function nameReverse(fullName, separator = ', ') {
     return reversedName
 }
 
-function normalizeCardinalDirection(addr) {
+function normalizeCardinalDirection(addr: string) {
     return addr
         .replaceAll(/west/gi, 'w')
         .replaceAll(/east/gi, 'e')
@@ -51,7 +51,7 @@ function normalizeCardinalDirection(addr) {
         .replaceAll(/south/gi, 's')
 }
 
-function capitalizeName(fullName) {
+function capitalizeName(fullName: string) {
     const nameList = combineSpaces(fullName).toLowerCase().split(' ')
     let capitalizedName = ''
 
@@ -63,19 +63,7 @@ function capitalizeName(fullName) {
     return capitalizedName.trim()
 }
 
-/**
- * Returns a jQuery-templating "entry function" $.
- *
- * $("someQuery") returns an object representing a jQuery.
- * The jQuery object can be chained with $("").has("").not("").find("").css(), etc.
- *
- * The "result" is a string representing a js-evaluatable jQuery command.
- * The result is accessible with .toString()
- *
- * @param {string} entryFunctionName
- * @returns
- */
-function jqTemplaterFactory(entryFunctionName) {
+function jqTemplaterFactory(entryFunctionName: string) {
     if (!entryFunctionName) {
         throw new Error(
             'jqTemplaterFactory constructor requires a jQuery entry function name!'
@@ -91,7 +79,11 @@ function jqTemplaterFactory(entryFunctionName) {
         return inp.replaceAll('"', '\\"')
     }
 
-    function validate(fnName, param, requiredParamType) {
+    function validate(
+        fnName: string,
+        param: any,
+        requiredParamType: string
+    ): void {
         if (typeof param !== requiredParamType) {
             throw new Error(
                 `jQuery.${fnName} requires param of type ${requiredParamType}! Received type  ${typeof param} with value ${JSON.stringify(
@@ -101,19 +93,21 @@ function jqTemplaterFactory(entryFunctionName) {
         }
     }
 
-    function zipMap(arr, callback) {
+    function zipMap<T>(arr: string[], callback: (arrVal: string) => any) {
+        const test: Array<string> = ['a', 'b']
+
         return zipObject(
             arr,
             arr.map((arrVal) => callback(arrVal))
         )
     }
 
-    return function $(baseQuery, suffix = '') {
+    return function $(baseQuery: string, suffix = '') {
         const jQueryObj = {
             toString: () =>
                 `${entryFunctionName}("${esc(baseQuery)}")${suffix}`,
 
-            ...zipMap(stringParamFnList, (fnName) => (selector) => {
+            ...zipMap<string>(stringParamFnList, (fnName) => (selector) => {
                 validate(fnName, selector, 'string')
                 return $(baseQuery, `${suffix}.${fnName}("${esc(selector)}")`)
             }),
