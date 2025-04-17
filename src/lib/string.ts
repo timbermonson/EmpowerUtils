@@ -94,7 +94,7 @@ function jqTemplaterFactory(entryFunctionName: string) {
     const noParamFnList = ['parent']
     const propertyList = ['length', 'innerHTML', 'outerHTML', 'textContent']
 
-    function esc(inp) {
+    function esc(inp: string) {
         return inp.replaceAll('"', '\\"')
     }
 
@@ -129,7 +129,7 @@ function jqTemplaterFactory(entryFunctionName: string) {
                 return $(baseQuery, `${suffix}.${fnName}("${esc(selector)}")`)
             }),
 
-            ...zipMap(numberParamFnList, (fnName) => (selector) => {
+            ...zipMap(numberParamFnList, (fnName) => (selector: any) => {
                 validate(fnName, selector, 'number')
                 return $(baseQuery, `${suffix}.${fnName}(${selector})`)
             }),
