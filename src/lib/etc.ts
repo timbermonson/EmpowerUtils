@@ -1,13 +1,18 @@
 class TimeoutError extends Error {
-    constructor(message, options) {
-        super(message, options)
+    constructor(message?: string) {
+        super(message)
         this.name = 'TimeoutError'
     }
 }
 
-const wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+const wait = (time: number) =>
+    new Promise((resolve) => setTimeout(resolve, time))
 
-const doWhileUndefined = async (timeout, interval, callback) => {
+const doWhileUndefined = async (
+    timeout: number,
+    interval: number,
+    callback: (millisPassed: number, attemptNum: number) => any
+) => {
     const startTime = Date.now()
     let millisPassed = 0
     let attemptNum = 0
