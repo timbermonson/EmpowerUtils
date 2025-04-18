@@ -69,7 +69,7 @@ function addLogFileStart() {
  * ]
  */
 function commandLineArgsWrapper(
-    definitions: commandLineArgs.OptionDefinition[]
+    definitions?: commandLineArgs.OptionDefinition[]
 ) {
     if (!definitions?.length) {
         definitions = []

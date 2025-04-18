@@ -16,7 +16,7 @@
         "ebp": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.js",
         "ebpMult": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.js -m",
         "end": "tsx watch --include ./ioFiles/input.txt apps/EndatoApp/app.js --no-stdin",
-        "xero": "tsx apps/Xero/app.js",
+        "xero": "tsx apps/Xero/app.ts",
         "integration": "vitest run --config ./.test/config/integration.config.js",
         "test-unit": "vitest --config ./.test/config/unit.config.js",
         "test-unitCI": "vitest run --config ./.test/config/unit.config.js",
