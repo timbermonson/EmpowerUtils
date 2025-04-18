@@ -66,20 +66,17 @@ function capitalizeName(fullName: string) {
     return capitalizedName.trim()
 }
 
+type JQueryStringMethods = 'has' | 'not' | 'find' | 'css'
+type JQueryDataProps = 'length' | 'innerHTML' | 'outerHTML' | 'textContent'
+
 type JQueryTemplater = {
-    has: (selector: string) => JQueryTemplater
-    not: (selector: string) => JQueryTemplater
-    find: (selector: string) => JQueryTemplater
-    css: (selector: string) => JQueryTemplater
-
-    get: (index: number) => JQueryTemplater
-
+    toString: () => string
     parent: () => JQueryTemplater
-
-    length: JQueryTemplater
-    innerHTML: JQueryTemplater
-    outerHTML: JQueryTemplater
-    textContent: JQueryTemplater
+    get: (index: number) => JQueryTemplater
+} & {
+    [key in JQueryStringMethods]: (selector: string) => JQueryTemplater
+} & {
+    [key in JQueryDataProps]: JQueryTemplater
 }
 
 function jqTemplaterFactory(entryFunctionName: string) {
@@ -89,9 +86,9 @@ function jqTemplaterFactory(entryFunctionName: string) {
         )
     }
 
-    const stringParamFnList = ['has', 'not', 'find', 'css']
     const numberParamFnList = ['get']
     const noParamFnList = ['parent']
+    const stringParamFnList = ['has', 'not', 'find', 'css']
     const propertyList = ['length', 'innerHTML', 'outerHTML', 'textContent']
 
     function esc(inp: string) {
@@ -112,7 +109,7 @@ function jqTemplaterFactory(entryFunctionName: string) {
         }
     }
 
-    function zipMap<T>(arr: string[], callback: (arrVal: string) => any) {
+    function zipMap(arr: string[], callback: (arrVal: string) => any) {
         return zipObject(
             arr,
             arr.map((arrVal) => callback(arrVal))
@@ -124,7 +121,7 @@ function jqTemplaterFactory(entryFunctionName: string) {
             toString: () =>
                 `${entryFunctionName}("${esc(baseQuery)}")${suffix}`,
 
-            ...zipMap<string>(stringParamFnList, (fnName) => (selector) => {
+            ...zipMap(stringParamFnList, (fnName) => (selector: string) => {
                 validate(fnName, selector, 'string')
                 return $(baseQuery, `${suffix}.${fnName}("${esc(selector)}")`)
             }),
