@@ -8,7 +8,7 @@ import clipboard from 'clipboardy'
 import config from 'config'
 import fs from 'fs'
 
-import lib from '../../lib/index.ts'
+import lib from '../../lib/index.js'
 
 const { lm, logBar, logSep, setupIOTextFiles, commandLineArgsWrapper } = lib.io
 
@@ -28,7 +28,7 @@ const outputFilePath = config.get('ioFiles.outputPath')
 
 setupIOTextFiles()
 
-async function handleEmptyLine(inputList) {
+async function handleEmptyLine(inputList: string[]) {
     if (
         !(await inquirerConfirm({
             message: 'Empty newline(s) detected. Trim off inputfile?',
@@ -46,7 +46,7 @@ async function handleEmptyLine(inputList) {
     fs.writeFileSync(inputFilePath, outputContent)
 }
 
-async function handleEmptyLineScratch(inputList) {
+async function handleEmptyLineScratch(inputList: string[]) {
     if (
         !(await inquirerConfirm({
             message: 'Empty newline(s) detected. Trim off inputfile?',
@@ -83,11 +83,11 @@ async function getInputJson() {
     }
 }
 
-function writeOutput(content) {
+function writeOutput(content: string) {
     fs.writeFileSync(outputFilePath, content)
 }
 
-function writeOutputScratch(content, association) {
+function writeOutputScratch(content: string, association: string) {
     const associatedContent = content
         .split('\n')
         .map((ln) => `${association}\t${ln}`)
@@ -97,7 +97,9 @@ function writeOutputScratch(content, association) {
     fs.writeFileSync(outputFilePath, associatedContent)
 }
 
-function excelFormatEnrichedContactList(enrichedContactList) {
+function excelFormatEnrichedContactList(
+    enrichedContactList: D_EndatoContactFormatted[]
+) {
     const outputList = []
     for (const {
         firstName,
@@ -116,7 +118,7 @@ function excelFormatEnrichedContactList(enrichedContactList) {
     return outputList.join('\n')
 }
 
-function toPromptOption(person) {
+function toPromptOption(person: D_PersonResult) {
     const apiSearchPerson = convertToApiSearchBody(person)
     const {
         FirstName,
@@ -132,7 +134,7 @@ function toPromptOption(person) {
     }
 }
 
-async function doFilterRequestListPrompt(personList) {
+async function doFilterRequestListPrompt(personList: D_PersonResult[]) {
     const choiceList = personList
         .filter(({ addressList }) => !!addressList.length)
         .map((person) => toPromptOption(person))
@@ -150,7 +152,7 @@ async function doFilterRequestListPrompt(personList) {
     return filteredList
 }
 
-async function getEditedPersonList(personList) {
+async function getEditedPersonList(personList: D_PersonResult[]) {
     const newList = await inquirerEditor({
         message: 'Make sure to save the editor before closing.',
         waitForUseInput: false,
@@ -161,7 +163,7 @@ async function getEditedPersonList(personList) {
     return JSON.parse(newList)
 }
 
-async function promptGetRetryList(personListNoResults) {
+async function promptGetRetryList(personListNoResults: D_PersonResult[]) {
     if (!personListNoResults?.length) return []
 
     const nameList = personListNoResults.map(({ fullName }) => fullName)
@@ -240,7 +242,7 @@ async function run() {
     const { inputAssociation, inputMap } = await scratchParse()
 
     assertPersonMapSchema(inputMap)
-    const personList = Object.values(inputMap)
+    const personList = Object.values(inputMap) as D_PersonResult[]
 
     const personListFiltered = await doFilterRequestListPrompt(personList)
     const personListNoResults = []

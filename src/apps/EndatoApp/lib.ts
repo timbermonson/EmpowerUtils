@@ -1,18 +1,18 @@
 import { compact, cloneDeep, sortBy } from 'lodash-es'
-import Ajv from 'ajv'
+import { Ajv } from 'ajv'
 import axios from 'axios'
 import config from 'config'
 import Fuse from 'fuse.js'
 
-import lib from '../../lib/index.ts'
+import lib from '../../lib/index.js'
 
 const { lm, lo, logSep } = lib.io
 const { normalizeCardinalDirection, prepAddressSearchTerm } = lib.str
 
 const { getFuzzyCityMatch } = lib.address
 
-const apiKeyName = config.get('endato.profileKeyName')
-const apiKeyPassword = config.get('endato.profileKeyPassword')
+const apiKeyName = config.get('endato.profileKeyName') as string
+const apiKeyPassword = config.get('endato.profileKeyPassword') as string
 
 const ajv = new Ajv()
 
@@ -74,7 +74,7 @@ const contactEnrichApiResponseSchema = {
 const apiResponseAjvValidator = ajv.compile(contactEnrichApiResponseSchema)
 const personMapAjvValidator = ajv.compile(inputPersonMapSchema)
 
-function assertPersonMapSchema(personMap) {
+function assertPersonMapSchema(personMap: D_SearchResultMapByName) {
     const personMapIsValid = personMapAjvValidator(personMap)
     if (!personMapIsValid) {
         throw new Error(
@@ -87,7 +87,9 @@ function assertPersonMapSchema(personMap) {
     }
 }
 
-function convertToApiSearchBody(person) {
+function convertToApiSearchBody(
+    person: D_PersonResult
+): D_EndatoContactEnrichBody {
     const {
         fullName,
         addressList: [address],
@@ -113,7 +115,7 @@ function convertToApiSearchBody(person) {
     }
 }
 
-function apiAssertResponseSchema(response) {
+function apiAssertResponseSchema(response: any) {
     const respIsValid = apiResponseAjvValidator(response)
     if (!respIsValid) {
         const errorList = (apiResponseAjvValidator.errors || []).map((er) => {
@@ -132,7 +134,7 @@ function apiAssertResponseSchema(response) {
     }
 }
 
-async function apiContactEnrichCall(body) {
+async function apiContactEnrichCall(body: D_EndatoContactEnrichBody) {
     try {
         const response = await axios({
             url: 'https://devapi.endato.com/Contact/Enrich',
@@ -154,9 +156,12 @@ async function apiContactEnrichCall(body) {
 }
 
 function getFuzzyAddressMatch(
-    address,
-    searchList,
-    { streetThreshold, cityThreshold } = {}
+    address: D_Address,
+    searchList: D_Address[],
+    { streetThreshold = 0.6, cityThreshold = 0.6 } = {
+        streetThreshold: 0,
+        cityThreshold: 0,
+    }
 ) {
     const { city: cityRaw, street } = address
 
@@ -206,7 +211,7 @@ function getFuzzyAddressMatch(
     return false
 }
 
-function apiGetLastReported(list) {
+function apiGetLastReported(list: any[]) {
     if (!list?.length) {
         return
     }
@@ -219,7 +224,7 @@ function apiGetLastReported(list) {
     return listSorted[listSorted.length - 1]
 }
 
-function stringifyApiAddress(apiAddress) {
+function stringifyApiAddress(apiAddress: any) {
     const unitNum = apiAddress.unit ? `#${apiAddress.unit}` : ''
     const output =
         `${apiAddress.street} ${unitNum}, ${apiAddress.city}, ${apiAddress.state} ${apiAddress.zip}`
@@ -230,7 +235,7 @@ function stringifyApiAddress(apiAddress) {
     return output
 }
 
-function stringifyPersonAddress(apiAddress) {
+function stringifyPersonAddress(apiAddress: any) {
     const output = `${apiAddress.street}, ${apiAddress.city}`
         .trim()
         .replaceAll(' ,', ',')
@@ -239,20 +244,23 @@ function stringifyPersonAddress(apiAddress) {
     return output
 }
 
-function apiAssertHasMatches(response) {
+function apiAssertHasMatches(response: any) {
     if (apiHasNoMatches(response)) {
         throw new Error('Endato did not have any matches!')
     }
 }
 
-function apiHasNoMatches(response) {
+function apiHasNoMatches(response: any) {
     return (
         response?.data?.pagination?.totalResults === 0 &&
         response?.data?.pagination?.totalPages === 0
     )
 }
 
-function apiAssertHasFuzzyMatchAddress(personAddressOld, apiPerson) {
+function apiAssertHasFuzzyMatchAddress(
+    personAddressOld: D_Address,
+    apiPerson: any
+) {
     const apiFuzzyPrevAddr = getFuzzyAddressMatch(
         personAddressOld,
         apiPerson.addresses
@@ -263,7 +271,10 @@ function apiAssertHasFuzzyMatchAddress(personAddressOld, apiPerson) {
     }
 }
 
-function formatEnrichedContact(personAddressOld, apiPerson) {
+function formatEnrichedContact(
+    personAddressOld: D_Address,
+    apiPerson: any
+): D_EndatoContactFormatted {
     const enrichedContact = {
         firstName: apiPerson.name.firstName,
         lastName:
@@ -292,7 +303,10 @@ function formatEnrichedContact(personAddressOld, apiPerson) {
     return enrichedContact
 }
 
-async function getEnrichedContact(person, simulatedResponse = false) {
+async function getEnrichedContact(
+    person: D_PersonResult,
+    simulatedResponse = false
+) {
     const personAddressOld = person.addressList[0]
     const apiSearchBody = convertToApiSearchBody(person)
 
