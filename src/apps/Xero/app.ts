@@ -14,13 +14,15 @@ const {
     lm,
 } = lib.io
 
+import T_Xero from '../../lib/Xero.js'
+
 const Xero = lib.Xero
 const AutoBrowser = lib.AutoBrowser
 const InputLineIterator = lib.InputLineIterator
 
 const debugPort = 9222
 
-async function pickActionCallback(xeroObject) {
+async function pickActionCallback(xeroObject: T_Xero) {
     return await select({
         message: 'What would you like to do per-community?',
         choices: [
@@ -29,7 +31,7 @@ async function pickActionCallback(xeroObject) {
 
                 value: {
                     logVerb: 'Open Imports:',
-                    actionCallback: async (orgName) => {
+                    actionCallback: async (orgName: string) => {
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openImports()
                     },
@@ -41,7 +43,7 @@ async function pickActionCallback(xeroObject) {
 
                 value: {
                     logVerb: 'Open Aged Checks:',
-                    actionCallback: async (orgName) => {
+                    actionCallback: async (orgName: string) => {
                         await xeroObject.switchToOrg(orgName)
                         await xeroObject.openAgedChecks()
                     },
@@ -53,7 +55,7 @@ async function pickActionCallback(xeroObject) {
 
                 value: {
                     logVerb: 'Reconciliation Report - Slide date:',
-                    actionCallback: async (orgName) => {
+                    actionCallback: async () => {
                         const startInput = await input({
                             message: '(ex. May 5, 2020) Input a starting date:',
                         })
