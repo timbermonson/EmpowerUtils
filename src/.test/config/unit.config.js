@@ -10,7 +10,7 @@ export default defineConfig({
         exclude: [...configDefaults.exclude, '.test/*'],
         globals: true,
         globalSetup: '.test/config/globalSetup.js',
-        include: ['**/*.test.js'],
+        include: ['**/*.test.js', '**/*.test.ts'],
         reporters: ['verbose'],
     },
 })

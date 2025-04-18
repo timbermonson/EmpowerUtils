@@ -1,6 +1,6 @@
 import { compact, uniqBy } from 'lodash-es'
 
-import lib from '../../lib/index.ts'
+import lib from '../../lib/index.js'
 const { capitalizeName, combineSpaces } = lib.str
 const {
     commandLineArgsWrapper,
@@ -17,7 +17,7 @@ const argDefinitions = [
 // TODO: convert to the util/lib.js > importJson (to satisfy prettier)
 import titleReplacementMap from './titleReplacementMap.js'
 
-function getReplacementTitle(title) {
+function getReplacementTitle(title: string) {
     const normalizedTitle = combineSpaces(title.trim())
     const replacement = titleReplacementMap[normalizedTitle.toLowerCase()]
 
@@ -25,7 +25,7 @@ function getReplacementTitle(title) {
     return replacement
 }
 
-function getPrincipalListString(rowTextList) {
+function getPrincipalListString(rowTextList?: string[]) {
     if (!rowTextList) return ''
     let principalObjectList = []
 
@@ -51,7 +51,7 @@ function getPrincipalListString(rowTextList) {
     return boardMemberListString
 }
 
-function multiInputLineToTableRowList(line) {
+function multiInputLineToTableRowList(line: string) {
     return compact(
         line
             .trim()
@@ -61,7 +61,7 @@ function multiInputLineToTableRowList(line) {
     )
 }
 
-function runMultipleAHKOutput(inputData) {
+function runMultipleAHKOutput(inputData: string) {
     lm('running ebp with multiple!')
     let outputList = []
 
@@ -81,7 +81,7 @@ function runMultipleAHKOutput(inputData) {
     return outputList.join('\n')
 }
 
-function runSingle(inputData) {
+function runSingle(inputData: string) {
     // Trim & remove header line
     let inputByLines = inputData.trim().split('\n')
     if (inputByLines[0].trim().toLowerCase().startsWith('title')) {

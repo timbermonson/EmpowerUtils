@@ -1,4 +1,4 @@
-import lib from '../../lib/index.ts'
+import lib from '../../lib/index.js'
 vi.mock('../../lib/index.ts', { spy: true })
 
 import {
@@ -8,7 +8,7 @@ import {
     run,
     runMultipleAHKOutput,
     runSingle,
-} from './app'
+} from './app.js'
 
 const testReplacementMap = {
     treasurer: 'T',
@@ -115,15 +115,15 @@ describe('Extract Business Principals', () => {
 
     describe('run()', () => {
         test('Handles single input', () => {
-            lib.io.getInputData.mockReturnValueOnce(singleTest)
+            vi.mocked(lib.io.getInputData).mockReturnValueOnce(singleTest)
 
             run()
             expect(lib.io.writeOutputData).toBeCalledTimes(1)
             expect(lib.io.writeOutputData).toBeCalledWith(singleResult)
         })
         test('Handles ahk input', () => {
-            lib.io.getInputData.mockReturnValueOnce(ahkTest)
-            lib.io.commandLineArgsWrapper.mockReturnValueOnce({
+            vi.mocked(lib.io.getInputData).mockReturnValueOnce(ahkTest)
+            vi.mocked(lib.io.commandLineArgsWrapper).mockReturnValueOnce({
                 multiple: true,
             })
 
