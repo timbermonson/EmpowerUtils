@@ -6,5 +6,11 @@
       "skipLibCheck": true,
       "module": "nodenext",
     },
+    "watchOptions": {
+      "excludeFiles": [
+            "./ioFiles/logs.txt",
+            "./ioFiles/output.txt"
+        ],
+    },
     "include": ["./**/*"]
   }

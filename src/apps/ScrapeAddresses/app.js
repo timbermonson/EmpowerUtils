@@ -1,6 +1,6 @@
 import { uniq, compact } from 'lodash-es'
 
-import lib from '../../lib/index.js'
+import lib from '../../lib/index.ts'
 
 import { pickBestCountyAndAddresses } from './lib.js'
 

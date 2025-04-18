@@ -42,7 +42,6 @@
 
 **npm packages**
 
-- Install npm/nodemon globally with `npm i -g nodemon`
 - Set your cwd with `cd ./src` (do this before doing anything else, really)
 - Clear out old packages with `rm -Force node_modules` on Windows, or `rm -rf node_modules` on mac.
 - run `npm i` to install all packages.
@@ -65,7 +64,8 @@ Run with: `npm run xero`
 
 This is to help with repetitive per-org tasks-- Viewing aged checks, transaction imports, etc.
 
-### Example 
+### Example
+
 ![xerodemo2](https://github.com/user-attachments/assets/c15e3337-7a85-41ba-90c0-93fcb2c6cc86)
 
 (Your browser must be launched with `--remote-debugging-port=9222`)

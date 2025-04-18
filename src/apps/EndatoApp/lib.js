@@ -4,7 +4,7 @@ import axios from 'axios'
 import config from 'config'
 import Fuse from 'fuse.js'
 
-import lib from '../../lib/index.js'
+import lib from '../../lib/index.ts'
 
 const { lm, lo, logSep } = lib.io
 const { normalizeCardinalDirection, prepAddressSearchTerm } = lib.str

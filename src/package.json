@@ -9,26 +9,14 @@
         "semi": false,
         "singleQuote": true
     },
-    "nodemonConfig": {
-        "watch": [
-            "./"
-        ],
-        "ignore": [
-            "./ioFiles/logs.txt",
-            "./ioFiles/output.txt"
-        ],
-        "restartable": false,
-        "verbose": false,
-        "ext": "js, txt, json"
-    },
     "scripts": {
-        "addr": "nodemon ./apps/ScrapeAddresses/run.js",
-        "addrAll": "nodemon ./apps/ScrapeAddresses/run.js -- -o both",
-        "addrAllMult": "nodemon ./apps/ScrapeAddresses/run.js -- -o both -c -m",
-        "ebp": "nodemon ./apps/ExtractBusinessPrincipals/run.js",
-        "ebpMult": "nodemon ./apps/ExtractBusinessPrincipals/run.js -- -m",
-        "end": "nodemon ./apps/EndatoApp/app.js --no-stdin",
-        "xero": "tsc && node ./.tsc-built/apps/Xero/app.js",
+        "addr": "tsx watch --include ./ioFiles/input.txt apps/ScrapeAddresses/run.js",
+        "addrAll": "tsx watch --include ./ioFiles/input.txt apps/ScrapeAddresses/run.js -o both",
+        "addrAllMult": "tsx watch --include ./ioFiles/input.txt apps/ScrapeAddresses/run.js -o both -c -m",
+        "ebp": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.js",
+        "ebpMult": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.js -m",
+        "end": "tsx watch --include ./ioFiles/input.txt apps/EndatoApp/app.js --no-stdin",
+        "xero": "tsx apps/Xero/app.js",
         "integration": "vitest run --config ./.test/config/integration.config.js",
         "test-unit": "vitest --config ./.test/config/unit.config.js",
         "test-unitCI": "vitest run --config ./.test/config/unit.config.js",
@@ -56,6 +44,8 @@
         "jsdom": "^26.0.0",
         "lodash-es": "^4.17.21",
         "qs": "^6.14.0",
+        "tsx": "^4.19.3",
+        "typescript": "^5.8.3",
         "ws": "^8.18.1"
     },
     "devDependencies": {

@@ -1,5 +1,5 @@
-import lib from '../../lib/index.js'
-vi.mock('../../lib/index.js', { spy: true })
+import lib from '../../lib/index.ts'
+vi.mock('../../lib/index.ts', { spy: true })
 
 import * as localLib from './lib.js'
 vi.mock('./lib.js')

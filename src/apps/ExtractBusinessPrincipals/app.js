@@ -1,6 +1,6 @@
 import { compact, uniqBy } from 'lodash-es'
 
-import lib from '../../lib/index.js'
+import lib from '../../lib/index.ts'
 const { capitalizeName, combineSpaces } = lib.str
 const {
     commandLineArgsWrapper,
@@ -15,7 +15,7 @@ const argDefinitions = [
 ]
 
 // TODO: convert to the util/lib.js > importJson (to satisfy prettier)
-import titleReplacementMap from './titleReplacementMap.json' with { type: 'json' }
+import titleReplacementMap from './titleReplacementMap.js'
 
 function getReplacementTitle(title) {
     const normalizedTitle = combineSpaces(title.trim())

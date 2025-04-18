@@ -1,4 +1,4 @@
-import lib from '../../../lib/index.js'
+import lib from '../../../lib/index.ts'
 
 const { SearchStatus } = lib.scraper
 const { lm } = lib.io

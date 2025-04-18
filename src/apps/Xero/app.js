@@ -2,7 +2,7 @@ import { select, input } from '@inquirer/prompts'
 import dayjs from 'dayjs'
 import chalk from 'chalk'
 
-import lib from '../../lib/index.js'
+import lib from '../../lib/index.ts'
 
 const {
     appendOutputData,

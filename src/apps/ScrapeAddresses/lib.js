@@ -2,7 +2,7 @@ import { uniq, max, compact, cloneDeep } from 'lodash-es'
 import chalk from 'chalk'
 import Fuse from 'fuse.js'
 
-import lib from '../../lib/index.js'
+import lib from '../../lib/index.ts'
 
 const { lm } = lib.io
 const { prepAddressSearchTerm } = lib.str

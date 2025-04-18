@@ -8,7 +8,7 @@ import clipboard from 'clipboardy'
 import config from 'config'
 import fs from 'fs'
 
-import lib from '../../lib/index.js'
+import lib from '../../lib/index.ts'
 
 const { lm, logBar, logSep, setupIOTextFiles, commandLineArgsWrapper } = lib.io
 

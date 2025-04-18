@@ -1,6 +1,7 @@
 import axios from 'axios'
 import jQuery from 'jquery'
 import jsdom from 'jsdom'
+import https from 'https'
 
 const { JSDOM } = jsdom
 
@@ -11,7 +12,7 @@ const SearchStatus = Object.freeze({
     NONE: 'none',
 })
 
-function getJQWindow(resp) {
+function getJQWindow(resp: any) {
     const { window } = new JSDOM(resp, {
         pretendToBeVisual: true,
         runScripts: 'outside-only',
@@ -25,8 +26,20 @@ function getJQWindow(resp) {
 const encodeUrl = encodeURIComponent
 
 async function getWebpage(
-    baseUrl,
-    { headers, data, queryParamList, method = 'GET', httpsAgent }
+    baseUrl: string,
+    {
+        headers,
+        data,
+        queryParamList,
+        method = 'GET',
+        httpsAgent,
+    }: {
+        headers?: { [key: string]: string }
+        data?: any
+        queryParamList?: Array<string>
+        method?: string
+        httpsAgent?: https.Agent
+    }
 ) {
     let urlAppendage = ''
     if (queryParamList && queryParamList.length) {
