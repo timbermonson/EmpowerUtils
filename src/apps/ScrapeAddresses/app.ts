@@ -1,10 +1,11 @@
 import { uniq, compact } from 'lodash-es'
 
-import lib from '../../lib/index.ts'
+import lib from '../../lib/index.js'
 
 import { pickBestCountyAndAddresses } from './lib.js'
 
 import countyScraperMap from './countyPlugins/index.js'
+import commandLineArgs from 'command-line-args'
 
 const {
     appendOutputData,
@@ -33,9 +34,9 @@ const argDefinitions = [
     }, // 'json' for JUST the object, 'both' for both.
     { name: 'clipboard', alias: 'c', type: Boolean, defaultOption: false },
     { name: 'multiple', alias: 'm', type: Boolean, defaultOption: false },
-]
+] as commandLineArgs.OptionDefinition[]
 
-function parseInputMultiple(inputContent) {
+function parseInputMultiple(inputContent: string) {
     // empty lines aren't trimmed off-- trying to preserve same number of rows in/out
     const inputSplit = inputContent
         .split('\n')
@@ -44,7 +45,7 @@ function parseInputMultiple(inputContent) {
     return inputSplit
 }
 
-function parseInputSingle(inputContent) {
+function parseInputSingle(inputContent: string) {
     // Trim & sanitize input
     let input = combineSpaces(
         inputContent

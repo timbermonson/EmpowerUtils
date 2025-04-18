@@ -1,6 +1,5 @@
 import { cloneDeep } from 'lodash-es'
 
-import countyScraperMap from './countyPlugins/index.js'
 vi.mock('./countyPlugins/index.js', () => {
     return { default: { countyA: vi.fn(), countyB: vi.fn() } }
 })
