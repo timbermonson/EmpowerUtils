@@ -4,7 +4,7 @@ import chalk from 'chalk'
 
 import { lm, logSep } from './io.js'
 import { TimeoutError, doWhileUndefined } from './etc.js'
-import { JQueryTemplater, jqTemplaterFactory } from './string.js'
+import { T_JQueryTemplater, jqTemplaterFactory } from './string.js'
 
 async function getWebsocketURL(
     port: number,
@@ -59,7 +59,7 @@ export default class AutoBrowser {
         await this.cons(AutoBrowser.hideHeaderCommand)
     }
 
-    async type(jQuery: JQueryTemplater, text: string) {
+    async type(jQuery: T_JQueryTemplater, text: string) {
         // Make sure the element is actually "there"
         await this.waitFor(jQuery)
 
@@ -111,12 +111,12 @@ export default class AutoBrowser {
         )
     }
 
-    async click(jQuery: JQueryTemplater) {
+    async click(jQuery: T_JQueryTemplater) {
         return this.clickFirstVisible([jQuery])
     }
 
-    async clickFirstVisible(jQueryList: Array<JQueryTemplater>) {
-        const callback = async (jQuery: JQueryTemplater) =>
+    async clickFirstVisible(jQueryList: Array<T_JQueryTemplater>) {
+        const callback = async (jQuery: T_JQueryTemplater) =>
             this.sendQuery(jQuery.get(0), '.click()')
 
         return this.findAndDo(
@@ -126,8 +126,8 @@ export default class AutoBrowser {
     }
 
     async findAndDo(
-        jQueryList: JQueryTemplater[],
-        actionCallbackList: ((JQueryTemplater) => Promise<void>)[]
+        jQueryList: T_JQueryTemplater[],
+        actionCallbackList: ((T_JQueryTemplater) => Promise<void>)[]
     ) {
         if (jQueryList.length !== actionCallbackList.length) {
             throw new Error('This error should never occur.')
@@ -139,7 +139,7 @@ export default class AutoBrowser {
     }
 
     async waitFor(
-        jQuery: JQueryTemplater,
+        jQuery: T_JQueryTemplater,
         timeout = 5000,
         interval = 300
     ): Promise<number> {
@@ -147,7 +147,7 @@ export default class AutoBrowser {
     }
 
     async waitForMult(
-        jQueryList: Array<JQueryTemplater>,
+        jQueryList: Array<T_JQueryTemplater>,
         timeout = 5000,
         interval = 300
     ): Promise<number> {
@@ -172,7 +172,7 @@ export default class AutoBrowser {
         }
     }
 
-    async has(jQuery: JQueryTemplater) {
+    async has(jQuery: T_JQueryTemplater) {
         return !!(await this.sendQuery(jQuery.length))
     }
 
@@ -189,7 +189,7 @@ export default class AutoBrowser {
         await this.doConsoleSetup()
     }
 
-    async sendQuery(jQuery: JQueryTemplater, suffix = '') {
+    async sendQuery(jQuery: T_JQueryTemplater, suffix = '') {
         return this.cons(`${jQuery.toString()}${suffix}`)
     }
 

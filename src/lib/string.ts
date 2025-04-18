@@ -69,14 +69,14 @@ function capitalizeName(fullName: string) {
 type JQueryStringMethods = 'has' | 'not' | 'find' | 'css'
 type JQueryDataProps = 'length' | 'innerHTML' | 'outerHTML' | 'textContent'
 
-type JQueryTemplater = {
+type T_JQueryTemplater = {
     toString: () => string
-    parent: () => JQueryTemplater
-    get: (index: number) => JQueryTemplater
+    parent: () => T_JQueryTemplater
+    get: (index: number) => T_JQueryTemplater
 } & {
-    [key in JQueryStringMethods]: (selector: string) => JQueryTemplater
+    [key in JQueryStringMethods]: (selector: string) => T_JQueryTemplater
 } & {
-    [key in JQueryDataProps]: JQueryTemplater
+    [key in JQueryDataProps]: T_JQueryTemplater
 }
 
 function jqTemplaterFactory(entryFunctionName: string) {
@@ -116,7 +116,7 @@ function jqTemplaterFactory(entryFunctionName: string) {
         )
     }
 
-    return function $(baseQuery: string, suffix = ''): JQueryTemplater {
+    return function $(baseQuery: string, suffix = ''): T_JQueryTemplater {
         const jQueryObj = {
             toString: () =>
                 `${entryFunctionName}("${esc(baseQuery)}")${suffix}`,
@@ -145,12 +145,12 @@ function jqTemplaterFactory(entryFunctionName: string) {
             })
         )
 
-        return jQueryObj as JQueryTemplater
+        return jQueryObj as T_JQueryTemplater
     }
 }
 
 export {
-    JQueryTemplater,
+    T_JQueryTemplater,
     jqTemplaterFactory,
     capitalizeName,
     combineSpaces,
