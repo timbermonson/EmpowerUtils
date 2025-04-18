@@ -2,20 +2,23 @@ import { uniq, max, compact, cloneDeep } from 'lodash-es'
 import chalk from 'chalk'
 import Fuse from 'fuse.js'
 
-import lib from '../../lib/index.ts'
+import lib from '../../lib/index.js'
 
 const { lm } = lib.io
 const { prepAddressSearchTerm } = lib.str
 
-function pickRandom(list) {
+function pickRandom<T>(list: Array<T>) {
     return list[Math.floor(Math.random() * list.length)]
 }
 
-function prepStreetSearchList(strList) {
+function prepStreetSearchList(strList: string[]) {
     return strList.map((str) => prepAddressSearchTerm(str))
 }
 
-function fuzzyStreetCompare(unpreppedStreet1, unpreppedStreet2) {
+function fuzzyStreetCompare(
+    unpreppedStreet1: string,
+    unpreppedStreet2: string
+) {
     const searchResult1 = fuzzyStreetSearch(
         [unpreppedStreet1],
         unpreppedStreet2
@@ -30,28 +33,22 @@ function fuzzyStreetCompare(unpreppedStreet1, unpreppedStreet2) {
     return false
 }
 
-function citiesAreSimilar(city1, city2) {
+function citiesAreSimilar(city1?: string, city2?: string) {
     // Within the same county, all addresses come from the same dataset with the same weird names.
     // Thus, simple string matching is good enough.
     return city1?.toLowerCase()?.trim() === city2?.toLowerCase()?.trim()
 }
 
-function fuzzyStreetSearch(searchList, searchTerm) {
+function fuzzyStreetSearch(searchList: string[], searchTerm: string) {
     const fuseOptions = {
         isCaseSensitive: false,
         includeScore: true,
         ignoreDiacritics: true,
-        // shouldSort: true,
-        // includeMatches: false,
         findAllMatches: true,
         minMatchCharLength: 3,
-        // location: 0,
         threshold: 0.35,
-        // distance: 100,
-        // useExtendedSearch: false,
         ignoreLocation: true,
         ignoreFieldNorm: false,
-        // fieldNormWeight: 1,
     }
 
     const fuse = new Fuse(prepStreetSearchList(searchList), fuseOptions)
@@ -65,11 +62,14 @@ function fuzzyStreetSearch(searchList, searchTerm) {
     return fuseResult.map(({ item }) => item)
 }
 
-function hasAddressInCity(addressList, cityName) {
+function hasAddressInCity(addressList: D_Address[], cityName: string) {
     return !!addressList.find(({ city }) => citiesAreSimilar(city, cityName))
 }
 
-function getCountyCityCorrelationScore(searchresultMapByName, cityName) {
+function getCountyCityCorrelationScore(
+    searchresultMapByName: D_SearchResultMapByName,
+    cityName: string
+) {
     const addressListList = Object.values(searchresultMapByName)
         .map(({ addressList }) => addressList)
         .filter((addressList) => addressList?.length)
@@ -82,7 +82,7 @@ function getCountyCityCorrelationScore(searchresultMapByName, cityName) {
     return cityCorrelationScore
 }
 
-function getAllAddresses(searchresultMapByName) {
+function getAllAddresses(searchresultMapByName: D_SearchResultMapByName) {
     const addressList = []
     for (const name in searchresultMapByName) {
         addressList.push(...searchresultMapByName[name].addressList)
@@ -90,7 +90,10 @@ function getAllAddresses(searchresultMapByName) {
     return addressList
 }
 
-function getMostCorrelatedAddress(searchresultMapByName, name) {
+function getMostCorrelatedAddress(
+    searchresultMapByName: D_SearchResultMapByName,
+    name: string
+) {
     if (!searchresultMapByName || !name) return
     // Temporarily remove the person's addressList so it doesn't get matched against itself
     const addressList = searchresultMapByName[name].addressList
@@ -148,7 +151,9 @@ function getMostCorrelatedAddress(searchresultMapByName, name) {
     return bestAddress
 }
 
-function getNameListSortedByNumAddr(searchresultMapByName) {
+function getNameListSortedByNumAddr(
+    searchresultMapByName: D_SearchResultMapByName
+) {
     return Object.keys(searchresultMapByName || {}).sort(
         (a, b) =>
             searchresultMapByName[b]?.addressList?.length -
@@ -177,7 +182,7 @@ function filterAllAddressListsToBest(inputMap) {
     return searchresultMapByName
 }
 
-function getCountyResultScore(searchresultMapByName) {
+function getCountyResultScore(searchresultMapByName: D_SearchResultMapByName) {
     let score = 0
 
     for (const fullName in searchresultMapByName) {
@@ -188,7 +193,7 @@ function getCountyResultScore(searchresultMapByName) {
     return score
 }
 
-function getCountyCityList(searchresultMapByName) {
+function getCountyCityList(searchresultMapByName: D_SearchResultMapByName) {
     let completeAddressList = []
 
     Object.values(searchresultMapByName)
@@ -204,7 +209,9 @@ function getCountyCityList(searchresultMapByName) {
     return cityList
 }
 
-function getCountyCorrelationScore(searchresultMapByName) {
+function getCountyCorrelationScore(
+    searchresultMapByName: D_SearchResultMapByName
+) {
     const cityList = getCountyCityList(searchresultMapByName)
 
     let highestCityCorrelation = -1
@@ -222,7 +229,9 @@ function getCountyCorrelationScore(searchresultMapByName) {
     return highestCityCorrelation
 }
 
-function countyHasSimilarAddressPair(searchresultMapByName) {
+function countyHasSimilarAddressPair(
+    searchresultMapByName: D_SearchResultMapByName
+) {
     const nameList = Object.keys(searchresultMapByName)
 
     // Compare every pair once
@@ -247,7 +256,7 @@ function countyHasSimilarAddressPair(searchresultMapByName) {
     return false
 }
 
-function getAllCountyScoreList(nameSearchresultMapByCounty) {
+function getAllCountyScoreList(nameSearchresultMapByCounty: D_CountyResultMap) {
     let scoreObjectList = []
     for (const countyName in nameSearchresultMapByCounty) {
         const searchresultMapByName = nameSearchresultMapByCounty[countyName]
@@ -309,7 +318,9 @@ Comparison rules:
 - Comparison is done based on the sum of each county's reg+cor.
 - Ties are broken via coinflip.
 */
-function pickBestCountyAndAddresses(nameSearchresultMapByCounty) {
+function pickBestCountyAndAddresses(
+    nameSearchresultMapByCounty: D_CountyResultMap
+) {
     if (!Object.keys(nameSearchresultMapByCounty || {}).length) return {}
     // Step 1: modify nameSearchresultMapByCounty:
     //  For each person in each county, add a "bestAddress" attribute,

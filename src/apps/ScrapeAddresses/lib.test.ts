@@ -19,8 +19,11 @@ describe('Address Scraper library', () => {
     const looseAddressMatch1 = {
         city: ' beeptown',
         street: '123123 astreat north',
-    }
-    const looseAddressMatch2 = { city: 'beepTOWN', street: 'astreet' }
+    } as D_Address
+    const looseAddressMatch2 = {
+        city: 'beepTOWN',
+        street: 'astreet',
+    } as D_Address
 
     const testMapEmpty = {
         a: {
@@ -31,7 +34,7 @@ describe('Address Scraper library', () => {
             fullName: 'b',
             addressList: [],
         },
-    }
+    } as D_SearchResultMapByName
 
     const testMap = {
         a: {
@@ -58,7 +61,7 @@ describe('Address Scraper library', () => {
                 { city: 'boopville', street: 'aroad' },
             ],
         },
-    }
+    } as D_SearchResultMapByName
 
     const testMapFiltered = {
         a: {
@@ -73,7 +76,7 @@ describe('Address Scraper library', () => {
             fullName: 'c',
             addressList: [looseAddressMatch2],
         },
-    }
+    } as D_SearchResultMapByName
 
     beforeEach(() => {
         vi.clearAllMocks()
@@ -99,8 +102,7 @@ describe('Address Scraper library', () => {
 
     describe('getCountyCityCorrelationScore()', () => {
         test('Handles 0 names', () => {
-            expect(getCountyCityCorrelationScore({})).toStrictEqual(0)
-            expect(getCountyCityCorrelationScore(testMap)).toStrictEqual(0)
+            expect(getCountyCityCorrelationScore({}, '')).toStrictEqual(0)
             expect(getCountyCityCorrelationScore(testMap, '')).toStrictEqual(0)
         })
 
@@ -125,8 +127,7 @@ describe('Address Scraper library', () => {
 
     describe('getMostCorrelatedAddress()', () => {
         test('Handles empty inputs', () => {
-            expect(getMostCorrelatedAddress()).toEqual(undefined)
-            expect(getMostCorrelatedAddress(testMap)).toEqual(undefined)
+            expect(getMostCorrelatedAddress(testMap, '')).toEqual(undefined)
             expect(getMostCorrelatedAddress({}, '')).toEqual(undefined)
         })
 
@@ -145,7 +146,6 @@ describe('Address Scraper library', () => {
 
     describe('getCountyResultScore()', () => {
         test('Handles empty inputs', () => {
-            expect(getCountyResultScore()).toEqual(0)
             expect(getCountyResultScore({})).toEqual(0)
         })
 
@@ -164,7 +164,6 @@ describe('Address Scraper library', () => {
 
     describe('getNameListSortedByNumAddr()', () => {
         test('Handles empty inputs', () => {
-            expect(getNameListSortedByNumAddr()).toEqual([])
             expect(getNameListSortedByNumAddr({})).toEqual([])
         })
 
@@ -179,7 +178,6 @@ describe('Address Scraper library', () => {
 
     describe('filterAllAddressListsToBest()', () => {
         test('Handles empty inputs', () => {
-            expect(filterAllAddressListsToBest()).toEqual(undefined)
             expect(filterAllAddressListsToBest({})).toEqual({})
         })
 
@@ -205,7 +203,6 @@ describe('Address Scraper library', () => {
         }
 
         test('Handles empty inputs', () => {
-            expect(pickBestCountyAndAddresses()).toEqual({})
             expect(pickBestCountyAndAddresses({})).toEqual({})
         })
 
@@ -213,6 +210,7 @@ describe('Address Scraper library', () => {
             const countyMap = {
                 countyA: cloneDeep(testMap),
                 countyB: Object.assign(
+                    {},
                     ...[
                         'a',
                         'b',

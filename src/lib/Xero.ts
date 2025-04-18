@@ -12,7 +12,7 @@ export default class Xero {
         this.autoBrowser = autoBrowser
     }
 
-    async switchToOrg(orgName) {
+    async switchToOrg(orgName: string) {
         const {
             autoBrowser: ab,
             autoBrowser: { $ },
