@@ -126,7 +126,7 @@ function jqTemplaterFactory(entryFunctionName: string) {
                 return $(baseQuery, `${suffix}.${fnName}("${esc(selector)}")`)
             }),
 
-            ...zipMap(numberParamFnList, (fnName) => (selector: any) => {
+            ...zipMap(numberParamFnList, (fnName) => (selector: number) => {
                 validate(fnName, selector, 'number')
                 return $(baseQuery, `${suffix}.${fnName}(${selector})`)
             }),
