@@ -1,4 +1,4 @@
-import lib from '../../lib/index.ts'
+import lib from '../../lib/index.js'
 vi.mock('../../lib/index.ts', { spy: true })
 
 import * as localLib from './lib.js'
@@ -15,7 +15,7 @@ import {
     parseInputSingle,
     parseInputMultiple,
     run,
-} from './app'
+} from './app.js'
 
 const testNameSearchResultMap = {
     'george washington': {
@@ -32,7 +32,7 @@ const testNameSearchResultMap = {
             { street: " jdon't pick this ", city: 'jbad city ' },
         ],
     },
-}
+} as D_SearchResultMapByName
 const testSingleName = 'george washington'
 
 describe('Address Scraper App', () => {
@@ -164,11 +164,19 @@ describe('Address Scraper App', () => {
         test('Handles 0 names', async () => {
             const res = await getSearchresultMapByName([])
 
-            expect(countyScraperMap.countyA).toBeCalledTimes(0)
-            expect(countyScraperMap.countyB).toBeCalledTimes(0)
+            expect(
+                vi.mocked((countyScraperMap as any).countyA)
+            ).toBeCalledTimes(0)
+            expect(
+                vi.mocked((countyScraperMap as any).countyB)
+            ).toBeCalledTimes(0)
 
-            expect(localLib.pickBestCountyAndAddresses).toBeCalledTimes(1)
-            expect(localLib.pickBestCountyAndAddresses).toBeCalledWith({
+            expect(
+                vi.mocked(localLib.pickBestCountyAndAddresses)
+            ).toBeCalledTimes(1)
+            expect(
+                vi.mocked(localLib.pickBestCountyAndAddresses)
+            ).toBeCalledWith({
                 countyA: {},
                 countyB: {},
             })
@@ -177,15 +185,15 @@ describe('Address Scraper App', () => {
         test('Handles 1 names', async () => {
             await getSearchresultMapByName(['george washington'])
 
-            expect(countyScraperMap.countyA.mock.calls).toEqual([
+            expect((countyScraperMap as any).countyA.mock.calls).toEqual([
                 ['george washington'],
             ])
-            expect(countyScraperMap.countyB.mock.calls).toEqual([
+            expect((countyScraperMap as any).countyB.mock.calls).toEqual([
                 ['george washington'],
             ])
 
             expect(
-                localLib.pickBestCountyAndAddresses.mock.calls
+                vi.mocked(localLib).pickBestCountyAndAddresses.mock.calls
             ).toMatchSnapshot()
         })
 
@@ -195,17 +203,17 @@ describe('Address Scraper App', () => {
                 'john smith',
             ])
 
-            expect(countyScraperMap.countyA.mock.calls).toEqual([
+            expect((countyScraperMap as any).countyA.mock.calls).toEqual([
                 ['george washington'],
                 ['john smith'],
             ])
-            expect(countyScraperMap.countyB.mock.calls).toEqual([
+            expect((countyScraperMap as any).countyB.mock.calls).toEqual([
                 ['george washington'],
                 ['john smith'],
             ])
 
             expect(
-                localLib.pickBestCountyAndAddresses.mock.calls
+                vi.mocked(localLib).pickBestCountyAndAddresses.mock.calls
             ).toMatchSnapshot()
         })
     })
@@ -226,92 +234,110 @@ describe('Address Scraper App', () => {
 
         describe('Single Line', () => {
             test('Handles 0 names', async () => {
-                lib.io.getInputData.mockReturnValueOnce('')
+                vi.mocked(lib.io.getInputData).mockReturnValueOnce('')
 
                 await run()
 
-                expect(countyScraperMap.countyA.mock.calls).toEqual([])
-                expect(countyScraperMap.countyB.mock.calls).toEqual([])
-                expect(lib.io.appendOutputData).toBeCalledTimes(1)
+                expect((countyScraperMap as any).countyA.mock.calls).toEqual([])
+                expect((countyScraperMap as any).countyB.mock.calls).toEqual([])
+                expect(vi.mocked(lib.io.appendOutputData)).toBeCalledTimes(1)
             })
 
             test('Handles 1 name', async () => {
-                lib.io.getInputData.mockReturnValueOnce(testSingleInput)
-
-                await run()
-
-                expect(countyScraperMap.countyA.mock.calls).toEqual([['ab cd']])
-                expect(countyScraperMap.countyB.mock.calls).toEqual([['ab cd']])
-                expect(lib.io.appendOutputData).toBeCalledTimes(1)
-            })
-
-            test('Handles 2 names, uses formatter', async () => {
-                lib.io.getInputData.mockReturnValueOnce(testMultiInput)
-                localLib.pickBestCountyAndAddresses.mockReturnValueOnce(
-                    testAddressPickerReturn
+                vi.mocked(lib.io.getInputData).mockReturnValueOnce(
+                    testSingleInput
                 )
 
                 await run()
 
-                expect(countyScraperMap.countyA.mock.calls).toEqual([
+                expect((countyScraperMap as any).countyA.mock.calls).toEqual([
+                    ['ab cd'],
+                ])
+                expect((countyScraperMap as any).countyB.mock.calls).toEqual([
+                    ['ab cd'],
+                ])
+                expect(vi.mocked(lib.io.appendOutputData)).toBeCalledTimes(1)
+            })
+
+            test('Handles 2 names, uses formatter', async () => {
+                vi.mocked(lib.io.getInputData).mockReturnValueOnce(
+                    testMultiInput
+                )
+                vi.mocked(
+                    localLib.pickBestCountyAndAddresses
+                ).mockReturnValueOnce(testAddressPickerReturn)
+
+                await run()
+
+                expect((countyScraperMap as any).countyA.mock.calls).toEqual([
                     ['ab cd'],
                     ['de fg'],
                 ])
-                expect(countyScraperMap.countyB.mock.calls).toEqual([
+                expect((countyScraperMap as any).countyB.mock.calls).toEqual([
                     ['ab cd'],
                     ['de fg'],
                 ])
 
-                expect(lib.io.appendOutputData.mock.calls).toMatchSnapshot()
+                expect(
+                    vi.mocked(lib.io).appendOutputData.mock.calls
+                ).toMatchSnapshot()
             })
         })
 
         describe('Multi Line', () => {
             test('Handles 0 names', async () => {
-                lib.io.commandLineArgsWrapper.mockReturnValueOnce({
+                vi.mocked(lib.io.commandLineArgsWrapper).mockReturnValueOnce({
                     multiple: true,
                 })
-                lib.io.getInputData.mockReturnValueOnce('')
+                vi.mocked(lib.io.getInputData).mockReturnValueOnce('')
 
                 await run()
 
-                expect(countyScraperMap.countyA.mock.calls).toEqual([])
-                expect(countyScraperMap.countyB.mock.calls).toEqual([])
-                expect(lib.io.appendOutputData).toBeCalledTimes(1)
+                expect((countyScraperMap as any).countyA.mock.calls).toEqual([])
+                expect((countyScraperMap as any).countyB.mock.calls).toEqual([])
+                expect(vi.mocked(lib.io.appendOutputData)).toBeCalledTimes(1)
             })
 
             test('Handles 1 name', async () => {
-                lib.io.commandLineArgsWrapper.mockReturnValueOnce({
+                vi.mocked(lib.io.commandLineArgsWrapper).mockReturnValueOnce({
                     multiple: true,
                 })
-                lib.io.getInputData.mockReturnValueOnce(testSingleInput)
+                vi.mocked(lib.io.getInputData).mockReturnValueOnce(
+                    testSingleInput
+                )
 
                 await run()
 
-                expect(countyScraperMap.countyA.mock.calls).toEqual([['ab cd']])
-                expect(countyScraperMap.countyB.mock.calls).toEqual([['ab cd']])
-                expect(lib.io.appendOutputData).toBeCalledTimes(1)
+                expect((countyScraperMap as any).countyA.mock.calls).toEqual([
+                    ['ab cd'],
+                ])
+                expect((countyScraperMap as any).countyB.mock.calls).toEqual([
+                    ['ab cd'],
+                ])
+                expect(vi.mocked(lib.io.appendOutputData)).toBeCalledTimes(1)
             })
 
             test('Handles 2+1 names', async () => {
-                lib.io.commandLineArgsWrapper.mockReturnValueOnce({
+                vi.mocked(lib.io.commandLineArgsWrapper).mockReturnValueOnce({
                     multiple: true,
                 })
-                lib.io.getInputData.mockReturnValueOnce(testMultiInput)
+                vi.mocked(lib.io.getInputData).mockReturnValueOnce(
+                    testMultiInput
+                )
 
                 await run()
 
-                expect(countyScraperMap.countyA.mock.calls).toEqual([
+                expect((countyScraperMap as any).countyA.mock.calls).toEqual([
                     ['ab cd'],
                     ['de fg'],
                     ['ifsingle donotread'],
                 ])
-                expect(countyScraperMap.countyB.mock.calls).toEqual([
+                expect((countyScraperMap as any).countyB.mock.calls).toEqual([
                     ['ab cd'],
                     ['de fg'],
                     ['ifsingle donotread'],
                 ])
-                expect(lib.io.appendOutputData).toBeCalledTimes(2)
+                expect(vi.mocked(lib.io.appendOutputData)).toBeCalledTimes(2)
             })
         })
     })
