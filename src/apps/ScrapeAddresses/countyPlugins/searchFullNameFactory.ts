@@ -1,21 +1,22 @@
-import lib from '../../../lib/index.ts'
+import { I_ScraperPlugin } from '../../../lib/types/I_ScraperPlugin.js'
+import lib from '../../../lib/index.js'
 
 const { SearchStatus } = lib.scraper
 const { lm } = lib.io
 
-export default function searchFullNameFactory({
+export default function searchFullNameFactory<T>({
     getFullNameWebpageFactory,
     getUniqIdWebpageFactory,
     parseMultiResultUniqIdList,
-    parseSearchStatus,
     parseResultPageAddress,
-}) {
-    async function searchUniqId(id) {
+    parseSearchStatus,
+}: I_ScraperPlugin<T>) {
+    async function searchUniqId(id: T) {
         lm(`\tGetting address for unique identifier ${id}...`)
         const getUniqIdWebpage = getUniqIdWebpageFactory(id)
         let status = ''
         let addressList = []
-        let resp
+        let resp: D_WebResponseData
 
         try {
             resp = await getUniqIdWebpage()
@@ -50,11 +51,11 @@ export default function searchFullNameFactory({
         }
     }
 
-    async function searchFullName(fullName) {
+    async function searchFullName(fullName: string) {
         lm(`Getting address for ${fullName}...`)
         const getFullNameWebpage = getFullNameWebpageFactory(fullName)
         let status = ''
-        let addressList = []
+        let addressList: D_PersonResult['addressList'] = []
         let resp
 
         try {

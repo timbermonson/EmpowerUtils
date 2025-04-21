@@ -1,26 +1,24 @@
 import axios from 'axios'
 import jQuery from 'jquery'
-import jsdom from 'jsdom'
+import { JSDOM } from 'jsdom'
 import https from 'https'
 
-const { JSDOM } = jsdom
+enum SearchStatus {
+    ERROR = 'error',
+    FOUND_MULTIRESULTTABLE = 'found_multiresulttable',
+    FOUND_RESULTPAGE = 'found_resultpage',
+    NONE = 'none',
+}
 
-const SearchStatus = Object.freeze({
-    ERROR: 'error',
-    FOUND_MULTIRESULTTABLE: 'found_multiresulttable',
-    FOUND_RESULTPAGE: 'found_resultpage',
-    NONE: 'none',
-})
-
-function getJQWindow(resp: any) {
-    const { window } = new JSDOM(resp, {
+function getJQWindow(data: D_WebResponseData): I_JQDomWindow {
+    const { window } = new JSDOM(data, {
         pretendToBeVisual: true,
         runScripts: 'outside-only',
     })
 
-    window.$ = jQuery(window)
+    const jq: (query: string) => any = jQuery(window) as any
 
-    return window
+    return { $: jq, ...window }
 }
 
 const encodeUrl = encodeURIComponent
@@ -40,7 +38,7 @@ async function getWebpage(
         method?: string
         httpsAgent?: https.Agent
     }
-) {
+): Promise<D_WebResponseData> {
     let urlAppendage = ''
     if (queryParamList && queryParamList.length) {
         urlAppendage = `?${queryParamList.join('&')}`
@@ -56,9 +54,19 @@ async function getWebpage(
         withCredentials: true,
     }
 
-    const { data: response } = await axios(options)
+    const { data: responseData } = await axios(options)
 
-    return response
+    if (typeof responseData !== 'string') {
+        throw new Error(
+            `getWebpage: could not retrieve response data!\nOptions: ${JSON.stringify(
+                options,
+                null,
+                2
+            )}`
+        )
+    }
+
+    return responseData as D_WebResponseData
 }
 
 export { getJQWindow, SearchStatus, getWebpage, encodeUrl }
