@@ -20,6 +20,7 @@ export default class Xero {
         lm(`• Switching to ${orgName}...`)
 
         await ab.cons('location.reload()')
+        await ab.cons('location.reload()')
         await ab.waitPageLoad()
 
         const orgChangeBtnQuery = $('[data-name="xnav-changeorgbutton"]')
@@ -68,6 +69,18 @@ export default class Xero {
                 '.xui-pageheading--titlewrapper:contains("Import bank transactions")'
             )
         )
+        await ab.waitFor(
+            $('button[data-automationid="wizard-next-step-button"]')
+        )
+
+        const buttonSelectString = `${$(
+            'button[data-automationid="wizard-next-step-button"]'
+        )
+            .get(0)
+            .toString()}.focus()`
+
+        await ab.cons(buttonSelectString)
+        await ab.cons(buttonSelectString)
         lm('○ Done!')
     }
 
