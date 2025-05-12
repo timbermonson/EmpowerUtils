@@ -22,9 +22,7 @@ export default class Xero {
             clientId: xeroClientId,
             clientSecret: xeroClientSecret,
             redirectUris: [`http://localhost:${25565}/callback`],
-            scopes: 'openid profile email accounting.transactions offline_access'.split(
-                ' '
-            ),
+            scopes: 'accounting.contacts'.split(' '),
             state: 'returnPage=my-sweet-dashboard', // custom params (optional)
             httpTimeout: 3000, // ms (optional)
             clockTolerance: 10, // seconds (optional)
@@ -32,7 +30,13 @@ export default class Xero {
     }
 
     async clientLogin() {
-        console.log(this.autoBrowser.$('aaa').toString())
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+        const consentUrl = await this.apiClient.buildConsentUrl()
+        await ab.cons(`window.open('${consentUrl}')`)
+        console.log(consentUrl)
     }
 
     async switchToOrg(orgName: string) {

@@ -111,7 +111,8 @@ async function run() {
         debugPort,
         ({ url, type }) =>
             type === 'page' &&
-            (url.includes('reporting.xero.com') || url.includes('go.xero.com'))
+            // (url.includes('reporting.xero.com') || url.includes('go.xero.com'))
+            url.includes('emphoa.mgmt.emphoa.net')
     )
     const xero = new Xero(autoBrowser)
     lm('')
