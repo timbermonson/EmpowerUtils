@@ -1,15 +1,38 @@
+import { XeroClient } from 'xero-node'
+import config from 'config'
 import dayjs from 'dayjs'
+
 import { wait } from './etc.js'
 import { lm } from './io.js'
 import AutoBrowser from './AutoBrowser.js'
+
+const xeroClientId: string = config.get('xero.clientId')
+const xeroClientSecret: string = config.get('xero.clientSecret')
 
 const operatingButtonSelector =
     '.mf-bank-widget-panel:contains("Operating")>div>div>button'
 
 export default class Xero {
     autoBrowser: AutoBrowser
+    apiClient: XeroClient
+
     constructor(autoBrowser: AutoBrowser) {
         this.autoBrowser = autoBrowser
+        this.apiClient = new XeroClient({
+            clientId: xeroClientId,
+            clientSecret: xeroClientSecret,
+            redirectUris: [`http://localhost:${25565}/callback`],
+            scopes: 'openid profile email accounting.transactions offline_access'.split(
+                ' '
+            ),
+            state: 'returnPage=my-sweet-dashboard', // custom params (optional)
+            httpTimeout: 3000, // ms (optional)
+            clockTolerance: 10, // seconds (optional)
+        })
+    }
+
+    async clientLogin() {
+        console.log(this.autoBrowser.$('aaa').toString())
     }
 
     async switchToOrg(orgName: string) {

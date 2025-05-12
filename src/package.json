@@ -17,7 +17,6 @@
         "ebpMult": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.ts -m",
         "end": "tsx watch --include ./ioFiles/input.txt apps/EndatoApp/app.ts --no-stdin",
         "xero": "tsx apps/Xero/app.ts",
-        "xeroApi": "tsx apps/XeroApi/app.js",
         "tsx": "tsx",
         "integration": "vitest run --config ./.test/config/integration.config.js",
         "test-unit": "vitest --config ./.test/config/unit.config.js",
@@ -30,6 +29,7 @@
     "dependencies": {
         "@inquirer/prompts": "^7.4.1",
         "@types/command-line-args": "^5.2.3",
+        "@types/config": "^3.3.5",
         "@types/inquirer": "^9.0.7",
         "@types/jquery": "^3.5.32",
         "@types/jsdom": "^21.1.7",

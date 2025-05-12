@@ -80,8 +80,22 @@ async function pickActionCallback(xeroObject: T_Xero) {
                     },
                 },
             },
+            {
+                name: 'apitest',
+
+                value: {
+                    logVerb: 'apitest',
+                    actionCallback: async () => {
+                        await apiTest(xeroObject)
+                    },
+                },
+            },
         ],
     })
+}
+
+async function apiTest(xeroObject: T_Xero) {
+    xeroObject.clientLogin()
 }
 
 async function run() {
