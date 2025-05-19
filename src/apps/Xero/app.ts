@@ -49,6 +49,17 @@ async function pickActionCallback(xeroObject: T_Xero) {
                     },
                 },
             },
+            {
+                name: 'Open Aged Transactions',
+
+                value: {
+                    logVerb: 'Open Aged Transactions:',
+                    actionCallback: async (orgName: string) => {
+                        await xeroObject.switchToOrg(orgName)
+                        await xeroObject.openAgedTransactions()
+                    },
+                },
+            },
 
             {
                 name: 'Reconciliation Report: Slide date',
@@ -111,8 +122,7 @@ async function run() {
         debugPort,
         ({ url, type }) =>
             type === 'page' &&
-            // (url.includes('reporting.xero.com') || url.includes('go.xero.com'))
-            url.includes('emphoa.mgmt.emphoa.net')
+            (url.includes('reporting.xero.com') || url.includes('go.xero.com'))
     )
     const xero = new Xero(autoBrowser)
     lm('')

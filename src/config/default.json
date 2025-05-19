@@ -19,5 +19,10 @@
         "name": "",
         "profileKeyName": "",
         "profileKeyPassword": ""
+    },
+    "xero": {
+        "clientId": "",
+        "clientSecret": "",
+        "oauthRedirectUrl": ""
     }
 }
