@@ -7,7 +7,7 @@ function listSum(list: Array<number>): number {
 function combinationSumRecurse(
     goal: number,
     sourceList: Array<number>,
-    maxDelta: number = 0.003,
+    maxDelta: number = 0.001,
     startIndex: number = 0,
     usedList: Array<number> = []
 ): false | Array<number> {
