@@ -16,33 +16,9 @@ const operatingButtonSelector =
 
 export default class Xero {
     autoBrowser: AutoBrowser
-    apiClient: XeroClient
 
     constructor(autoBrowser: AutoBrowser) {
         this.autoBrowser = autoBrowser
-        this.apiClient = new XeroClient({
-            clientId: xeroClientId,
-            clientSecret: xeroClientSecret,
-            redirectUris: [xeroClientCallbackUrl],
-            scopes: 'accounting.contacts'.split(' '),
-            state: 'returnPage=my-sweet-dashboard', // custom params (optional)
-            httpTimeout: 3000, // ms (optional)
-            clockTolerance: 10, // seconds (optional)
-        })
-    }
-
-    async clientLogin() {
-        // TODO: finish
-        const {
-            autoBrowser: ab,
-            autoBrowser: { $ },
-            apiClient: client,
-        } = this
-        const consentUrl = await client.buildConsentUrl()
-        console.log(consentUrl)
-        // await ab.cons(`window.open('${consentUrl}')`)
-        // const tokenSet = await client.apiCallback(xeroClientCallbackUrl)
-        // console.log(JSON.stringify(tokenSet, null, 2))
     }
 
     async switchToOrg(orgName: string) {
