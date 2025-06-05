@@ -59,4 +59,4 @@ function getAveragedTime(numPowers: number, numAverages: number): number {
     return duration
 }
 
-getAveragedTime(1000000, 60)
+getAveragedTime(1000000, 10)
