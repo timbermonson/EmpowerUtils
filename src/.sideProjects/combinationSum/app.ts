@@ -11,26 +11,21 @@ function combinationSumRecurse(
     startIndex: number = 0,
     usedList: Array<number> = []
 ): false | Array<number> {
-    const prevSum = listSum(usedList)
+    const curSum = listSum(usedList)
 
-    if (prevSum > goal || startIndex >= sourceList.length) return false
+    if (curSum > goal || startIndex >= sourceList.length) return false
+
+    if (Math.abs(goal - curSum) < maxDelta) {
+        return usedList
+    }
 
     for (let i = startIndex; i < sourceList.length; i++) {
-        const newList = [...cloneDeep(usedList), sourceList[i]]
-
-        if (
-            listSum(newList) >= goal - maxDelta &&
-            listSum(newList) <= goal + maxDelta
-        ) {
-            return newList
-        }
-
         const newCheck = combinationSumRecurse(
             goal,
             sourceList,
             maxDelta,
             i + 1,
-            newList
+            [...cloneDeep(usedList), sourceList[i]]
         )
 
         if (!!newCheck) return newCheck
