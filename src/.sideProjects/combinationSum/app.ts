@@ -1,31 +1,45 @@
-import { cloneDeep } from 'lodash-es'
-
+/**
+ * Returns the sum of all values in a number array.
+ *
+ * @param list
+ * @returns the sum of all elements of (list).
+ */
 function listSum(list: Array<number>): number {
     return list.reduce((prev, cur) => prev + cur, 0)
 }
 
+/**
+ * Searches a set of numbers for a subset that sums to the goal value.
+ *
+ * @param goal The goal value to search for subset-sums of.
+ * @param sourceSet The parent set to construct a subset from.
+ * @param maxDelta The maximum a subset-sum may differ from the goal value (needed for floating-point imprecision)
+ * @param startIndex Used in recursion. Stores the starting index of the current nested-call search.
+ * @param usedList Used in recursion. Stores the current subset as it is being built.
+ * @returns the subset that sums to (goal), or false if none could be found.
+ */
 function combinationSumRecurse(
     goal: number,
-    sourceList: Array<number>,
-    maxDelta: number = 0.001,
+    sourceSet: Array<number>,
+    maxDelta: number = 0.00001, // Needed for floating-point math
     startIndex: number = 0,
     usedList: Array<number> = []
 ): false | Array<number> {
     const curSum = listSum(usedList)
 
-    if (curSum > goal || startIndex >= sourceList.length) return false
+    if (curSum > goal || startIndex >= sourceSet.length) return false
 
-    if (Math.abs(goal - curSum) < maxDelta) {
+    if (Math.abs(goal - curSum) <= maxDelta) {
         return usedList
     }
 
-    for (let i = startIndex; i < sourceList.length; i++) {
+    for (let i = startIndex; i < sourceSet.length; i++) {
         const newCheck = combinationSumRecurse(
             goal,
-            sourceList,
+            sourceSet,
             maxDelta,
             i + 1,
-            [...cloneDeep(usedList), sourceList[i]]
+            [...usedList, sourceSet[i]]
         )
 
         if (!!newCheck) return newCheck

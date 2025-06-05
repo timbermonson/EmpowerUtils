@@ -5,6 +5,12 @@ type T_TreeNode = {
     v: number
 }
 
+/**
+ * Generates pefect power numbers, as quickly as possible.
+ *
+ * @param n
+ * @returns The first (n) perfect powers, in order.
+ */
 function getNPerfectPowers(n: number): Array<number> {
     if (n < 1) throw new Error()
     const max = n ** 2
