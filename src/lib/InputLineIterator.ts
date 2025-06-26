@@ -8,8 +8,13 @@ export default class InputLineIterator {
     curLine = ''
     offerEmptyLineSkip = true
 
+    getLineList() {
+        return (getInputData() || '').split('\n').map((l) => l.trim())
+    }
+
     getInputLine(lineNum: number) {
-        const inputList = (getInputData() || '').split('\n')
+        const inputList = this.getLineList()
+
         if (!inputList?.length) {
             throw new Error('getInputLine: empty input!')
         }
@@ -19,6 +24,7 @@ export default class InputLineIterator {
         if (lineNum > inputList.length - 1) {
             throw new Error(`getInputLine: reached end of file!`)
         }
+
         return (inputList[lineNum] || '').trim()
     }
 
@@ -28,13 +34,14 @@ export default class InputLineIterator {
         this.curLineNum += 1
         nextLine = this.getInputLine(this.curLineNum)
 
-        if (!this.offerEmptyLineSkip || (nextLine || '').trim().length)
-            return nextLine
+        const lineIsEmpty = () => !(nextLine || '').trim().length
 
-        if (await confirm('Empty lines detected. Skip?')) {
-            while (!(nextLine || '').trim().length) {
-                this.curLineNum += 1
-                nextLine = this.getInputLine(this.curLineNum)
+        if (lineIsEmpty() && this.offerEmptyLineSkip) {
+            if (await confirm('Empty lines detected. Skip?')) {
+                while (lineIsEmpty()) {
+                    this.curLineNum += 1
+                    nextLine = this.getInputLine(this.curLineNum)
+                }
             }
         }
 
