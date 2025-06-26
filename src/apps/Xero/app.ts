@@ -1,4 +1,7 @@
-import { select, input } from '@inquirer/prompts'
+import {
+    select as inquirerSelect,
+    input as inquirerInput,
+} from '@inquirer/prompts'
 import dayjs from 'dayjs'
 import chalk from 'chalk'
 
@@ -23,7 +26,7 @@ const InputLineIterator = lib.InputLineIterator
 const debugPort = 9222
 
 async function pickActionCallback(xeroObject: T_Xero) {
-    return await select({
+    return await inquirerSelect({
         message: 'What would you like to do per-community?',
         choices: [
             {
@@ -67,7 +70,7 @@ async function pickActionCallback(xeroObject: T_Xero) {
                 value: {
                     logVerb: 'Reconciliation Report - Slide date:',
                     actionCallback: async () => {
-                        const startInput = await input({
+                        const startInput = await inquirerInput({
                             message: '(ex. May 5, 2020) Input a starting date:',
                         })
 
@@ -91,33 +94,19 @@ async function pickActionCallback(xeroObject: T_Xero) {
                     },
                 },
             },
-            {
-                name: 'apitest',
-
-                value: {
-                    logVerb: 'apitest',
-                    actionCallback: async () => {
-                        await apiTest(xeroObject)
-                    },
-                },
-            },
         ],
     })
 }
 
-async function apiTest(xeroObject: T_Xero) {
-    xeroObject.clientLogin()
-}
-
 async function run() {
+    // Setup logging
     setupIOTextFiles()
     commandLineArgsWrapper()
     writeOutputData('')
     lm('')
 
+    // Autobrowser setup
     const autoBrowser = new AutoBrowser()
-    const iterator = new InputLineIterator()
-
     await autoBrowser.connect(
         debugPort,
         ({ url, type }) =>
@@ -127,11 +116,14 @@ async function run() {
     const xero = new Xero(autoBrowser)
     lm('')
 
+    // Setup automation
     logSep('<Automation Settings>', '-')
+    const iterator = new InputLineIterator()
     await iterator.offerSkipSearch()
     const { logVerb, actionCallback } = await pickActionCallback(xero)
     logSep()
 
+    // Loop through list
     do {
         const curLine = await iterator.getNextLine()
         appendOutputData(curLine + '\n')
