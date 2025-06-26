@@ -5,7 +5,6 @@ import { getInputData, confirm, logSep } from './io.js'
 
 export default class InputLineIterator implements I_InputIterator<string> {
     #curLineNum = -1
-    #curLine = ''
     #offerEmptyLineSkip = true
 
     getItemList() {
