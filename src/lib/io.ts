@@ -6,8 +6,12 @@ import fs from 'fs'
 import dayjs from 'dayjs'
 import chalk from 'chalk'
 
-const inputFilePath: string = config.get('io.files.inputPath')
-const outputFilePath: string = config.get('io.files.outputPath')
+const inputFilePath: string =
+    config.get('io.files.ioFolder') + '/' + config.get('io.files.inputFileName')
+const outputFilePath: string =
+    config.get('io.files.ioFolder') +
+    '/' +
+    config.get('io.files.outputFileName')
 const logFilePath: string = config.get('io.files.logPath')
 
 const ioDisable: boolean = config.get('io.disable')

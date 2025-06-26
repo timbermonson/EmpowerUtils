@@ -10,8 +10,9 @@
         },
         "disable": false,
         "files": {
-            "inputPath": "./ioFiles/input.txt",
-            "outputPath": "./ioFiles/output.txt",
+            "ioFolder": "./ioFiles",
+            "inputFileName": "input.txt",
+            "outputFileName": "output.txt",
             "logPath": "./ioFiles/logs.txt"
         }
     },
