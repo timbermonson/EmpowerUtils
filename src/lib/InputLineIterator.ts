@@ -3,17 +3,17 @@ import { select, search } from '@inquirer/prompts'
 
 import { getInputData, confirm, logSep } from './io.js'
 
-export default class InputLineIterator {
-    curLineNum = -1
-    curLine = ''
-    offerEmptyLineSkip = true
+export default class InputLineIterator implements I_InputIterator<string> {
+    #curLineNum = -1
+    #curLine = ''
+    #offerEmptyLineSkip = true
 
-    getLineList() {
+    getItemList() {
         return (getInputData() || '').split('\n').map((l) => l.trim())
     }
 
-    getInputLine(lineNum: number) {
-        const inputList = this.getLineList()
+    getItem(lineNum: number) {
+        const inputList = this.getItemList()
 
         if (!inputList?.length) {
             throw new Error('getInputLine: empty input!')
@@ -28,19 +28,19 @@ export default class InputLineIterator {
         return (inputList[lineNum] || '').trim()
     }
 
-    async getNextLine() {
+    async getNextItem() {
         let nextLine: string
 
-        this.curLineNum += 1
-        nextLine = this.getInputLine(this.curLineNum)
+        this.#curLineNum += 1
+        nextLine = this.getItem(this.#curLineNum)
 
         const lineIsEmpty = () => !(nextLine || '').trim().length
 
-        if (lineIsEmpty() && this.offerEmptyLineSkip) {
+        if (lineIsEmpty() && this.#offerEmptyLineSkip) {
             if (await confirm('Empty lines detected. Skip?')) {
                 while (lineIsEmpty()) {
-                    this.curLineNum += 1
-                    nextLine = this.getInputLine(this.curLineNum)
+                    this.#curLineNum += 1
+                    nextLine = this.getItem(this.#curLineNum)
                 }
             }
         }
@@ -100,10 +100,10 @@ export default class InputLineIterator {
             source: inquirerSearchCallback,
         })
 
-        this.curLineNum = selectedIndex - 1
+        this.#curLineNum = selectedIndex - 1
     }
 
     constructor({ offerEmptyLineSkip } = { offerEmptyLineSkip: true }) {
-        this.offerEmptyLineSkip = offerEmptyLineSkip
+        this.#offerEmptyLineSkip = offerEmptyLineSkip
     }
 }

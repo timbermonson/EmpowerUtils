@@ -118,14 +118,14 @@ async function run() {
 
     // Setup automation
     logSep('<Automation Settings>', '-')
-    const iterator = new InputLineIterator()
+    const iterator: I_InputIterator<string> = new InputLineIterator()
     await iterator.offerSkipSearch()
     const { logVerb, actionCallback } = await pickActionCallback(xero)
     logSep()
 
     // Loop through list
     do {
-        const curLine = await iterator.getNextLine()
+        const curLine = await iterator.getNextItem()
         appendOutputData(curLine + '\n')
 
         if (await confirm(`${logVerb} ` + chalk.green(`[${curLine}]?`))) {
