@@ -3,4 +3,5 @@ interface I_InputIterator<ItemType> {
     getItem(lineNumnumber): ItemType
     getNextItem(): Promise<ItemType>
     offerSkipSearch(): Promise<void>
+    back(): void
 }

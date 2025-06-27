@@ -6,81 +6,25 @@ import dayjs from 'dayjs'
 import chalk from 'chalk'
 
 import lib from '../../lib/index.js'
-
+import T_Xero from '../../lib/Xero.js'
 const {
     appendOutputData,
     commandLineArgsWrapper,
     confirm,
+    confirmWithOption,
     logSep,
     setupIOTextFiles,
     writeOutputData,
     lm,
 } = lib.io
 
-import T_Xero from '../../lib/Xero.js'
+import { selectCancel, selectFile, selectFolder } from './xeroLib.js'
 
 const Xero = lib.Xero
 const AutoBrowser = lib.AutoBrowser
 const InputLineIterator = lib.InputLineIterator
 
 const debugPort = 9222
-
-import config from 'config'
-import { readdirSync } from 'fs'
-import { search as inquirerSearch } from '@inquirer/prompts'
-import Fuse from 'fuse.js'
-const importFileExtension = 'ofx'
-const ioFolder = config.get('io.files.ioFolder') as string
-async function selectFolder(): Promise<any> {
-    const folderList = readdirSync(ioFolder, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-
-    const folderSelectOptionList = folderList.map((folderName) => {
-        return {
-            name: folderName,
-            value: `${ioFolder}/${folderName}`,
-        }
-    })
-
-    return await inquirerSelect({
-        message: 'In "ioFiles", which folder contains your import files?',
-        choices: folderSelectOptionList,
-    })
-}
-
-function getSearchResults(
-    searchOptionList: Array<{ name: string; value: string }>,
-    searchTerm: string
-) {}
-
-async function selectFile(
-    folderPath: string,
-    orgName: string
-): Promise<string | false> {
-    const fileNameList = readdirSync(folderPath, { withFileTypes: true })
-        .filter(
-            (entry) =>
-                entry.isFile() && entry.name.endsWith(`.${importFileExtension}`)
-        )
-        .map((entry) => entry.name)
-
-    const searchOptionList = fileNameList.map((fileName) => {
-        return {
-            name: fileName
-                .replace(`.${importFileExtension}`, '')
-                .split('_')[0]
-                .replace('HOA', '')
-                .replaceAll(/(?<=[a-z])([A-Z])/g, ' $1') // TitleCase => Spaced Title Case
-                .replaceAll(/\s+/g, ' ')
-                .trim(),
-            value: fileName,
-        }
-    })
-    searchOptionList.push({ name: '$~Cancel', value: 'cancelSearch.notAFile' })
-
-    return false
-}
 
 type D_AutomationChoice = {
     name: string
@@ -110,14 +54,26 @@ async function pickActionCallback(
             name: 'Auto Import',
 
             value: {
-                logVerb: 'Auto Import:',
+                logVerb: 'Auto Import:\n ',
                 setup: selectFolder,
                 actionCallback: async (orgName: string, setupState: any) => {
                     const folderPath = setupState
-                    console.log(
-                        `importing ${orgName} using file from folder ${folderPath}`
+                    const selectedFileName = await selectFile(
+                        folderPath,
+                        orgName
                     )
-                    await selectFile(folderPath, orgName)
+
+                    lm('')
+                    logSep()
+                    if (selectedFileName === selectCancel) {
+                        lm('\nCanceled! Skipping...\n')
+                        return
+                    }
+                    lm(`• Starting import w/ ${selectedFileName}...`)
+                    lm(`○ Done!`)
+                    logSep()
+                    lm('')
+
                     return
                     await xeroObject.switchToOrg(orgName)
                     await xeroObject.openImports()
@@ -203,7 +159,7 @@ async function run() {
     lm('')
 
     // Setup automation
-    logSep('<Automation Settings>', '-')
+    logSep('<Automation Settings>', '-', 'green')
     const iterator: I_InputIterator<string> = new InputLineIterator()
     await iterator.offerSkipSearch()
     const {
@@ -211,20 +167,30 @@ async function run() {
         actionCallback,
         setup: actionSetup,
     } = await pickActionCallback(xero)
-    logSep()
 
     // Perform action setup if needed
     let actionSetupState: any
     if (actionSetup) {
         actionSetupState = await actionSetup()
     }
+    logSep()
+    lm('')
 
     // Loop through list
     do {
         const curLine = await iterator.getNextItem()
         appendOutputData(curLine + '\n')
 
-        if (await confirm(`${logVerb} ` + chalk.green(`[${curLine}]?`))) {
+        const resp = await confirmWithOption(
+            `${logVerb} ` + chalk.green(`[${curLine}]?`),
+            'back'
+        )
+        if (resp.trim().toLowerCase() === 'back') {
+            iterator.back()
+            iterator.back()
+            continue
+        }
+        if (resp) {
             let retry = true
 
             while (retry) {
@@ -240,7 +206,7 @@ async function run() {
                 }
             }
         }
-    } while (await confirm('Continue?'))
+    } while (/*await confirm('Continue?')*/ true)
 
     await autoBrowser.close()
 }

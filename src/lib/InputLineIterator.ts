@@ -7,6 +7,14 @@ export default class InputLineIterator implements I_InputIterator<string> {
     #curLineNum = -1
     #offerEmptyLineSkip = true
 
+    back() {
+        if (this.#curLineNum < 0) {
+            this.#curLineNum = -1
+            return
+        }
+        this.#curLineNum -= 1
+    }
+
     getItemList() {
         return (getInputData() || '').split('\n').map((l) => l.trim())
     }

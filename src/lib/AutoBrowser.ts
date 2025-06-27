@@ -314,7 +314,7 @@ export default class AutoBrowser {
         await this.doConsoleSetup()
         await this.hideHeader()
         this.setup = true
-        logSep('[Browser automations ready!]', ' ', 'none')
+        logSep('[Ready!]', '-', 'none')
     }
 
     async close() {

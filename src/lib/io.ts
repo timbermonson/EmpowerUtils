@@ -1,5 +1,8 @@
 import { cloneDeep } from 'lodash-es'
-import { confirm as inquirerConfirm } from '@inquirer/prompts'
+import {
+    confirm as inquirerConfirm,
+    input as inquirerInput,
+} from '@inquirer/prompts'
 import commandLineArgs from 'command-line-args'
 import config from 'config'
 import fs from 'fs'
@@ -18,11 +21,31 @@ const ioDisable: boolean = config.get('io.disable')
 
 const logSettings: any = cloneDeep(config.get('io.log'))
 
-async function confirm(msg: string) {
+async function confirm(msg: string): Promise<boolean> {
     if (ioDisable) return
     return await inquirerConfirm({
         message: msg,
     })
+}
+
+async function confirmWithOption(
+    msg: string,
+    otherOption: string
+): Promise<string> {
+    if (ioDisable) return
+
+    const optionSuffix = `(Y/n${otherOption ? '/' + otherOption : ''})`
+
+    const resp =
+        (await inquirerInput({
+            message: `${msg} ${optionSuffix} `,
+        })) || ''
+
+    if (resp.trim().toLowerCase().startsWith('n')) {
+        return ''
+    }
+
+    return resp || 'yes'
 }
 
 const logBarLen = 64
@@ -146,6 +169,7 @@ function lo(inp: any) {
 
 export {
     confirm,
+    confirmWithOption,
     appendOutputData,
     commandLineArgsWrapper,
     getInputData,
