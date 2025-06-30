@@ -93,6 +93,30 @@ export default class Xero {
         lm('○ Done!')
     }
 
+    async dropImportFile(filePath: string) {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+        lm('• Uploading import file...')
+
+        await ab.dropFile(
+            $('.xero-manual-transaction-upload-ui-SelectFileStep').find(
+                '.xui-fileuploader--dropzone'
+            ),
+            filePath
+        )
+
+        await ab.waitFor($('.xui-fileuploader--fileitem--maincontent'))
+        await wait(300)
+        await ab.click($('.xui-fixedfooter').find('button:contains("Next")'))
+        await ab.click(
+            $('.xui-fixedfooter').find('button:contains("Complete import")')
+        )
+        await ab.waitPageLoad()
+        lm('○ Done!')
+    }
+
     async openAgedChecks() {
         const {
             autoBrowser: ab,
@@ -113,10 +137,10 @@ export default class Xero {
         await ab.waitFor($('.search.action.open'))
 
         // TODO REMOVE
-        await ab.cons('location.reload()')
-        await ab.waitPageLoad()
-        await ab.cons('window.Bank.toggleSearchForm();')
-        await ab.waitFor($('.search.action.open'))
+        // await ab.cons('location.reload()')
+        // await ab.waitPageLoad()
+        // await ab.cons('window.Bank.toggleSearchForm();')
+        // await ab.waitFor($('.search.action.open'))
         //
 
         await ab.cons('jQuery.noConflict()')
@@ -150,7 +174,7 @@ export default class Xero {
         lm('○ Done!')
     }
 
-    async openAgedTransactions() {
+    async openAgedTransactions(skipNav = false) {
         const {
             autoBrowser: ab,
             autoBrowser: { $ },
@@ -158,23 +182,28 @@ export default class Xero {
 
         lm('• Opening aged Transactions...')
 
-        await ab.click($(operatingButtonSelector))
-        await ab.click(
-            $('.mf-bank-widget-text-minorlink:contains("Account Transactions")')
-        )
+        if (skipNav) {
+            await ab.cons("clearBankTran(); SubmitAction('Clear');")
+            await ab.waitPageLoad()
+        } else {
+            await ab.click($(operatingButtonSelector))
+            await ab.click(
+                $(
+                    '.mf-bank-widget-text-minorlink:contains("Account Transactions")'
+                )
+            )
+            await ab.waitPageLoad()
+            await ab.waitFor($('#removeAndRedoButton'))
+            await ab.cons('window.Bank.toggleSearchForm();')
+            await ab.waitFor($('.search.action.open'))
 
-        await ab.waitPageLoad()
-        await ab.waitFor($('#removeAndRedoButton'))
-
-        await ab.cons('window.Bank.toggleSearchForm();')
-        await ab.waitFor($('.search.action.open'))
-
-        // TODO REMOVE
-        await ab.cons('location.reload()')
-        await ab.waitPageLoad()
-        await ab.cons('window.Bank.toggleSearchForm();')
-        await ab.waitFor($('.search.action.open'))
-        //
+            // TODO REMOVE
+            await ab.cons('location.reload()')
+            await ab.waitPageLoad()
+            await ab.cons('window.Bank.toggleSearchForm();')
+            await ab.waitFor($('.search.action.open'))
+            //
+        }
 
         await ab.cons('jQuery.noConflict()')
         await ab.cons('jQuery.noConflict()')

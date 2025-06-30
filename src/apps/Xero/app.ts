@@ -2,8 +2,8 @@ import {
     select as inquirerSelect,
     input as inquirerInput,
 } from '@inquirer/prompts'
-import dayjs from 'dayjs'
 import chalk from 'chalk'
+// import dayjs from 'dayjs'
 
 import lib from '../../lib/index.js'
 import T_Xero from '../../lib/Xero.js'
@@ -19,6 +19,7 @@ const {
 } = lib.io
 
 import { selectCancel, selectFile, selectFolder } from './xeroLib.js'
+import path from 'path'
 
 const Xero = lib.Xero
 const AutoBrowser = lib.AutoBrowser
@@ -55,9 +56,13 @@ async function pickActionCallback(
 
             value: {
                 logVerb: 'Auto Import:\n ',
-                setup: selectFolder,
+                setup: async () => {
+                    const folderPath = await selectFolder()
+                    return { folderPath }
+                },
                 actionCallback: async (orgName: string, setupState: any) => {
-                    const folderPath = setupState
+                    // Choose File
+                    const { folderPath, fileServer } = setupState
                     const selectedFileName = await selectFile(
                         folderPath,
                         orgName
@@ -65,18 +70,26 @@ async function pickActionCallback(
 
                     lm('')
                     logSep()
+
+                    // Exit if skip selected
                     if (selectedFileName === selectCancel) {
                         lm('\nCanceled! Skipping...\n')
                         return
                     }
-                    lm(`• Starting import w/ ${selectedFileName}...`)
-                    lm(`○ Done!`)
+                    const filePath = path.join(
+                        path.resolve(folderPath),
+                        selectedFileName
+                    )
+
+                    // Otherwise, perform file import
+                    await xeroObject.switchToOrg(orgName)
+                    await xeroObject.openImports()
+                    await xeroObject.dropImportFile(filePath)
+
                     logSep()
                     lm('')
 
                     return
-                    await xeroObject.switchToOrg(orgName)
-                    await xeroObject.openImports()
                 },
             },
         },
@@ -89,49 +102,40 @@ async function pickActionCallback(
                 actionCallback: async (orgName: string) => {
                     await xeroObject.switchToOrg(orgName)
                     await xeroObject.openAgedChecks()
-                },
-            },
-        },
-        {
-            name: 'Open Aged Transactions',
-
-            value: {
-                logVerb: 'Open Aged Transactions:',
-                actionCallback: async (orgName: string) => {
-                    await xeroObject.switchToOrg(orgName)
-                    await xeroObject.openAgedTransactions()
+                    await confirm('Press enter to open Aged Transactions.')
+                    await xeroObject.openAgedTransactions(true)
                 },
             },
         },
 
-        {
-            name: 'Reconciliation Report: Slide date',
+        // {
+        //     name: 'Reconciliation Report: Slide date',
 
-            value: {
-                logVerb: 'Reconciliation Report - Slide date:',
-                actionCallback: async () => {
-                    const startInput = await inquirerInput({
-                        message: '(ex. May 5, 2020) Input a starting date:',
-                    })
+        //     value: {
+        //         logVerb: 'Reconciliation Report - Slide date:',
+        //         actionCallback: async () => {
+        //             const startInput = await inquirerInput({
+        //                 message: '(ex. May 5, 2020) Input a starting date:',
+        //             })
 
-                    let iter = 0
-                    while (true) {
-                        const endDateString = dayjs(startInput)
-                            .add(iter, 'day')
-                            .format('MMM D, YYYY')
-                        if (
-                            !(await confirm(
-                                `Continue using date ${endDateString}?`
-                            ))
-                        ) {
-                            break
-                        }
-                        await xeroObject.enterRecReportEndDate(endDateString)
-                        iter += 1
-                    }
-                },
-            },
-        },
+        //             let iter = 0
+        //             while (true) {
+        //                 const endDateString = dayjs(startInput)
+        //                     .add(iter, 'day')
+        //                     .format('MMM D, YYYY')
+        //                 if (
+        //                     !(await confirm(
+        //                         `Continue using date ${endDateString}?`
+        //                     ))
+        //                 ) {
+        //                     break
+        //                 }
+        //                 await xeroObject.enterRecReportEndDate(endDateString)
+        //                 iter += 1
+        //             }
+        //         },
+        //     },
+        // },
     ]
 
     return await inquirerSelect({

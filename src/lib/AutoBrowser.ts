@@ -1,6 +1,14 @@
 import axios from 'axios'
-import WebSocket from 'ws'
 import chalk from 'chalk'
+import express from 'express'
+import path from 'path'
+import WebSocket from 'ws'
+import config from 'config'
+import fs from 'fs'
+
+const ioFolder = config.get('io.files.ioFolder') as string
+
+import { Server as ServerType } from 'net'
 
 import { lm, logSep } from './io.js'
 import { TimeoutError, doWhileUndefined } from './etc.js'
@@ -41,11 +49,79 @@ export default class AutoBrowser {
     static hideHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "";`
 
     ws: null | WebSocket
-    setup = false
     msgCurId = 1000
 
-    isConnected = false
     $ = jqTemplaterFactory('jQuery')
+    static fileTransferServerPort = 8282
+    static fileTransferBrowserVar = '$AutoBrowserFileTransferFile'
+    #fileTransferServer: ReturnType<typeof express>
+    #fileTransferFilePath: string
+
+    constructor() {
+        this.#fileTransferServer = express()
+        this.#fileTransferServer.get('/', (req, res) => {
+            res.setHeader('Access-Control-Allow-Origin', '*')
+            res.setHeader('Access-Control-Allow-Methods', '*')
+            res.setHeader('Access-Control-Allow-Headers', '*')
+
+            res.sendFile(this.#fileTransferFilePath)
+        })
+    }
+
+    #pathIsChildOfFolder(childPath: string, parentFolder: string) {
+        if (!path.isAbsolute(childPath) || !path.isAbsolute(parentFolder)) {
+            throw new Error('provided paths must be absolute!')
+        }
+
+        const relativePath = path.relative(parentFolder, childPath)
+        return !relativePath.startsWith('..')
+    }
+
+    #hostFile(filePath: string): ServerType {
+        if (!fs.statSync(filePath).isFile()) {
+            throw new Error('Path must point to a file!')
+        }
+        if (!path.isAbsolute(filePath)) {
+            throw new Error(
+                'File to be transferred must be given as an absolute path!'
+            )
+        }
+        if (!this.#pathIsChildOfFolder(filePath, path.resolve(ioFolder))) {
+            throw new Error(
+                'File to be transferred must be a child of the io folder specified in config!'
+            )
+        }
+
+        this.#fileTransferFilePath = filePath
+
+        return this.#fileTransferServer.listen(
+            AutoBrowser.fileTransferServerPort
+        )
+    }
+
+    async #transferFileToBrowser(filePath: string) {
+        const { fileTransferBrowserVar: browserVar } = AutoBrowser
+
+        const listener = this.#hostFile(filePath)
+        const fileNameAndExt = `${path.parse(filePath).name}${
+            path.parse(filePath).ext
+        }`
+
+        try {
+            await this.cons(`let ${browserVar}Blob = 1;`)
+            await this.cons(
+                `${browserVar}Blob = await (await fetch("http://127.0.0.1:${AutoBrowser.fileTransferServerPort}/")).blob();`,
+                true
+            )
+            await this.cons(
+                `let ${browserVar} = new File([${browserVar}Blob], "${fileNameAndExt}")`
+            )
+        } catch (e) {
+            throw e
+        } finally {
+            listener.close()
+        }
+    }
 
     async showHeader() {
         await this.doConsoleSetup()
@@ -57,6 +133,22 @@ export default class AutoBrowser {
         await this.doConsoleSetup()
         await this.waitFor(this.$('header'))
         await this.cons(AutoBrowser.hideHeaderCommand)
+    }
+
+    async dropFile(jQuery: T_JQueryTemplater, filePath: string) {
+        const { fileTransferBrowserVar: browserVar } = AutoBrowser
+
+        await this.#transferFileToBrowser(filePath)
+
+        await this.cons(`let ${browserVar}DT = new DataTransfer()`)
+        await this.cons(`${browserVar}DT.items.add(${browserVar})`)
+        await this.cons(
+            `let ${browserVar}Event = new DragEvent("drop", {bubbles: true, cancelable: true, dataTransfer: ${browserVar}DT})`
+        )
+        await this.sendQuery(
+            jQuery.get(0),
+            `.dispatchEvent(${browserVar}Event)`
+        )
     }
 
     async type(jQuery: T_JQueryTemplater, text: string) {
@@ -271,7 +363,7 @@ export default class AutoBrowser {
         return result
     }
 
-    async connect(port, tabSelectorFn) {
+    async connect(port: number, tabSelectorFn: (tabObject: any) => boolean) {
         logSep('[Browser automations init]')
         lm('• Reading open tabs...')
         const wsUrl = await getWebsocketURL(port, tabSelectorFn)
@@ -313,11 +405,10 @@ export default class AutoBrowser {
         this.ws = newWs
         await this.doConsoleSetup()
         await this.hideHeader()
-        this.setup = true
         logSep('[Ready!]', '-', 'none')
     }
 
     async close() {
-        await this.ws.close()
+        return await this.ws.close()
     }
 }

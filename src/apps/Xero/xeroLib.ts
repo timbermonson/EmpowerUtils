@@ -168,7 +168,7 @@ function standardizeOrgSearchTerm(searchTerm: string) {
 async function selectFile(
     folderPath: string,
     orgName: string
-): Promise<string | false> {
+): Promise<string> {
     // Get list of filenames
     const fileNameList = readdirSync(folderPath, { withFileTypes: true })
         .filter(
