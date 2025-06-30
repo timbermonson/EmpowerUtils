@@ -38,6 +38,15 @@ async function getWebsocketURL(
     return wsUrl
 }
 
+function pathIsChildOfFolder(childPath: string, parentFolder: string) {
+    if (!path.isAbsolute(childPath) || !path.isAbsolute(parentFolder)) {
+        throw new Error('Provided paths must be absolute!')
+    }
+
+    const relativePath = path.relative(parentFolder, childPath)
+    return !relativePath.startsWith('..')
+}
+
 export default class AutoBrowser {
     static headerVar = '$myHeader'
 
@@ -48,8 +57,8 @@ export default class AutoBrowser {
     static showHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";`
     static hideHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "";`
 
-    ws: null | WebSocket
-    msgCurId = 1000
+    #ws: null | WebSocket
+    #msgCurId = 1000
 
     $ = jqTemplaterFactory('jQuery')
     static fileTransferServerPort = 8282
@@ -68,15 +77,6 @@ export default class AutoBrowser {
         })
     }
 
-    #pathIsChildOfFolder(childPath: string, parentFolder: string) {
-        if (!path.isAbsolute(childPath) || !path.isAbsolute(parentFolder)) {
-            throw new Error('provided paths must be absolute!')
-        }
-
-        const relativePath = path.relative(parentFolder, childPath)
-        return !relativePath.startsWith('..')
-    }
-
     #hostFile(filePath: string): ServerType {
         if (!fs.statSync(filePath).isFile()) {
             throw new Error('Path must point to a file!')
@@ -86,7 +86,7 @@ export default class AutoBrowser {
                 'File to be transferred must be given as an absolute path!'
             )
         }
-        if (!this.#pathIsChildOfFolder(filePath, path.resolve(ioFolder))) {
+        if (!pathIsChildOfFolder(filePath, path.resolve(ioFolder))) {
             throw new Error(
                 'File to be transferred must be a child of the io folder specified in config!'
             )
@@ -108,13 +108,13 @@ export default class AutoBrowser {
         }`
 
         try {
-            await this.cons(`let ${browserVar}Blob = 1;`)
+            await this.cons(`let ${browserVar}Blob;`)
             await this.cons(
                 `${browserVar}Blob = await (await fetch("http://127.0.0.1:${AutoBrowser.fileTransferServerPort}/")).blob();`,
                 true
             )
             await this.cons(
-                `let ${browserVar} = new File([${browserVar}Blob], "${fileNameAndExt}")`
+                `let ${browserVar} = new File([${browserVar}Blob], "${fileNameAndExt}");`
             )
         } catch (e) {
             throw e
@@ -319,7 +319,7 @@ export default class AutoBrowser {
         }
 
         const msg = {
-            id: this.msgCurId,
+            id: this.#msgCurId,
             params: {
                 expression: executeAsync
                     ? `asyncFunc = async () => {${consoleCommand}}; asyncFunc()`
@@ -334,10 +334,10 @@ export default class AutoBrowser {
         }
 
         const result = await new Promise(async (res) => {
-            await this.ws.once('message', async (rawResponseData) => {
+            await this.#ws.once('message', async (rawResponseData) => {
                 const respData = JSON.parse(rawResponseData.toString())
 
-                if (respData.id === this.msgCurId) {
+                if (respData.id === this.#msgCurId) {
                     if (!respData?.result?.result) {
                         throw new Error(JSON.stringify(respData, null, 2))
                     }
@@ -348,7 +348,7 @@ export default class AutoBrowser {
                 )
             })
 
-            await this.ws.send(JSON.stringify(msg))
+            await this.#ws.send(JSON.stringify(msg))
         })
 
         if (echo) {
@@ -385,7 +385,7 @@ export default class AutoBrowser {
 
                 const closeCallback = (eventCode: number) => {
                     lm('♦ websocket: close:', eventCode)
-                    this.ws = null
+                    this.#ws = null
                 }
                 closeCallback.bind(this)
                 newWs.on('close', closeCallback)
@@ -402,13 +402,13 @@ export default class AutoBrowser {
 
         lm('○ Connected!')
 
-        this.ws = newWs
+        this.#ws = newWs
         await this.doConsoleSetup()
         await this.hideHeader()
         logSep('[Ready!]', '-', 'none')
     }
 
     async close() {
-        return await this.ws.close()
+        return await this.#ws.close()
     }
 }
