@@ -11,7 +11,7 @@ const wait = (time: number) =>
 const doWhileUndefined = async (
     timeout: number,
     interval: number,
-    callback: (millisPassed: number, attemptNum: number) => any
+    callback: (millisPassed: number, attemptNum: number) => Promise<any>
 ) => {
     const startTime = Date.now()
     let millisPassed = 0

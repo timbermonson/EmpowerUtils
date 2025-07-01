@@ -199,13 +199,13 @@ async function run() {
 
             while (retry) {
                 try {
-                    await autoBrowser.showHeader()
+                    await autoBrowser.headerShow()
                     await actionCallback(curLine, actionSetupState)
                     retry = false
-                    await autoBrowser.hideHeader()
+                    await autoBrowser.headerHide()
                 } catch (e) {
                     console.error(e)
-                    await autoBrowser.hideHeader()
+                    await autoBrowser.headerHide()
                     retry = await confirm('Retry?')
                 }
             }

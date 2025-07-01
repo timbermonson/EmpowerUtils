@@ -48,21 +48,22 @@ function pathIsChildOfFolder(childPath: string, parentFolder: string) {
 }
 
 export default class AutoBrowser {
-    static headerVar = '$myHeader'
+    #webSocket: null | WebSocket
 
-    static headerInjector = `let ${AutoBrowser.headerVar} = document.createElement("h4");${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>"; jQuery("header").get(0).appendChild(${AutoBrowser.headerVar});`
+    #webSocketCurMsgId = 1000
     static jQueryInjector =
         "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res();})"
-
-    static showHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "<h4 style=\\"text-align: center;background-color: IndianRed\\">Browser is being automated!<br></h4>";`
-    static hideHeaderCommand = `${AutoBrowser.headerVar}.innerHTML =  "";`
-
-    #ws: null | WebSocket
-    #msgCurId = 1000
-
     $ = jqTemplaterFactory('jQuery')
+
+    static headerVarName = '_AutoBrowserHeader'
+    static headerHTML = `<h4 style=\\"color:white;font-size: 20px;width:100%;z-index: 1000000;position: fixed;top: 0px;text-align: center;background-color: IndianRed;margin:0px;\\">Browser is being automated!<br></h4>`
+    static headerInjector = `${AutoBrowser.headerVarName} = document.createElement("div");${AutoBrowser.headerVarName}.id = "${AutoBrowser.headerVarName}";document.body.insertBefore(${AutoBrowser.headerVarName}, jQuery("body > :first-child").get(0));`
+    static showHeaderCommand = `${AutoBrowser.headerVarName}.style["height"] = "20px";${AutoBrowser.headerVarName}.innerHTML =  "${AutoBrowser.headerHTML}"`
+    static hideHeaderCommand = `${AutoBrowser.headerVarName}.style["height"] = "0px";${AutoBrowser.headerVarName}.innerHTML =  "";`
+    #headerShowing = false
+
     static fileTransferServerPort = 8282
-    static fileTransferBrowserVar = '$AutoBrowserFileTransferFile'
+    static fileTransferBrowserVar = '_AutoBrowserFileTransferFile'
     #fileTransferServer: ReturnType<typeof express>
     #fileTransferFilePath: string
 
@@ -121,18 +122,6 @@ export default class AutoBrowser {
         } finally {
             listener.close()
         }
-    }
-
-    async showHeader() {
-        await this.doConsoleSetup()
-        await this.waitFor(this.$('header'))
-        await this.cons(AutoBrowser.showHeaderCommand)
-    }
-
-    async hideHeader() {
-        await this.doConsoleSetup()
-        await this.waitFor(this.$('header'))
-        await this.cons(AutoBrowser.hideHeaderCommand)
     }
 
     async dropFile(jQuery: T_JQueryTemplater, filePath: string) {
@@ -219,7 +208,7 @@ export default class AutoBrowser {
 
     async findAndDo(
         jQueryList: T_JQueryTemplater[],
-        actionCallbackList: ((T_JQueryTemplater) => Promise<void>)[]
+        actionCallbackList: ((query: T_JQueryTemplater) => Promise<void>)[]
     ) {
         if (jQueryList.length !== actionCallbackList.length) {
             throw new Error('This error should never occur.')
@@ -268,58 +257,94 @@ export default class AutoBrowser {
         return !!(await this.sendQuery(jQuery.length))
     }
 
+    async sendQuery(jQuery: T_JQueryTemplater, suffix = '') {
+        return this.cons(`${jQuery.toString()}${suffix}`)
+    }
+
     async waitPageLoad() {
-        await doWhileUndefined(7000, 200, async () => {
-            if (
-                (await this.cons(`typeof ${AutoBrowser.headerVar}`)) !==
-                'object'
-            ) {
+        await doWhileUndefined(7000, 50, async () => {
+            if ((await this.cons('typeof jQuery')) !== 'function') {
                 return true
             }
         })
 
         await this.doConsoleSetup()
+        if (this.#headerShowing) {
+            await this.headerShow()
+        }
     }
 
-    async sendQuery(jQuery: T_JQueryTemplater, suffix = '') {
-        return this.cons(`${jQuery.toString()}${suffix}`)
+    async headerShow() {
+        await this.doConsoleSetup()
+        await this.cons(AutoBrowser.showHeaderCommand)
+        this.#headerShowing = true
     }
 
-    async doConsoleSetup() {
-        const { jQueryInjector, headerInjector } = AutoBrowser
-        if (await this.confirmConsoleSetup()) {
+    async headerHide() {
+        await this.doConsoleSetup()
+        await this.cons(AutoBrowser.hideHeaderCommand)
+        this.#headerShowing = false
+    }
+
+    async #headerSetup() {
+        const { headerVarName, headerInjector } = AutoBrowser
+
+        await this.#jQuerySetup()
+        await this.waitFor(this.$('body > :first-child'))
+
+        if (
+            (await this.sendQuery(
+                this.$('body > :first-child'),
+                '.get(0).id'
+            )) === headerVarName
+        ) {
+            return
+        }
+        await this.cons(headerInjector)
+
+        if (
+            (await this.sendQuery(
+                this.$('body > :first-child'),
+                '.get(0).id'
+            )) !== headerVarName
+        ) {
+            throw new Error('Failed to setup header!')
+        }
+    }
+
+    async #jQuerySetup() {
+        if ((await this.cons('typeof jQuery')) === 'function') {
             return
         }
 
-        await this.cons(jQueryInjector, true)
+        await this.cons(AutoBrowser.jQueryInjector, true)
+        await doWhileUndefined(7000, 50, async () => {
+            if ((await this.cons('typeof jQuery')) === 'function') {
+                return true
+            }
+        })
+
         await this.cons('$ = jQuery;')
         await this.cons('jQuery.noConflict();')
         await this.cons('jQuery.noConflict();')
-        await this.waitFor(this.$('header'))
-        await this.cons(headerInjector)
     }
 
-    async confirmConsoleSetup() {
-        if ((await this.cons('typeof jQuery')) !== 'function') {
-            return false
-        }
-        if ((await this.cons(`typeof ${AutoBrowser.headerVar}`)) !== 'object') {
-            return false
-        }
-        return true
+    async doConsoleSetup() {
+        await this.#jQuerySetup()
+        await this.#headerSetup()
     }
 
     async cons(
         consoleCommand: string,
         executeAsync = false,
-        echo = true
+        echoInBrowser = true
     ): Promise<any> {
-        if (!consoleCommand?.trim()?.length) {
+        if (!consoleCommand.trim().length) {
             throw new Error('cons() Command cannot be empty!')
         }
 
         const msg = {
-            id: this.#msgCurId,
+            id: this.#webSocketCurMsgId,
             params: {
                 expression: executeAsync
                     ? `asyncFunc = async () => {${consoleCommand}}; asyncFunc()`
@@ -334,24 +359,24 @@ export default class AutoBrowser {
         }
 
         const result = await new Promise(async (res) => {
-            await this.#ws.once('message', async (rawResponseData) => {
+            this.#webSocket.once('message', async (rawResponseData) => {
                 const respData = JSON.parse(rawResponseData.toString())
 
-                if (respData.id === this.#msgCurId) {
+                if (respData.id === this.#webSocketCurMsgId) {
                     if (!respData?.result?.result) {
                         throw new Error(JSON.stringify(respData, null, 2))
                     }
                     return res(respData.result.result.value)
                 }
                 throw new Error(
-                    "Message listener out of sync! Ensure you're awaiting any browser actions or messages."
+                    "Message listener out of sync! Ensure you're awaiting all browser actions and messages."
                 )
             })
 
-            await this.#ws.send(JSON.stringify(msg))
+            this.#webSocket.send(JSON.stringify(msg))
         })
 
-        if (echo) {
+        if (echoInBrowser) {
             const echoMsg = `${chalk.black(chalk.bgGreen('[AUTOMATION]:'))} ${
                 msg.params.expression
             }`
@@ -385,7 +410,7 @@ export default class AutoBrowser {
 
                 const closeCallback = (eventCode: number) => {
                     lm('♦ websocket: close:', eventCode)
-                    this.#ws = null
+                    this.#webSocket = null
                 }
                 closeCallback.bind(this)
                 newWs.on('close', closeCallback)
@@ -402,13 +427,12 @@ export default class AutoBrowser {
 
         lm('○ Connected!')
 
-        this.#ws = newWs
+        this.#webSocket = newWs
         await this.doConsoleSetup()
-        await this.hideHeader()
         logSep('[Ready!]', '-', 'none')
     }
 
     async close() {
-        return await this.#ws.close()
+        return await this.#webSocket.close()
     }
 }
