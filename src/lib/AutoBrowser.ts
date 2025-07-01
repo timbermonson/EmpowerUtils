@@ -262,7 +262,7 @@ export default class AutoBrowser {
     }
 
     async waitPageLoad() {
-        await doWhileUndefined(7000, 50, async () => {
+        await doWhileUndefined(7000, 100, async () => {
             if ((await this.cons('typeof jQuery')) !== 'function') {
                 return true
             }
