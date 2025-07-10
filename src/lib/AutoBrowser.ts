@@ -11,7 +11,7 @@ const ioFolder = config.get('io.files.ioFolder') as string
 import { Server as ServerType } from 'net'
 
 import { lm, logSep } from './io.js'
-import { TimeoutError, doWhileUndefined } from './etc.js'
+import { TimeoutError, doWhileUndefined, wait } from './etc.js'
 import { T_JQueryTemplater, jqTemplaterFactory } from './string.js'
 
 async function getWebsocketURL(
@@ -49,10 +49,10 @@ function pathIsChildOfFolder(childPath: string, parentFolder: string) {
 
 export default class AutoBrowser {
     #webSocket: null | WebSocket
-
     #webSocketCurMsgId = 1000
+
     static jQueryInjector =
-        "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res();})"
+        "await new Promise((res)=>{var script = document.createElement('script'); script.src = 'https://code.jquery.com/jquery-3.7.1.slim.min.js'; document.getElementsByTagName('head')[0].appendChild(script);script.onload=res();})"
     $ = jqTemplaterFactory('jQuery')
 
     static headerVarName = '_AutoBrowserHeader'
@@ -267,6 +267,13 @@ export default class AutoBrowser {
                 return true
             }
         })
+        await doWhileUndefined(7000, 100, async () => {
+            if (
+                (await this.cons('document.readyState === "complete"')) === true
+            ) {
+                return true
+            }
+        })
 
         await this.doConsoleSetup()
         if (this.#headerShowing) {
@@ -313,20 +320,18 @@ export default class AutoBrowser {
     }
 
     async #jQuerySetup() {
-        if ((await this.cons('typeof jQuery')) === 'function') {
-            return
+        if ((await this.cons('typeof jQuery')) !== 'function') {
+            await doWhileUndefined(12000, 50, async () => {
+                await this.cons(AutoBrowser.jQueryInjector, true)
+                const jQueryType = await this.cons('typeof jQuery')
+                if (jQueryType === 'function') {
+                    return true
+                }
+            })
         }
 
-        await this.cons(AutoBrowser.jQueryInjector, true)
-        await doWhileUndefined(7000, 50, async () => {
-            if ((await this.cons('typeof jQuery')) === 'function') {
-                return true
-            }
-        })
-
-        await this.cons('$ = jQuery;')
         await this.cons('jQuery.noConflict();')
-        await this.cons('jQuery.noConflict();')
+        await wait(100)
     }
 
     async doConsoleSetup() {

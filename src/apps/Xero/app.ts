@@ -164,7 +164,7 @@ async function run() {
 
     // Setup automation
     logSep('<Automation Settings>', '-', 'green')
-    const iterator: I_InputIterator<string> = new InputLineIterator()
+    const iterator = new InputLineIterator()
     await iterator.offerSkipSearch()
     const {
         logVerb,
