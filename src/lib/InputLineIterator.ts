@@ -35,6 +35,10 @@ export default class InputLineIterator implements I_InputIterator<string> {
         return (inputList[lineNum] || '').trim()
     }
 
+    hasNext() {
+        return this.#curLineNum + 1 < this.getItemList().length
+    }
+
     async getNextItem() {
         let nextLine: string
 
