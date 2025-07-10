@@ -3,7 +3,7 @@ import config from 'config'
 import dayjs from 'dayjs'
 import process from 'process'
 
-import { wait } from './etc.js'
+import { doWhileUndefined, wait } from './etc.js'
 import { lm } from './io.js'
 import AutoBrowser from './AutoBrowser.js'
 
@@ -33,9 +33,11 @@ export default class Xero {
         await ab.waitPageLoad()
 
         const orgChangeBtnQuery = $('[data-name="xnav-changeorgbutton"]')
+        const hasChangeOrgButton = await ab.has(orgChangeBtnQuery)
 
-        if (!(await ab.has(orgChangeBtnQuery))) {
+        if (!hasChangeOrgButton) {
             await ab.clickFirstVisible([
+                $('button[aria-label="Main menu"]'),
                 $('.xnav-appbutton').not('.xnav-appbutton-is-active'),
                 $('.xnav-orgsearchcontainer > button.xnav-icon-orgsearchclear'),
             ])
@@ -107,9 +109,20 @@ export default class Xero {
             filePath
         )
 
-        await ab.waitFor($('.xui-fileuploader--fileitem--maincontent'))
-        await wait(300)
+        await ab.waitFor($('.xui-fileuploader--fileitem--description'))
         await ab.click($('.xui-fixedfooter').find('button:contains("Next")'))
+        await doWhileUndefined(1200, 200, async () => {
+            await wait(500)
+            const hasNextButton = await ab.has(
+                $('.xui-fixedfooter').find('button:contains("Next")')
+            )
+            if (!hasNextButton) {
+                return true
+            }
+            await ab.click(
+                $('.xui-fixedfooter').find('button:contains("Next")')
+            )
+        })
         await ab.click(
             $('.xui-fixedfooter').find('button:contains("Complete import")')
         )
@@ -136,34 +149,17 @@ export default class Xero {
         await ab.cons('window.Bank.toggleSearchForm();')
         await ab.waitFor($('.search.action.open'))
 
-        // TODO REMOVE
-        // await ab.cons('location.reload()')
-        // await ab.waitPageLoad()
-        // await ab.cons('window.Bank.toggleSearchForm();')
-        // await ab.waitFor($('.search.action.open'))
-        //
-
-        await ab.cons('jQuery.noConflict()')
-        await ab.cons('jQuery.noConflict()')
-        await ab.type($('#sb_reconciledStatus_value'), 'Un')
-        await ab.click(
-            $(
-                '#sb_reconciledStatus_suggestions>div>div:contains("Unreconciled")'
-            )
-        )
-
         await ab.type(
             $('#sb_dteEndDate'),
             `${dayjs().subtract(90, 'day').format('MMM D, YYYY')}`
         )
 
-        await ab.type($('#sb_reconciledStatus_value'), 'Un')
         await ab.cons('jQuery.noConflict()')
         await ab.type($('#sb_reconciledStatus_value'), 'Un')
         await wait(500)
         await ab.click(
             $(
-                '#sb_reconciledStatus_suggestions>div>div:contains("Unreconciled")'
+                '#sb_reconciledStatus_suggestions>div>div.selected:contains("Unreconciled")'
             )
         )
 
