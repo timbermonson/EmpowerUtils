@@ -21,6 +21,12 @@
         "profileKeyName": "",
         "profileKeyPassword": ""
     },
+    "empowered": {
+        "condoCerts": {
+            "username": "",
+            "password": ""
+        }
+    },
     "xero": {
         "clientId": "",
         "clientSecret": "",

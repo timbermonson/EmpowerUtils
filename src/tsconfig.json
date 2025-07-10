@@ -1,10 +1,11 @@
 {
     "compilerOptions": {
-      "outDir": "./.tsc-built",
       "allowJs": true,
-      "target": "es2022",
-      "skipLibCheck": true,
       "module": "nodenext",
+      "outDir": "./.tsc-built",
+      "resolveJsonModule": true,
+      "skipLibCheck": true,
+      "target": "es2022",
       "types": ["vitest/globals"]
     },
     "watchOptions": {

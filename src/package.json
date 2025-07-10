@@ -13,6 +13,7 @@
         "addr": "tsx watch --include ./ioFiles/input.txt apps/ScrapeAddresses/run.ts",
         "addrAll": "tsx watch --include ./ioFiles/input.txt apps/ScrapeAddresses/run.ts -o both",
         "addrAllMult": "tsx watch --include ./ioFiles/input.txt apps/ScrapeAddresses/run.ts -o both -c -m",
+        "empuser": "tsx apps/EmpoweredUserScraper/app.ts",
         "ebp": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.ts",
         "ebpMult": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.ts -m",
         "end": "tsx watch --include ./ioFiles/input.txt apps/EndatoApp/app.ts --no-stdin",
