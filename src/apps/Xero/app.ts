@@ -102,8 +102,22 @@ async function pickActionCallback(
                 actionCallback: async (orgName: string) => {
                     await xeroObject.switchToOrg(orgName)
                     await xeroObject.openAgedChecks()
+                    await xeroObject.autoBrowser.headerHide()
                     await confirm('Press enter to open Aged Transactions.')
+                    await xeroObject.autoBrowser.headerShow()
                     await xeroObject.openAgedTransactions(true)
+                },
+            },
+        },
+
+        {
+            name: 'Open RESV Aged Transactions',
+
+            value: {
+                logVerb: 'Open Aged Checks:',
+                actionCallback: async (orgName: string) => {
+                    await xeroObject.switchToOrg(orgName)
+                    await xeroObject.openReserveAgedTransactions()
                 },
             },
         },

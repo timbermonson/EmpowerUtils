@@ -1,18 +1,14 @@
-import { XeroClient } from 'xero-node'
-import config from 'config'
 import dayjs from 'dayjs'
-import process from 'process'
 
 import { doWhileUndefined, wait } from './etc.js'
 import { lm } from './io.js'
 import AutoBrowser from './AutoBrowser.js'
 
-const xeroClientId: string = config.get('xero.clientId')
-const xeroClientSecret: string = config.get('xero.clientSecret')
-const xeroClientCallbackUrl: string = config.get('xero.oauthRedirectUrl')
-
 const operatingButtonSelector =
     '.mf-bank-widget-panel:contains("Operating")>div>div>button'
+
+const reserveButtonSelector =
+    '.mf-bank-widget-panel:contains("Reserv")>div>div>button'
 
 export default class Xero {
     autoBrowser: AutoBrowser
@@ -152,6 +148,49 @@ export default class Xero {
         await ab.type(
             $('#sb_dteEndDate'),
             `${dayjs().subtract(90, 'day').format('MMM D, YYYY')}`
+        )
+
+        await ab.cons('jQuery.noConflict()')
+        await ab.type($('#sb_reconciledStatus_value'), 'Un')
+        await wait(500)
+        await ab.click(
+            $(
+                '#sb_reconciledStatus_suggestions>div>div.selected:contains("Unreconciled")'
+            )
+        )
+
+        await ab.click($('#sbSubmit_BT'))
+        await ab.waitPageLoad()
+        await ab.waitFor($('#bankTransactions'))
+
+        lm('○ Done!')
+    }
+
+    async openReserveAgedTransactions() {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+        lm("• Opening resv aged trans'ns...")
+
+        await ab.click(
+            $('.mf-bank-widget-panel:contains("Reserv")')
+                .not(':contains("CD")')
+                .find('div>div>button')
+        )
+        await ab.click(
+            $('.mf-bank-widget-text-minorlink:contains("Account Transactions")')
+        )
+
+        await ab.waitPageLoad()
+        await ab.waitFor($('#removeAndRedoButton'))
+
+        await ab.cons('window.Bank.toggleSearchForm();')
+        await ab.waitFor($('.search.action.open'))
+
+        await ab.type(
+            $('#sb_dteEndDate'),
+            `${dayjs().subtract(23, 'day').format('MMM D, YYYY')}`
         )
 
         await ab.cons('jQuery.noConflict()')

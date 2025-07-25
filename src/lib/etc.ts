@@ -5,8 +5,7 @@ class TimeoutError extends Error {
     }
 }
 
-const wait = (time: number) =>
-    new Promise((resolve) => setTimeout(resolve, time))
+const wait = (time: number) => new Promise((res) => setTimeout(res, time))
 
 const doWhileUndefined = async (
     timeout: number,

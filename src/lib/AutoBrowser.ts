@@ -57,7 +57,7 @@ export default class AutoBrowser {
 
     static headerVarName = '_AutoBrowserHeader'
     static headerHTML = `<h4 style=\\"color:white;font-size: 20px;width:100%;z-index: 1000000;position: fixed;top: 0px;text-align: center;background-color: IndianRed;margin:0px;\\">Browser is being automated!<br></h4>`
-    static headerInjector = `${AutoBrowser.headerVarName} = document.createElement("div");${AutoBrowser.headerVarName}.id = "${AutoBrowser.headerVarName}";document.body.insertBefore(${AutoBrowser.headerVarName}, jQuery("body > :first-child").get(0));`
+    static headerInjector = `${AutoBrowser.headerVarName} = document.createElement("div");${AutoBrowser.headerVarName}.id = "${AutoBrowser.headerVarName}";document.body.insertBefore(${AutoBrowser.headerVarName}, document.querySelector("body > :first-child"));`
     static showHeaderCommand = `${AutoBrowser.headerVarName}.style["height"] = "20px";${AutoBrowser.headerVarName}.innerHTML =  "${AutoBrowser.headerHTML}"`
     static hideHeaderCommand = `${AutoBrowser.headerVarName}.style["height"] = "0px";${AutoBrowser.headerVarName}.innerHTML =  "";`
     #headerShowing = false
@@ -267,6 +267,9 @@ export default class AutoBrowser {
                 return true
             }
         })
+        if (this.#headerShowing) {
+            await this.headerShow()
+        }
         await doWhileUndefined(7000, 100, async () => {
             if (
                 (await this.cons('document.readyState === "complete"')) === true
@@ -276,19 +279,16 @@ export default class AutoBrowser {
         })
 
         await this.doConsoleSetup()
-        if (this.#headerShowing) {
-            await this.headerShow()
-        }
     }
 
     async headerShow() {
-        await this.doConsoleSetup()
+        await this.#headerSetup()
         await this.cons(AutoBrowser.showHeaderCommand)
         this.#headerShowing = true
     }
 
     async headerHide() {
-        await this.doConsoleSetup()
+        await this.#headerSetup()
         await this.cons(AutoBrowser.hideHeaderCommand)
         this.#headerShowing = false
     }
@@ -296,13 +296,19 @@ export default class AutoBrowser {
     async #headerSetup() {
         const { headerVarName, headerInjector } = AutoBrowser
 
-        await this.#jQuerySetup()
-        await this.waitFor(this.$('body > :first-child'))
+        await doWhileUndefined(7000, 100, async () => {
+            if (
+                await this.cons(
+                    '!!document.querySelector("body > :first-child")'
+                )
+            ) {
+                return true
+            }
+        })
 
         if (
-            (await this.sendQuery(
-                this.$('body > :first-child'),
-                '.get(0).id'
+            (await this.cons(
+                'document.querySelector("body > :first-child").id'
             )) === headerVarName
         ) {
             return
@@ -310,9 +316,8 @@ export default class AutoBrowser {
         await this.cons(headerInjector)
 
         if (
-            (await this.sendQuery(
-                this.$('body > :first-child'),
-                '.get(0).id'
+            (await this.cons(
+                'document.querySelector("body > :first-child").id'
             )) !== headerVarName
         ) {
             throw new Error('Failed to setup header!')
@@ -320,11 +325,19 @@ export default class AutoBrowser {
     }
 
     async #jQuerySetup() {
+        await doWhileUndefined(7000, 100, async () => {
+            if (
+                (await this.cons('document.readyState === "complete"')) === true
+            ) {
+                return true
+            }
+        })
         if ((await this.cons('typeof jQuery')) !== 'function') {
-            await doWhileUndefined(12000, 50, async () => {
-                await this.cons(AutoBrowser.jQueryInjector, true)
-                const jQueryType = await this.cons('typeof jQuery')
-                if (jQueryType === 'function') {
+            await wait(300)
+            await this.cons(AutoBrowser.jQueryInjector, true)
+
+            await doWhileUndefined(12000, 300, async () => {
+                if ((await this.cons('typeof jQuery')) === 'function') {
                     return true
                 }
             })
@@ -335,8 +348,8 @@ export default class AutoBrowser {
     }
 
     async doConsoleSetup() {
-        await this.#jQuerySetup()
         await this.#headerSetup()
+        await this.#jQuerySetup()
     }
 
     async cons(
@@ -382,12 +395,20 @@ export default class AutoBrowser {
         })
 
         if (echoInBrowser) {
-            const echoMsg = `${chalk.black(chalk.bgGreen('[AUTOMATION]:'))} ${
+            const msgEcho = `${chalk.black(chalk.bgGreen('[_AUTOMATION]'))}: ${
                 msg.params.expression
             }`
                 .replaceAll('\\', '\\\\')
                 .replaceAll('"', '\\"')
-            await this.cons(`console.log("${echoMsg}");`, false, false)
+
+            const respEcho = `${chalk.black(
+                chalk.bgBlueBright('[_RES]')
+            )}: ${JSON.stringify(result, null, 2)}`
+                .replaceAll('\\', '\\\\')
+                .replaceAll('"', '\\"')
+
+            await this.cons(`console.log("${msgEcho}");`, false, false)
+            await this.cons(`console.log("${respEcho}");`, false, false)
         }
 
         return result
