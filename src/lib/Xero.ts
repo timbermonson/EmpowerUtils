@@ -28,26 +28,66 @@ export default class Xero {
         await ab.cons('location.reload()')
         await ab.waitPageLoad()
 
-        const orgChangeBtnQuery = $('[data-name="xnav-changeorgbutton"]')
-        const hasChangeOrgButton = await ab.has(orgChangeBtnQuery)
+        let orgSelectFirstResult
 
-        if (!hasChangeOrgButton) {
-            await ab.clickFirstVisible([
-                $('button[aria-label="Main menu"]'),
-                $('.xnav-appbutton').not('.xnav-appbutton-is-active'),
-                $('.xnav-orgsearchcontainer > button.xnav-icon-orgsearchclear'),
-            ])
+        if (
+            await ab.has(
+                $('[aria-label="Top navigation bar"] > div.x-nav--logo')
+            )
+        ) {
+            const orgSearchQuery = $('input[aria-label="Search organizations"]')
+            const orgSearchClearQuery = $('.x-nav--org-search-input-clear')
+            const inactiveButtonQuery = $(
+                'button.x-nav--tenant-menu-button'
+            ).not('[aria-expanded="true"]')
+            const hasInactiveButton = await ab.has(inactiveButtonQuery)
+
+            if (hasInactiveButton) {
+                await ab.click(
+                    $('button.x-nav--tenant-menu-button').not(
+                        '[aria-expanded="true"]'
+                    )
+                )
+            } else if (await ab.has(orgSearchClearQuery)) {
+                await ab.click(orgSearchClearQuery)
+            }
+            await ab.waitFor(
+                $('button.x-nav--tenant-menu-button[aria-expanded="true"]')
+            )
+            await ab.waitFor(orgSearchQuery)
+
+            // Type name, select, wait for pageload
+            await ab.type(orgSearchQuery, orgName)
+
+            await wait(650)
+
+            orgSelectFirstResult = $(
+                'ul[aria-label="Search results"].x-nav--nav-item-list > li:nth-child(1) > a'
+            )
+        } else {
+            const orgChangeBtnQuery = $('[data-name="xnav-changeorgbutton"]')
+            const hasChangeOrgButton = await ab.has(orgChangeBtnQuery)
+
+            if (!hasChangeOrgButton) {
+                await ab.clickFirstVisible([
+                    $('button[aria-label="Main menu"]'),
+                    $('.xnav-appbutton').not('.xnav-appbutton-is-active'),
+                    $(
+                        '.xnav-orgsearchcontainer > button.xnav-icon-orgsearchclear'
+                    ),
+                ])
+            }
+
+            // Type name, select, wait for pageload
+            await ab.click(orgChangeBtnQuery)
+            await ab.type($('input.xnav-orgsearch--input'), orgName)
+
+            await wait(650)
+
+            orgSelectFirstResult = $(
+                'ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a'
+            )
         }
-
-        // Type name, select, wait for pageload
-        await ab.click(orgChangeBtnQuery)
-        await ab.type($('input.xnav-orgsearch--input'), orgName)
-
-        await wait(650)
-
-        const orgSelectFirstResult = $(
-            'ol[role="navigation"].xnav-verticalmenu > li:nth-child(1) > a'
-        )
 
         await ab.waitFor(orgSelectFirstResult)
         while (await ab.has(orgSelectFirstResult)) {
@@ -107,8 +147,8 @@ export default class Xero {
 
         await ab.waitFor($('.xui-fileuploader--fileitem--description'))
         await ab.click($('.xui-fixedfooter').find('button:contains("Next")'))
-        await doWhileUndefined(1200, 200, async () => {
-            await wait(500)
+        await wait(500)
+        await doWhileUndefined(10000, 500, async () => {
             const hasNextButton = await ab.has(
                 $('.xui-fixedfooter').find('button:contains("Next")')
             )
