@@ -7,6 +7,9 @@ import AutoBrowser from './AutoBrowser.js'
 const operatingButtonSelector =
     '.mf-bank-widget-panel:contains("Operating")>div>div>button'
 
+const operatingButtonSelectorNew =
+    '.homepage-banking-widget-mfe:contains("Operating") > header > div > div > div > button'
+
 const reserveButtonSelector =
     '.mf-bank-widget-panel:contains("Reserv")>div>div>button'
 
@@ -15,6 +18,18 @@ export default class Xero {
 
     constructor(autoBrowser: AutoBrowser) {
         this.autoBrowser = autoBrowser
+    }
+
+    async mainPageIs2026Design() {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+
+        return await ab.waitForMult([
+            $('.xui-pageheading--title'),
+            $('.header-and-quick-actions-mfe-MfeContainer'),
+        ])
     }
 
     async switchToOrg(orgName: string) {
@@ -97,8 +112,12 @@ export default class Xero {
 
         await ab.waitPageLoad()
 
-        await ab.waitFor($('.xui-pageheading--title'))
-        await ab.waitFor($(operatingButtonSelector))
+        if (await this.mainPageIs2026Design()) {
+            await ab.waitFor($(operatingButtonSelectorNew))
+        } else {
+            await ab.waitFor($(operatingButtonSelector))
+        }
+
         lm('○ Done!')
     }
 
@@ -109,8 +128,19 @@ export default class Xero {
         } = this
         lm('• Navigating to imports...')
 
-        await ab.click($(operatingButtonSelector))
-        await ab.click($('a:contains("Import a Statement")'))
+        if (await this.mainPageIs2026Design()) {
+            await ab.click($(operatingButtonSelectorNew))
+            await ab.click(
+                $(
+                    '.homepage-banking-widget-mfe-Link > a:contains("Import bank statement")'
+                )
+            )
+            await ab.waitPageLoad()
+        } else {
+            await ab.click($(operatingButtonSelector))
+            await ab.click($('a:contains("Import a Statement")'))
+        }
+
         await ab.waitFor(
             $(
                 '.xui-pageheading--titlewrapper:contains("Import bank transactions")'
