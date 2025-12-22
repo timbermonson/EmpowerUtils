@@ -13,8 +13,39 @@ const operatingButtonSelectorNew =
 const reserveButtonSelector =
     '.mf-bank-widget-panel:contains("Reserv")>div>div>button'
 
+type I_MatchAndSearch = {
+    regex: RegExp
+    searchTerm: string
+    dayOffset: number
+}
+
 export default class Xero {
     autoBrowser: AutoBrowser
+
+    static #reconciliationSearchObjList: I_MatchAndSearch[] = [
+        {
+            dayOffset: -1,
+            regex: /PayLease\.com\s+Settlement/,
+            searchTerm: 'ZACH',
+        },
+        { dayOffset: -1, regex: /PAYLEASE\.COM\s+CREDIT/, searchTerm: 'ZCC' },
+        { dayOffset: 0, regex: /Image\s+Deposit/, searchTerm: 'check' },
+        { dayOffset: 0, regex: /Lockbox\s+Deposit/, searchTerm: 'DOT' },
+        { dayOffset: -1, regex: /HOA\s+DUES/, searchTerm: 'APIACH' },
+        { dayOffset: 0, regex: /CCPAY/, searchTerm: 'DC' },
+    ]
+
+    static #reconciliationGetSearchObj(
+        bankLine: string
+    ): I_MatchAndSearch | null {
+        for (const searchObject of this.#reconciliationSearchObjList) {
+            if (searchObject.regex.test(bankLine)) {
+                return searchObject
+            }
+        }
+
+        return null
+    }
 
     constructor(autoBrowser: AutoBrowser) {
         this.autoBrowser = autoBrowser
@@ -26,10 +57,143 @@ export default class Xero {
             autoBrowser: { $ },
         } = this
 
-        return await ab.waitForMult([
-            $('.xui-pageheading--title'),
-            $('.header-and-quick-actions-mfe-MfeContainer'),
-        ])
+        return await ab.waitForMult(
+            [
+                $('.xui-pageheading--title'),
+                $('.header-and-quick-actions-mfe-MfeContainer'),
+            ],
+            15000
+        )
+    }
+
+    async listenForKey(key: string, callback: () => void) {
+        const { autoBrowser: ab } = this
+
+        await ab.cons('location.reload()')
+        await ab.waitPageLoad(true)
+
+        return await ab.listenForKey(key, callback)
+    }
+
+    async reconciliationUnselectAllTransactions() {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+
+        await ab.waitFor($('div#selectedTransactionList'))
+        const numSelected = await ab.hasNumber(
+            $('div#selectedTransactionList').find('div.transaction-row')
+        )
+
+        if (numSelected <= 0) {
+            return
+        }
+
+        lm('• Detected alread-selected xactions!')
+        lm('• Deselecting...')
+        for (let i = 0; i < numSelected; i++) {
+            await ab.clickInstance(
+                $('div#selectedTransactionList')
+                    .find('div.transaction-row')
+                    .find('input.checkbox'),
+                i
+            )
+        }
+        await wait(500)
+    }
+
+    async reconciliationSelectDatedTransactions(
+        searchObj: I_MatchAndSearch,
+        dateString: string
+    ) {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+
+        let searchDate = dayjs(dateString).add(searchObj.dayOffset, 'day')
+        while (searchDate.day() > 5 || searchDate.day() < 1) {
+            //If weekend, fit to prev business day
+            searchDate = searchDate.subtract(1, 'day')
+        }
+
+        const searchDateString = searchDate.format('MMM D, YYYY')
+        lm(`• Selecting all w/ date: ${searchDateString}`)
+
+        const numMatchingRows = await ab.hasNumber(
+            $('div#availableTransactionList')
+                .find('div.transaction-row')
+                .has(`div.date:contains("${searchDateString}")`)
+        )
+        lm(`• Found num: ${numMatchingRows}`)
+
+        lm(`• Clicking all instances...`)
+        for (let i = 0; i < numMatchingRows; i++) {
+            await ab.clickInstance(
+                $('div#availableTransactionList')
+                    .find('div.transaction-row')
+                    .has(`div.date:contains("${searchDateString}")`)
+                    .find('input.checkbox'),
+                i
+            )
+        }
+        lm(`○ Done!`)
+    }
+
+    async reconciliationStart() {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+
+        lm('\n• Starting reconcile attempt!')
+        await wait(500)
+
+        if (!(await ab.has($('div.findMatch[style="visibility: visible;"]')))) {
+            await ab.click($('a:contains("Find & Match")'))
+        }
+        await ab.waitFor($('div.findMatch[style="visibility: visible;"]'))
+
+        const bankLine = await ab.getText(
+            $('.line.opened').find('span[data-testid="payee"]')
+        )
+        const dateLine = await ab.getText(
+            $('.line.opened').find('span[data-testid="posted-date"]')
+        )
+
+        const searchObj = Xero.#reconciliationGetSearchObj(bankLine)
+        if (!searchObj) {
+            lm('○ Could not identify reconciliation type!')
+            return
+        }
+        lm(`• Identified: ${searchObj.searchTerm}`)
+
+        await ab.type($('input#searchNameText'), searchObj.searchTerm)
+        await wait(150)
+        await ab.click($('.bankrec-search-form').find(".xbtn:contains('Go')"))
+
+        await ab.waitFor(
+            $('div#transactionListLoading[style="display: block;"]')
+        )
+        await ab.waitFor(
+            $('div#transactionListLoading[style="display: none;"]'),
+            20000
+        )
+        await wait(150)
+        await ab.click($('.bankrec-search-form').find(".xbtn:contains('Go')"))
+
+        await wait(500)
+        if (await ab.has($('div#noTransactionAlert'))) {
+            lm('No transactions detected.')
+            return
+        }
+        await ab.waitFor(
+            $('div#availableTransactionList').find('div.transaction-row')
+        )
+
+        await this.reconciliationUnselectAllTransactions()
+        await this.reconciliationSelectDatedTransactions(searchObj, dateLine)
     }
 
     async switchToOrg(orgName: string) {
@@ -204,10 +368,21 @@ export default class Xero {
 
         lm('• Opening aged checks...')
 
-        await ab.click($(operatingButtonSelector))
-        await ab.click(
-            $('.mf-bank-widget-text-minorlink:contains("Account Transactions")')
-        )
+        if (await this.mainPageIs2026Design()) {
+            await ab.click($(operatingButtonSelectorNew))
+            await ab.click(
+                $(
+                    '.homepage-banking-widget-mfe-Link:contains("View account transactions")'
+                ).find('a')
+            )
+        } else {
+            await ab.click($(operatingButtonSelector))
+            await ab.click(
+                $(
+                    '.mf-bank-widget-text-minorlink:contains("Account Transactions")'
+                )
+            )
+        }
 
         await ab.waitPageLoad()
         await ab.waitFor($('#removeAndRedoButton'))
@@ -233,6 +408,30 @@ export default class Xero {
         await ab.waitPageLoad()
         await ab.waitFor($('#bankTransactions'))
 
+        lm('○ Done!')
+    }
+
+    async openReconciliations() {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+        lm('• Opening reconciliations...')
+
+        if (await this.mainPageIs2026Design()) {
+            await ab.click(
+                $('.homepage-banking-widget-mfe:contains("Operating")').find(
+                    'a.homepage-banking-widget-mfe-button:contains("Reconcile")'
+                )
+            )
+        } else {
+            await ab.click(
+                $('.mf-bank-widget-panel:contains("Operating")').find(
+                    'a[data-automationid="reconcileBankItems"]'
+                )
+            )
+        }
+        await ab.waitPageLoad(true)
         lm('○ Done!')
     }
 

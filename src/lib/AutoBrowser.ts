@@ -10,7 +10,7 @@ const ioFolder = config.get('io.files.ioFolder') as string
 
 import { Server as ServerType } from 'net'
 
-import { lm, logSep } from './io.js'
+import { confirm, lm, logSep } from './io.js'
 import { TimeoutError, doWhileUndefined, wait } from './etc.js'
 import { T_JQueryTemplater, jqTemplaterFactory } from './string.js'
 
@@ -62,7 +62,9 @@ export default class AutoBrowser {
     static hideHeaderCommand = `${AutoBrowser.headerVarName}.style["height"] = "0px";${AutoBrowser.headerVarName}.innerHTML =  "";`
     #headerShowing = false
 
-    static fileTransferServerPort = 8282
+    static keyListenerServerPort = 8283
+
+    static fileTransferServerPort = 8287
     static fileTransferBrowserVar = '_AutoBrowserFileTransferFile'
     #fileTransferServer: ReturnType<typeof express>
     #fileTransferFilePath: string
@@ -100,6 +102,10 @@ export default class AutoBrowser {
         )
     }
 
+    async getText(jQuery: T_JQueryTemplater) {
+        return this.sendQuery(jQuery.get(0).textContent)
+    }
+
     async #transferFileToBrowser(filePath: string) {
         const { fileTransferBrowserVar: browserVar } = AutoBrowser
 
@@ -122,6 +128,28 @@ export default class AutoBrowser {
         } finally {
             listener.close()
         }
+    }
+
+    async listenForKey(key: string, callback: () => any) {
+        if (key.length !== 1) {
+            throw new Error(
+                'listenForKey\'s "key" needs to be 1 character long.'
+            )
+        }
+
+        const keyListenerServer = express()
+        keyListenerServer.post('/', (req, res) => {
+            res.setHeader('Access-Control-Allow-Origin', '*')
+            res.setHeader('Access-Control-Allow-Methods', '*')
+            res.setHeader('Access-Control-Allow-Headers', '*')
+
+            callback()
+            res.end()
+        })
+
+        const browserCommand = `window.addEventListener('keydown', event => {const targetTag = event.target.tagName.toLowerCase() ;if (targetTag === 'input' || targetTag === 'textarea') return;if(event.key !== '${key}') return;fetch("http://127.0.0.1:${AutoBrowser.keyListenerServerPort}/", {method: "POST"});})`
+        await this.cons(browserCommand)
+        return keyListenerServer.listen(AutoBrowser.keyListenerServerPort)
     }
 
     async dropFile(jQuery: T_JQueryTemplater, filePath: string) {
@@ -196,6 +224,13 @@ export default class AutoBrowser {
         return this.clickFirstVisible([jQuery])
     }
 
+    async clickInstance(jQuery: T_JQueryTemplater, instance: number) {
+        const callback = async (jQuery: T_JQueryTemplater) =>
+            this.sendQuery(jQuery.get(instance), '.click()')
+
+        return this.findAndDo([jQuery], Array([jQuery].length).fill(callback))
+    }
+
     async clickFirstVisible(jQueryList: Array<T_JQueryTemplater>) {
         const callback = async (jQuery: T_JQueryTemplater) =>
             this.sendQuery(jQuery.get(0), '.click()')
@@ -257,11 +292,16 @@ export default class AutoBrowser {
         return !!(await this.sendQuery(jQuery.length))
     }
 
+    async hasNumber(jQuery: T_JQueryTemplater): Promise<number> {
+        const length = await this.sendQuery(jQuery.length)
+        return length ? length : 0
+    }
+
     async sendQuery(jQuery: T_JQueryTemplater, suffix = '') {
         return this.cons(`${jQuery.toString()}${suffix}`)
     }
 
-    async waitPageLoad() {
+    async waitPageLoad(awaitConfirm: boolean = false) {
         await doWhileUndefined(7000, 100, async () => {
             if ((await this.cons('typeof jQuery')) !== 'function') {
                 return true
@@ -270,14 +310,16 @@ export default class AutoBrowser {
         if (this.#headerShowing) {
             await this.headerShow()
         }
-        await doWhileUndefined(7000, 100, async () => {
+        await doWhileUndefined(20000, 100, async () => {
             if (
                 (await this.cons('document.readyState === "complete"')) === true
             ) {
                 return true
             }
         })
-
+        if (awaitConfirm) {
+            await confirm('do console setup?')
+        }
         await this.doConsoleSetup()
     }
 

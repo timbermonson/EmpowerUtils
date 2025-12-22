@@ -121,6 +121,43 @@ async function pickActionCallback(
                 },
             },
         },
+        {
+            name: 'Reconciliation Helper',
+
+            value: {
+                logVerb: 'Reconcile:',
+                actionCallback: async (orgName: string) => {
+                    await xeroObject.switchToOrg(orgName)
+                    await xeroObject.openReconciliations()
+                    let currentlyReconciling = false
+                    const listener = await xeroObject.autoBrowser.listenForKey(
+                        'r',
+                        async () => {
+                            if (currentlyReconciling) {
+                                lm(
+                                    '○ Waiting for current reconciliation to finish!'
+                                )
+                                return
+                            } else {
+                                currentlyReconciling = true
+                            }
+                            try {
+                                await xeroObject.reconciliationStart()
+                            } catch (e) {
+                                lm(
+                                    `○ Failed to reconcile! message: ${e.message}`
+                                )
+                            } finally {
+                                currentlyReconciling = false
+                            }
+                        }
+                    )
+
+                    await confirm('Press enter to stop listener.\n')
+                    listener.close()
+                },
+            },
+        },
 
         // {
         //     name: 'Reconciliation Report: Slide date',

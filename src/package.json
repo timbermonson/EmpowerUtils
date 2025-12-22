@@ -18,6 +18,7 @@
         "ebpMult": "tsx watch --include ./ioFiles/input.txt apps/ExtractBusinessPrincipals/run.ts -m",
         "end": "tsx watch --include ./ioFiles/input.txt apps/EndatoApp/app.ts --no-stdin",
         "xero": "tsx apps/Xero/app.ts",
+        "undelete": "tsx apps/SharepointUndelete/app.ts",
         "xeroserve": "tsx apps/Xero/oauthServer.ts",
         "tsx": "tsx",
         "integration": "vitest run --config ./.test/config/integration.config.js",
