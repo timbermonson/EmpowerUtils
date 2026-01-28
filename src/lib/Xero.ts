@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import { doWhileUndefined, wait } from './etc.js'
 import { lm } from './io.js'
 import AutoBrowser from './AutoBrowser.js'
+import chalk from 'chalk'
 
 const operatingButtonSelector =
     '.mf-bank-widget-panel:contains("Operating")>div>div>button'
@@ -64,15 +65,6 @@ export default class Xero {
             ],
             15000
         )
-    }
-
-    async listenForKey(key: string, callback: () => void) {
-        const { autoBrowser: ab } = this
-
-        await ab.cons('location.reload()')
-        await ab.waitPageLoad(true)
-
-        return await ab.listenForKey(key, callback)
     }
 
     async reconciliationUnselectAllTransactions() {
@@ -201,7 +193,7 @@ export default class Xero {
             autoBrowser: ab,
             autoBrowser: { $ },
         } = this
-        lm(`• Switching to ${orgName}...`)
+        lm(`• Switching to ${chalk.greenBright(orgName)}...`)
 
         await ab.cons('location.reload()')
         await ab.cons('location.reload()')
@@ -234,6 +226,7 @@ export default class Xero {
                 $('button.x-nav--tenant-menu-button[aria-expanded="true"]')
             )
             await ab.waitFor(orgSearchQuery)
+            await wait(250)
 
             // Type name, select, wait for pageload
             await ab.type(orgSearchQuery, orgName)
@@ -360,13 +353,13 @@ export default class Xero {
         lm('○ Done!')
     }
 
-    async openAgedChecks() {
+    async navToTransactionFilters() {
         const {
             autoBrowser: ab,
             autoBrowser: { $ },
         } = this
 
-        lm('• Opening aged checks...')
+        lm('• Opening account transaction search...')
 
         if (await this.mainPageIs2026Design()) {
             await ab.click($(operatingButtonSelectorNew))
@@ -389,6 +382,20 @@ export default class Xero {
 
         await ab.cons('window.Bank.toggleSearchForm();')
         await ab.waitFor($('.search.action.open'))
+        lm('○ Done!')
+    }
+
+    async openAgedChecks(skipClear = false) {
+        const {
+            autoBrowser: ab,
+            autoBrowser: { $ },
+        } = this
+
+        lm('• Opening aged checks...')
+        if (!skipClear) {
+            await ab.cons("clearBankTran(); SubmitAction('Clear');")
+            await ab.waitPageLoad()
+        }
 
         await ab.type(
             $('#sb_dteEndDate'),
@@ -408,7 +415,15 @@ export default class Xero {
         await ab.waitPageLoad()
         await ab.waitFor($('#bankTransactions'))
 
+        let numResults = 0
+        if (await ab.has($('#bankTransactionListEmptyRow'))) {
+            numResults = 0
+        } else {
+            numResults = await ab.hasNumber($('#bankTransactionList > tr'))
+        }
+
         lm('○ Done!')
+        return numResults
     }
 
     async openReconciliations() {
@@ -435,92 +450,21 @@ export default class Xero {
         lm('○ Done!')
     }
 
-    async openReserveAgedTransactions() {
-        const {
-            autoBrowser: ab,
-            autoBrowser: { $ },
-        } = this
-        lm("• Opening resv aged trans'ns...")
-
-        await ab.click(
-            $('.mf-bank-widget-panel:contains("Reserv")')
-                .not(':contains("CD")')
-                .find('div>div>button')
-        )
-        await ab.click(
-            $('.mf-bank-widget-text-minorlink:contains("Account Transactions")')
-        )
-
-        await ab.waitPageLoad()
-        await ab.waitFor($('#removeAndRedoButton'))
-
-        await ab.cons('window.Bank.toggleSearchForm();')
-        await ab.waitFor($('.search.action.open'))
-
-        await ab.type(
-            $('#sb_dteEndDate'),
-            `${dayjs().subtract(23, 'day').format('MMM D, YYYY')}`
-        )
-
-        await ab.cons('jQuery.noConflict()')
-        await ab.type($('#sb_reconciledStatus_value'), 'Un')
-        await wait(500)
-        await ab.click(
-            $(
-                '#sb_reconciledStatus_suggestions>div>div.selected:contains("Unreconciled")'
-            )
-        )
-
-        await ab.click($('#sbSubmit_BT'))
-        await ab.waitPageLoad()
-        await ab.waitFor($('#bankTransactions'))
-
-        lm('○ Done!')
-    }
-
-    async openAgedTransactions(skipNav = false) {
+    async openAgedTransactions(skipClear = false) {
         const {
             autoBrowser: ab,
             autoBrowser: { $ },
         } = this
 
         lm('• Opening aged Transactions...')
-
-        if (skipNav) {
+        if (!skipClear) {
             await ab.cons("clearBankTran(); SubmitAction('Clear');")
             await ab.waitPageLoad()
-        } else {
-            await ab.click($(operatingButtonSelector))
-            await ab.click(
-                $(
-                    '.mf-bank-widget-text-minorlink:contains("Account Transactions")'
-                )
-            )
-            await ab.waitPageLoad()
-            await ab.waitFor($('#removeAndRedoButton'))
-            await ab.cons('window.Bank.toggleSearchForm();')
-            await ab.waitFor($('.search.action.open'))
-
-            // TODO REMOVE
-            await ab.cons('location.reload()')
-            await ab.waitPageLoad()
-            await ab.cons('window.Bank.toggleSearchForm();')
-            await ab.waitFor($('.search.action.open'))
-            //
         }
-
-        await ab.cons('jQuery.noConflict()')
-        await ab.cons('jQuery.noConflict()')
-        await ab.type($('#sb_reconciledStatus_value'), 'Un')
-        await ab.click(
-            $(
-                '#sb_reconciledStatus_suggestions>div>div:contains("Unreconciled")'
-            )
-        )
 
         await ab.type(
             $('#sb_dteEndDate'),
-            `${dayjs().subtract(7, 'day').format('MMM D, YYYY')}`
+            `${dayjs().subtract(11, 'day').format('MMM D, YYYY')}`
         )
 
         await ab.type($('#sb_reconciledStatus_value'), 'Un')
@@ -537,7 +481,19 @@ export default class Xero {
         await ab.waitPageLoad()
         await ab.waitFor($('#bankTransactions'))
 
+        let numResults = 0
+        if (await ab.has($('#bankTransactionListEmptyRow'))) {
+            numResults = 0
+        } else {
+            numResults = await ab.hasNumber(
+                $('#bankTransactionList > tr')
+                    .not(":contains('EmpHOA #')")
+                    .not(":contains('INV-')")
+            )
+        }
+
         lm('○ Done!')
+        return numResults
     }
 
     async enterRecReportEndDate(endDateString) {

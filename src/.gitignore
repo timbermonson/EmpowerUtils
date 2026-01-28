@@ -8,6 +8,8 @@ config/*
 !config/test.json
 !config/development.json
 
+apps/SharepointUndelete/app.ts
+
 # Logs
 logs
 *.log

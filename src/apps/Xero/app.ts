@@ -20,6 +20,7 @@ const {
 
 import { selectCancel, selectFile, selectFolder } from './xeroLib.js'
 import path from 'path'
+import { wait } from '../../lib/etc.js'
 
 const Xero = lib.Xero
 const AutoBrowser = lib.AutoBrowser
@@ -32,7 +33,10 @@ type D_AutomationChoice = {
     value: {
         setup?: () => Promise<any>
         logVerb: string
-        actionCallback: (target: string, setupState?: any) => Promise<void>
+        actionCallback: (
+            target: string,
+            setupState?: any
+        ) => Promise<void | boolean>
     }
 }
 
@@ -95,29 +99,35 @@ async function pickActionCallback(
         },
 
         {
-            name: 'Open Aged Checks',
+            name: 'Open Aged Checks/Transactions',
 
             value: {
-                logVerb: 'Open Aged Checks:',
+                logVerb: 'Open Aged Transactions/Checks:',
                 actionCallback: async (orgName: string) => {
+                    lm('\n')
+                    logSep()
                     await xeroObject.switchToOrg(orgName)
-                    await xeroObject.openAgedChecks()
+                    await xeroObject.navToTransactionFilters()
+                    let results = 0
+
+                    results = await xeroObject.openAgedChecks(true)
                     await xeroObject.autoBrowser.headerHide()
-                    await confirm('Press enter to open Aged Transactions.')
+                    if (results) {
+                        await confirm('Press enter to open Aged Transactions.')
+                    } else {
+                        lm('No results! Continuing...')
+                        await wait(700)
+                    }
+
                     await xeroObject.autoBrowser.headerShow()
-                    await xeroObject.openAgedTransactions(true)
-                },
-            },
-        },
-
-        {
-            name: 'Open RESV Aged Transactions',
-
-            value: {
-                logVerb: 'Open Aged Checks:',
-                actionCallback: async (orgName: string) => {
-                    await xeroObject.switchToOrg(orgName)
-                    await xeroObject.openReserveAgedTransactions()
+                    results = await xeroObject.openAgedTransactions()
+                    if (results) {
+                        lm('\n')
+                    } else {
+                        lm('No results! Continuing...')
+                        await wait(700)
+                        return true
+                    }
                 },
             },
         },
@@ -131,7 +141,7 @@ async function pickActionCallback(
                     await xeroObject.openReconciliations()
                     let currentlyReconciling = false
                     const listener = await xeroObject.autoBrowser.listenForKey(
-                        'r',
+                        '4',
                         async () => {
                             if (currentlyReconciling) {
                                 lm(
@@ -232,33 +242,41 @@ async function run() {
     lm('')
 
     // Loop through list
+    let lastActionResult: void | boolean
     do {
         const curLine = await iterator.getNextItem()
         appendOutputData(curLine + '\n')
 
-        const resp = await confirmWithOption(
-            `${logVerb} ` + chalk.green(`[${curLine}]?`),
-            'back'
-        )
-        if (resp.trim().toLowerCase() === 'back') {
-            iterator.back()
-            iterator.back()
-            continue
+        if (!lastActionResult) {
+            const resp = await confirmWithOption(
+                `${logVerb} ` + chalk.green(`[${curLine}]?`),
+                'back'
+            )
+            if (resp.trim().toLowerCase() === 'back') {
+                iterator.back()
+                iterator.back()
+                continue
+            }
+            if (!resp) {
+                continue
+            }
         }
-        if (resp) {
-            let retry = true
 
-            while (retry) {
-                try {
-                    await autoBrowser.headerShow()
-                    await actionCallback(curLine, actionSetupState)
-                    retry = false
-                    await autoBrowser.headerHide()
-                } catch (e) {
-                    console.error(e)
-                    await autoBrowser.headerHide()
-                    retry = await confirm('Retry?')
-                }
+        let retry = true
+
+        while (retry) {
+            try {
+                await autoBrowser.headerShow()
+                lastActionResult = await actionCallback(
+                    curLine,
+                    actionSetupState
+                )
+                retry = false
+                await autoBrowser.headerHide()
+            } catch (e) {
+                console.error(e)
+                await autoBrowser.headerHide()
+                retry = await confirm('Retry?')
             }
         }
     } while (/*await confirm('Continue?')*/ true)
